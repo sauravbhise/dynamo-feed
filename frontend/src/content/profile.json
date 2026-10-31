@@ -1,0 +1,67 @@
+{
+  "name": "Dynamo",
+  "oneLiner": "I turn my life into cartoon reels.",
+  "photo": "/avatar.svg",
+  "resumeUrl": "/resume.txt",
+  "stories": [
+    { "id": "story-build", "title": "Build log", "items": [{ "caption": "Designing the feed shell" }, { "caption": "Naming the cast" }] },
+    { "id": "story-ink", "title": "Ink", "items": [{ "caption": "Sketching poses" }] },
+    { "id": "story-ship", "title": "Ship", "items": [{ "caption": "Deploy day, maybe" }] },
+    { "id": "story-fuel", "title": "Fuel", "items": [{ "caption": "Third coffee of the day" }] }
+  ],
+  "stats": [
+    { "label": "Reels", "value": "24" },
+    { "label": "Laughs", "value": "1.2k" },
+    { "label": "Cast", "value": "4" },
+    { "label": "Coffee", "value": "∞" }
+  ],
+  "now": {
+    "reading": "Understanding Comics — Scott McCloud",
+    "watching": "Every Spider-Verse breakdown I can find"
+  },
+  "highlights": ["Ex-agency dev", "Motion nerd", "Writes jokes in commits", "Ships on Fridays"],
+  "experience": [
+    {
+      "role": "Senior Frontend Engineer",
+      "company": "Placeholder Studio",
+      "period": "2022 — Now",
+      "note": "Design systems, motion, and too many prototypes."
+    },
+    {
+      "role": "Frontend Engineer",
+      "company": "Pixel & Co.",
+      "period": "2019 — 2022",
+      "note": "Shipped the checkout nobody hated."
+    }
+  ],
+  "projects": [
+    {
+      "name": "Dynamo Feed",
+      "description": "This site. A portfolio pretending to be a short-video app.",
+      "tag": "React"
+    },
+    {
+      "name": "Inkwell",
+      "description": "A tiny tool that turns commits into comic panels.",
+      "tag": "OSS"
+    },
+    {
+      "name": "Frame Zero",
+      "description": "A keyframe editor for CSS nerds.",
+      "tag": "Side quest"
+    }
+  ],
+  "education": [
+    { "title": "B.Sc. Computer Science", "org": "Placeholder University", "period": "2015 — 2019" }
+  ],
+  "certifications": [
+    { "title": "Motion Design for the Web", "issuer": "School of Motion-ish", "year": "2021" },
+    { "title": "AWS Cloud Practitioner", "issuer": "Amazon", "year": "2020" }
+  ],
+  "links": [
+    { "label": "GitHub", "url": "https://github.com" },
+    { "label": "X / Twitter", "url": "https://x.com" },
+    { "label": "LinkedIn", "url": "https://linkedin.com" },
+    { "label": "Email", "url": "mailto:hello@dynamo.feed" }
+  ]
+}

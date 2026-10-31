@@ -1,0 +1,81 @@
+[
+  {
+    "id": "reel-001",
+    "slug": "i-built-a-sitcom-about-myself",
+    "template": "breaking_news",
+    "hostId": "narrator",
+    "likes": 412,
+    "beats": [
+      {
+        "characterId": "narrator",
+        "pose": "talking",
+        "caption": "Breaking: local developer replaces personality with a video feed.",
+        "durationMs": 2600
+      },
+      {
+        "characterId": "saurav",
+        "pose": "sceptical",
+        "caption": "You did WHAT?",
+        "durationMs": 1800
+      },
+      {
+        "characterId": "hype",
+        "pose": "celebrating",
+        "caption": "I SUPPORT THIS.",
+        "durationMs": 1500
+      }
+    ],
+    "comments": [
+      { "authorId": "saurav", "text": "The sceptic is the best character, objectively." },
+      { "authorId": "visitor", "text": "Following for the drama." },
+      { "authorId": "prof", "text": "Chart of my confusion incoming." }
+    ]
+  },
+  {
+    "id": "reel-002",
+    "slug": "myth-i-read-the-docs",
+    "template": "myth_vs_fact",
+    "hostId": "prof",
+    "likes": 288,
+    "beats": [
+      {
+        "characterId": "prof",
+        "pose": "pointing",
+        "caption": "Myth: I read the docs before debugging.",
+        "durationMs": 2200
+      },
+      {
+        "characterId": "prof",
+        "pose": "thinking",
+        "caption": "Fact: I read the docs WHILE debugging.",
+        "durationMs": 2200,
+        "data": { "verdict": "BUSTED" }
+      }
+    ],
+    "comments": [{ "authorId": "visitor", "text": "Called out in 4K." }]
+  },
+  {
+    "id": "reel-003",
+    "slug": "shipping-on-fridays-ep1",
+    "template": "documentary",
+    "hostId": "narrator",
+    "seriesId": "series-friday",
+    "part": 1,
+    "likes": 731,
+    "beats": [
+      {
+        "characterId": "narrator",
+        "pose": "neutral",
+        "caption": "Friday, 4:59 PM. A developer reaches for the deploy button.",
+        "durationMs": 3000
+      },
+      {
+        "characterId": "saurav",
+        "pose": "shocked",
+        "caption": "Don't.",
+        "durationMs": 900
+      }
+    ],
+    "comments": [{ "authorId": "hype", "text": "PART 2 WHEN" }]
+  }
+]

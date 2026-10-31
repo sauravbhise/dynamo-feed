@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-ink font-body text-line antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    @apply bg-accent text-white;
+  }
+}
+
+@layer utilities {
+  .dotgrid {
+    background-image: radial-gradient(rgba(244, 242, 236, 0.08) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+  }
+
+  .scrollbar-brut {
+    scrollbar-width: thin;
+    scrollbar-color: #2a2a3c transparent;
+  }
+
+  .scrollbar-brut::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .scrollbar-brut::-webkit-scrollbar-thumb {
+    background: #2a2a3c;
+    border: 3px solid #14141e;
+    border-radius: 999px;
+  }
+
+  .scrollbar-brut::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}

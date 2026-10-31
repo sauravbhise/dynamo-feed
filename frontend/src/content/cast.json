@@ -1,0 +1,30 @@
+[
+  {
+    "id": "narrator",
+    "name": "The Narrator",
+    "role": "Narrator",
+    "color": "#FFC53D",
+    "personality": "Deadpan. Makes my life sound like a nature documentary."
+  },
+  {
+    "id": "saurav",
+    "name": "Saurav",
+    "role": "Best friend / sceptic",
+    "color": "#3DE0FF",
+    "personality": "Pokes holes in every plan. Usually right."
+  },
+  {
+    "id": "prof",
+    "name": "Prof. Pixel",
+    "role": "The explainer",
+    "color": "#7CFF6B",
+    "personality": "Explains feelings with bar charts."
+  },
+  {
+    "id": "hype",
+    "name": "Hype",
+    "role": "Hype machine",
+    "color": "#FF5CA8",
+    "personality": "Reacts to everything at 200% volume."
+  }
+]
