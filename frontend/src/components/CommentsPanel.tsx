@@ -24,22 +24,25 @@ function CommentRow({ comment }: { comment: ReelComment }) {
   );
 }
 
-export function CommentsPanel({ comments }: { comments: ReelComment[] }) {
+interface CommentsPanelProps {
+  comments: ReelComment[];
+  onAdd: (text: string) => void;
+}
+
+export function CommentsPanel({ comments, onAdd }: CommentsPanelProps) {
   const [draft, setDraft] = useState("");
-  const [extra, setExtra] = useState<ReelComment[]>([]);
-  const all = [...comments, ...extra];
 
   const submit = () => {
     const text = draft.trim();
     if (!text) return;
-    setExtra((prev) => [...prev, { authorId: "visitor", text }]);
+    onAdd(text);
     setDraft("");
   };
 
   return (
     <div className="flex h-full flex-col" data-testid="comments-panel">
       <ol className="scrollbar-soft flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-2" data-testid="comments-list">
-        {all.map((comment, i) => (
+        {comments.map((comment, i) => (
           <CommentRow key={comment.authorId + i} comment={comment} />
         ))}
       </ol>

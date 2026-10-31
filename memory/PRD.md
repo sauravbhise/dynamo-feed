@@ -32,11 +32,13 @@ Neo-brutalism removed. Warm dark rounded theme:
 
 ## Implemented
 - 2026-10-31: v1 neo-brutalist shell; same day: v2 warm rounded redesign (current), now.json + schema, comments overlay, Shorts-style rail + nav arrows, all responsive modes.
+- 2026-10-31: Feed engine — snap scroll (in player on desktop, full-bleed on mobile), windowed mounting (±1), leave = pause + reset, endless generations with series grouping (parts adjacent, in order) + five-position no-repeat seam rule (bug: seam check was off by one — fixed by walking the live feed), /r/:slug replaceState URL sync + deep-link start, keyboard (↓/J, ↑/K, Space), first-visit + after-loop "Swipe up" hints (localStorage flag), vercel.json rewrite for /r/:slug.
+- 2026-10-31: Reel player — single rAF elapsed-time clock (exact pause/resume), beat sequence by durationMs with audio-duration override (metadata preloaded, no playback; missing file falls back), top segmented progress bar (per-frame DOM writes, no per-frame re-render), tap to pause with pause icon, loop on end, beat placeholder render (character colour bg, name chip, pose label, caption with punchy spring entrance; reduced-motion = fades), reels.json now 8 reels covering all six templates + a two-part series.
 
 ## Backlog
-- P0: reel beat player (timed beats), character rig with 8 poses.
-- P1: scroll-snap feed with /r/:slug routing; template overlays (review, breaking_news, myth_vs_fact…); Watch-this swipe deck.
-- P2: joke-counter likes, share cards, voices (audioSrc), profile.json "now" section merge with The Clock, real photo/resume/covers.
+- P0: character rig with 8 poses inside ReelPlayer; audio playback when voices land.
+- P1: template overlays (review stars, breaking_news headline, myth_vs_fact verdict, stat_reveal value); Watch-this swipe deck; /r/:slug share preview meta.
+- P2: joke-counter likes, like/dislike persistence, profile.json "now" section merge with The Clock, real photo/resume/covers.
 
 ## Notes
 - Placeholders: /avatar.svg, /covers/reading.svg, /resume.txt — swap for real assets later.

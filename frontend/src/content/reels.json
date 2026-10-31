@@ -48,7 +48,8 @@
         "characterId": "prof",
         "pose": "thinking",
         "caption": "Fact: I read the docs WHILE debugging.",
-        "durationMs": 2200,
+        "durationMs": 2400,
+        "audioSrc": "/audio/tba-narration.mp3",
         "data": { "verdict": "BUSTED" }
       }
     ],
@@ -73,9 +74,159 @@
         "characterId": "saurav",
         "pose": "shocked",
         "caption": "Don't.",
-        "durationMs": 900
+        "durationMs": 1200
       }
     ],
     "comments": [{ "authorId": "hype", "text": "PART 2 WHEN" }]
+  },
+  {
+    "id": "reel-004",
+    "slug": "shipping-on-fridays-ep2",
+    "template": "documentary",
+    "hostId": "narrator",
+    "seriesId": "series-friday",
+    "part": 2,
+    "likes": 804,
+    "beats": [
+      {
+        "characterId": "narrator",
+        "pose": "talking",
+        "caption": "He deployed. Nature is healing.",
+        "durationMs": 2600
+      },
+      {
+        "characterId": "hype",
+        "pose": "laughing",
+        "caption": "The pager said hi at 2 AM.",
+        "durationMs": 2200
+      },
+      {
+        "characterId": "saurav",
+        "pose": "sceptical",
+        "caption": "We fixed it by Monday. Mostly.",
+        "durationMs": 2000
+      }
+    ],
+    "comments": [
+      { "authorId": "visitor", "text": "The Monday part is too real." },
+      { "authorId": "prof", "text": "Incident report: 10/10 storytelling." }
+    ]
+  },
+  {
+    "id": "reel-005",
+    "slug": "hype-reviews-my-desk",
+    "template": "review",
+    "hostId": "hype",
+    "likes": 655,
+    "beats": [
+      {
+        "characterId": "hype",
+        "pose": "celebrating",
+        "caption": "Desk setup review! Ten out of ten.",
+        "durationMs": 2000
+      },
+      {
+        "characterId": "hype",
+        "pose": "shocked",
+        "caption": "The cable management? CRIMINAL.",
+        "durationMs": 2400,
+        "data": { "stars": 10 }
+      },
+      {
+        "characterId": "narrator",
+        "pose": "neutral",
+        "caption": "He gave his own desk a ten.",
+        "durationMs": 1800
+      }
+    ],
+    "comments": [{ "authorId": "saurav", "text": "Bribed with snacks, clearly." }]
+  },
+  {
+    "id": "reel-006",
+    "slug": "i-talked-to-my-plants",
+    "template": "storytime",
+    "hostId": "saurav",
+    "likes": 523,
+    "beats": [
+      {
+        "characterId": "saurav",
+        "pose": "talking",
+        "caption": "Story time: he talked to his plants for a week.",
+        "durationMs": 2600
+      },
+      {
+        "characterId": "prof",
+        "pose": "pointing",
+        "caption": "The fern grew 4% faster. Coincidence?",
+        "durationMs": 2400
+      },
+      {
+        "characterId": "narrator",
+        "pose": "thinking",
+        "caption": "The cactus remains unconvinced.",
+        "durationMs": 2000
+      }
+    ],
+    "comments": [{ "authorId": "visitor", "text": "Justice for the cactus." }]
+  },
+  {
+    "id": "reel-007",
+    "slug": "renaming-variables-the-stats",
+    "template": "stat_reveal",
+    "hostId": "prof",
+    "likes": 377,
+    "beats": [
+      {
+        "characterId": "prof",
+        "pose": "talking",
+        "caption": "This week's data: hours spent renaming variables.",
+        "durationMs": 2400
+      },
+      {
+        "characterId": "prof",
+        "pose": "shocked",
+        "caption": "Six. Six whole hours. data2_final_v3.",
+        "durationMs": 2600,
+        "data": { "statValue": "6h" }
+      },
+      {
+        "characterId": "hype",
+        "pose": "laughing",
+        "caption": "data2_final_v3 deserves its own reel.",
+        "durationMs": 1800
+      }
+    ],
+    "comments": [{ "authorId": "visitor", "text": "v3 with no v2 in sight. Classic." }]
+  },
+  {
+    "id": "reel-008",
+    "slug": "keyboard-emergency-broadcast",
+    "template": "breaking_news",
+    "hostId": "saurav",
+    "likes": 902,
+    "beats": [
+      {
+        "characterId": "saurav",
+        "pose": "talking",
+        "caption": "Emergency broadcast: he bought another mechanical keyboard.",
+        "durationMs": 2600
+      },
+      {
+        "characterId": "narrator",
+        "pose": "neutral",
+        "caption": "That's number five. The wall is accepting donations.",
+        "durationMs": 2400
+      },
+      {
+        "characterId": "hype",
+        "pose": "celebrating",
+        "caption": "CLACK CLACK CLACK.",
+        "durationMs": 1600
+      }
+    ],
+    "comments": [
+      { "authorId": "visitor", "text": "The clack is worth it, tell him." },
+      { "authorId": "prof", "text": "Cost per clack is trending down. This is fine." }
+    ]
   }
 ]

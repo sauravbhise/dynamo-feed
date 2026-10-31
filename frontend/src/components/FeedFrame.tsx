@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, ChevronUp, Play, X } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { ActionRail } from "./ActionRail";
 import { CommentsPanel } from "./CommentsPanel";
-import { castById } from "../content";
-import type { Reel } from "../content/types";
+import { ReelPlayer } from "./ReelPlayer";
+import { nextGeneration } from "../feed/order";
+import type { Reel, ReelComment } from "../content/types";
+
+const HINT_KEY = "dynamo:swipe-hint-seen";
 
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -18,72 +21,179 @@ function useIsDesktop() {
   return isDesktop;
 }
 
-interface FeedFrameProps {
-  reel: Reel;
-}
-
-export function FeedFrame({ reel }: FeedFrameProps) {
-  const [commentsOpen, setCommentsOpen] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [disliked, setDisliked] = useState(false);
+export function FeedFrame() {
+  const reduceMotion = useReducedMotion();
   const isDesktop = useIsDesktop();
-  const host = castById[reel.hostId];
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const [order, setOrder] = useState<Reel[]>(() => nextGeneration([]));
+  const orderRef = useRef(order);
+
+  // Opening /r/:slug starts the feed at that reel.
+  const initialIndexRef = useRef(-1);
+  if (initialIndexRef.current < 0) {
+    const match = window.location.pathname.match(/\/r\/([^/]+)/);
+    const found = match ? order.findIndex((reel) => reel.slug === match[1]) : -1;
+    initialIndexRef.current = found >= 0 ? found : 0;
+  }
+  const [activeIndex, setActiveIndex] = useState(initialIndexRef.current);
+  const activeIndexRef = useRef(activeIndex);
+
+  const [paused, setPaused] = useState(false);
+  const [likedIds, setLikedIds] = useState<Record<string, boolean>>({});
+  const [dislikedIds, setDislikedIds] = useState<Record<string, boolean>>({});
+  const [extraComments, setExtraComments] = useState<Record<string, ReelComment[]>>({});
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [showIntroHint, setShowIntroHint] = useState(
+    () => localStorage.getItem(HINT_KEY) !== "1"
+  );
+  const introHintRef = useRef(showIntroHint);
+  const [loopHint, setLoopHint] = useState(false);
+
+  const activeReel = order[Math.min(activeIndex, order.length - 1)];
+
+  // Deep link: jump to the opening reel before first paint.
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (el && activeIndex > 0) el.scrollTop = activeIndex * el.clientHeight;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // The URL follows the feed without adding history entries.
+  useEffect(() => {
+    const slug = order[activeIndex]?.slug;
+    if (slug && window.location.pathname !== `/r/${slug}`) {
+      window.history.replaceState(null, "", `/r/${slug}`);
+    }
+  }, [activeIndex, order]);
+
+  const goTo = useCallback(
+    (index: number) => {
+      const el = scrollRef.current;
+      if (!el) return;
+      el.scrollTo({
+        top: Math.max(0, index) * el.clientHeight,
+        behavior: reduceMotion ? "auto" : "smooth",
+      });
+    },
+    [reduceMotion]
+  );
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || el.clientHeight === 0) return;
+    const index = Math.round(el.scrollTop / el.clientHeight);
+    if (index !== activeIndexRef.current) {
+      activeIndexRef.current = index;
+      setActiveIndex(index);
+    }
+    if (introHintRef.current) {
+      introHintRef.current = false;
+      localStorage.setItem(HINT_KEY, "1");
+      setShowIntroHint(false);
+    }
+    setLoopHint(false);
+    // Endless feed: near the end, append a reshuffled generation.
+    if (index >= orderRef.current.length - 2) {
+      const tail = orderRef.current.slice(-5).map((reel) => reel.id);
+      const next = [...orderRef.current, ...nextGeneration(tail)];
+      orderRef.current = next;
+      setOrder(next);
+    }
+  }, []);
+
+  // Keyboard: arrows / j,k to navigate, space to pause.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const tag = (event.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "BUTTON") return;
+      if (event.key === "ArrowDown" || event.key === "j" || event.key === "J") {
+        event.preventDefault();
+        goTo(activeIndexRef.current + 1);
+      } else if (event.key === "ArrowUp" || event.key === "k" || event.key === "K") {
+        event.preventDefault();
+        goTo(activeIndexRef.current - 1);
+      } else if (event.key === " ") {
+        event.preventDefault();
+        setPaused((value) => !value);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [goTo]);
+
+  // A new reel autoplays; the loop nudge resets on reel change.
+  useEffect(() => {
+    setPaused(false);
+    setLoopHint(false);
+  }, [activeIndex]);
+
+  const handleLoop = useCallback(() => setLoopHint(true), []);
+
   const rail = (
     <ActionRail
-      likes={reel.likes}
-      comments={reel.comments.length}
-      liked={liked}
-      onLike={() => setLiked((value) => !value)}
-      disliked={disliked}
-      onDislike={() => setDisliked((value) => !value)}
+      likes={activeReel.likes}
+      comments={activeReel.comments.length + (extraComments[activeReel.id]?.length ?? 0)}
+      liked={!!likedIds[activeReel.id]}
+      onLike={() => setLikedIds((prev) => ({ ...prev, [activeReel.id]: !prev[activeReel.id] }))}
+      disliked={!!dislikedIds[activeReel.id]}
+      onDislike={() => setDislikedIds((prev) => ({ ...prev, [activeReel.id]: !prev[activeReel.id] }))}
       onComments={() => setCommentsOpen(true)}
     />
   );
-  const firstBeat = reel.beats[0];
 
   return (
     <div className="flex h-full w-full items-center justify-center gap-5 md:gap-6" data-testid="feed-stage-inner">
       <div
         data-testid="feed-frame"
-        className="relative aspect-[9/16] h-full max-h-full max-w-full overflow-hidden rounded-3xl bg-[#191416] shadow-card max-md:aspect-auto max-md:w-full"
+        className="relative aspect-[9/16] h-full max-h-full max-w-full overflow-hidden rounded-3xl bg-[#191416] shadow-card max-md:aspect-auto max-md:w-full max-md:rounded-none"
       >
         <div
-          data-testid="reel-placeholder"
-          className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center"
+          ref={scrollRef}
+          onScroll={handleScroll}
+          data-testid="feed-scroller"
+          className="scrollbar-soft h-full snap-y snap-mandatory overflow-y-auto overscroll-contain"
         >
-          <span className="grid size-16 place-items-center rounded-full bg-white/10 backdrop-blur">
-            <Play className="size-7 text-sage" fill="currentColor" />
-          </span>
-          <p className="font-display text-lg text-cream">Reel placeholder</p>
-          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-muted" data-testid="reel-template">
-            {reel.template.replace("_", " ")}
-          </span>
-          <p className="text-xs text-muted">Cartoons arrive in a later update</p>
+          {order.map((reel, i) => (
+            <div key={`${reel.id}-${i}`} className="h-full w-full snap-start" data-testid={`feed-slot-${i}`}>
+              {Math.abs(i - activeIndex) <= 1 && (
+                <ReelPlayer
+                  reel={reel}
+                  active={i === activeIndex}
+                  paused={i === activeIndex && paused}
+                  onTogglePause={() => setPaused((value) => !value)}
+                  onLoop={handleLoop}
+                />
+              )}
+            </div>
+          ))}
         </div>
 
-        <div
-          data-testid="caption-area"
-          className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent px-5 pb-5 pt-16"
-        >
-          <div className="mb-2 flex gap-1" data-testid="beat-progress">
-            {reel.beats.map((beat, i) => (
-              <span key={beat.characterId + i} className={`h-1 flex-1 rounded-full ${i === 0 ? "bg-sage" : "bg-white/20"}`} />
-            ))}
-          </div>
-          <span
-            className="inline-flex w-max items-center gap-2 rounded-full bg-black/35 px-3 py-1.5 text-xs font-bold text-cream backdrop-blur"
-            data-testid="host-chip"
-          >
-            <span className="size-2 rounded-full" style={{ backgroundColor: host?.color ?? "#B9ADA6" }} />
-            {host?.name ?? "Unknown host"}
-          </span>
-          <p className="mt-2 max-w-[85%] text-sm font-medium leading-snug text-cream/90" data-testid="reel-caption">
-            {firstBeat?.caption}
-          </p>
-        </div>
+        <AnimatePresence>
+          {(showIntroHint || loopHint) && (
+            <motion.div
+              key="swipe-hint"
+              data-testid="swipe-hint"
+              className="pointer-events-none absolute bottom-5 left-1/2 z-30"
+              initial={{ opacity: 0, x: "-50%", y: 10 }}
+              animate={{ opacity: 1, x: "-50%", y: 0 }}
+              exit={{ opacity: 0, x: "-50%", y: 10 }}
+            >
+              <span className="flex items-center gap-1.5 rounded-full bg-ink/70 px-3.5 py-2 text-xs font-bold text-cream backdrop-blur">
+                <ChevronUp className="size-4" />
+                Swipe up
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {isDesktop ? null : (
-          <div className="absolute bottom-24 right-3 z-10">{rail}</div>
+          <div
+            className="absolute bottom-24 right-3 z-20"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {rail}
+          </div>
         )}
 
         <AnimatePresence>
@@ -93,7 +203,8 @@ export function FeedFrame({ reel }: FeedFrameProps) {
               data-testid="comments-overlay"
               role="dialog"
               aria-label="Comments"
-              className="absolute inset-x-0 bottom-0 z-20 flex h-[60%] flex-col rounded-t-3xl bg-surface/95 shadow-soft backdrop-blur-md"
+              onClick={(event) => event.stopPropagation()}
+              className="absolute inset-x-0 bottom-0 z-30 flex h-[60%] flex-col rounded-t-3xl bg-surface/95 shadow-soft backdrop-blur-md"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
@@ -111,7 +222,15 @@ export function FeedFrame({ reel }: FeedFrameProps) {
                 </button>
               </div>
               <div className="min-h-0 flex-1">
-                <CommentsPanel comments={reel.comments} />
+                <CommentsPanel
+                  comments={[...activeReel.comments, ...(extraComments[activeReel.id] ?? [])]}
+                  onAdd={(text) =>
+                    setExtraComments((prev) => ({
+                      ...prev,
+                      [activeReel.id]: [...(prev[activeReel.id] ?? []), { authorId: "visitor", text }],
+                    }))
+                  }
+                />
               </div>
             </motion.div>
           )}
@@ -120,24 +239,27 @@ export function FeedFrame({ reel }: FeedFrameProps) {
 
       {isDesktop ? <div className="shrink-0">{rail}</div> : null}
 
-      <div className="hidden flex-col gap-3 md:flex" data-testid="feed-nav">
-        <button
-          data-testid="nav-prev"
-          aria-label="Previous reel"
-          title="Previous reel — swiping arrives later"
-          className="grid size-11 place-items-center rounded-full bg-white/10 text-cream/80 transition hover:bg-white/20 hover:text-cream active:scale-95"
-        >
-          <ChevronUp className="size-5" />
-        </button>
-        <button
-          data-testid="nav-next"
-          aria-label="Next reel"
-          title="Next reel — swiping arrives later"
-          className="grid size-11 place-items-center rounded-full bg-white/10 text-cream/80 transition hover:bg-white/20 hover:text-cream active:scale-95"
-        >
-          <ChevronDown className="size-5" />
-        </button>
-      </div>
+      {isDesktop ? (
+        <div className="flex flex-col gap-3" data-testid="feed-nav">
+          <button
+            data-testid="nav-prev"
+            aria-label="Previous reel"
+            disabled={activeIndex === 0}
+            onClick={() => goTo(activeIndex - 1)}
+            className="grid size-11 place-items-center rounded-full bg-white/10 text-cream/80 transition hover:bg-white/20 hover:text-cream active:scale-95 disabled:opacity-40"
+          >
+            <ChevronUp className="size-5" />
+          </button>
+          <button
+            data-testid="nav-next"
+            aria-label="Next reel"
+            onClick={() => goTo(activeIndex + 1)}
+            className="grid size-11 place-items-center rounded-full bg-white/10 text-cream/80 transition hover:bg-white/20 hover:text-cream active:scale-95"
+          >
+            <ChevronDown className="size-5" />
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

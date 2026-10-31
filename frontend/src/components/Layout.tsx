@@ -4,7 +4,7 @@ import { LeftColumn } from "./LeftColumn";
 import { FeedFrame } from "./FeedFrame";
 import { RightColumn } from "./RightColumn";
 import { Sheet } from "./Sheet";
-import { profile, reels } from "../content";
+import { profile } from "../content";
 
 type SheetKind = "profile" | "clock" | null;
 
@@ -54,8 +54,8 @@ export function Layout() {
           <LeftColumn />
         </aside>
 
-        <main data-testid="feed-stage" className="glow-stage relative flex min-h-0 items-center justify-center overflow-hidden p-3 md:p-6">
-          <FeedFrame reel={reels[0]} />
+        <main data-testid="feed-stage" className="glow-stage relative flex min-h-0 items-center justify-center overflow-hidden p-0 md:p-6">
+          <FeedFrame />
         </main>
 
         <aside
