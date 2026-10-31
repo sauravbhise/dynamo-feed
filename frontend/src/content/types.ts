@@ -112,8 +112,38 @@ export interface Profile {
   links: LinkItem[];
 }
 
-export interface AskEntry {
+export interface Reading {
+  cover: string;
+  title: string;
+  author: string;
+  progress: number;
+  take: string;
+}
+
+export interface WatchingItem {
+  title: string;
+  kind?: string;
+  note: string;
+  image?: string;
+}
+
+export interface WritingLink {
+  platform: "substack" | "dev" | "medium" | "blog";
+  title: string;
+  url: string;
+}
+
+export interface LifeItem {
   id: string;
-  question: string;
-  answer: string;
+  label: string;
+  detail?: string;
+  streak?: number;
+}
+
+export interface Now {
+  updated: string;
+  reading: Reading;
+  watching: WatchingItem[];
+  writing: WritingLink[];
+  life: LifeItem[];
 }

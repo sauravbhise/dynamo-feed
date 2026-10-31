@@ -10,43 +10,41 @@
   }
 
   body {
-    @apply bg-ink font-body text-line antialiased;
+    @apply bg-ink font-body text-cream antialiased;
     text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    @apply bg-accent text-white;
+    @apply bg-sage text-sage-deep;
   }
 }
 
 @layer utilities {
-  .dotgrid {
-    background-image: radial-gradient(rgba(244, 242, 236, 0.08) 1.5px, transparent 1.5px);
-    background-size: 24px 24px;
-  }
-
-  .scrollbar-brut {
+  .scrollbar-soft {
     scrollbar-width: thin;
-    scrollbar-color: #2a2a3c transparent;
+    scrollbar-color: rgba(242, 234, 226, 0.15) transparent;
   }
 
-  .scrollbar-brut::-webkit-scrollbar {
-    width: 10px;
+  .scrollbar-soft::-webkit-scrollbar {
+    width: 8px;
   }
 
-  .scrollbar-brut::-webkit-scrollbar-thumb {
-    background: #2a2a3c;
-    border: 3px solid #14141e;
+  .scrollbar-soft::-webkit-scrollbar-thumb {
+    background: rgba(242, 234, 226, 0.15);
     border-radius: 999px;
   }
 
-  .scrollbar-brut::-webkit-scrollbar-track {
+  .scrollbar-soft::-webkit-scrollbar-track {
     background: transparent;
+  }
+
+  .glow-stage {
+    background: radial-gradient(ellipse 60% 50% at 50% 45%, rgba(147, 178, 156, 0.08), transparent 70%);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee {
+  .animate-ping {
     animation: none;
   }
 }

@@ -23,7 +23,7 @@ export function Sheet({ open, onClose, side, title, children, testId }: SheetPro
           <motion.div
             key="overlay"
             data-testid="sheet-overlay"
-            className="fixed inset-0 z-40 bg-black/70"
+            className="fixed inset-0 z-40 bg-black/60"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -37,26 +37,27 @@ export function Sheet({ open, onClose, side, title, children, testId }: SheetPro
             aria-label={title}
             className={
               isBottom
-                ? "fixed inset-x-0 bottom-0 z-50 flex max-h-[82dvh] flex-col rounded-t-3xl border-t-[3px] border-line bg-surface"
-                : "fixed inset-y-0 left-0 z-50 flex w-[min(92vw,380px)] flex-col border-r-[3px] border-line bg-surface"
+                ? "fixed inset-x-0 bottom-0 z-50 flex max-h-[82dvh] flex-col rounded-t-3xl bg-surface shadow-card"
+                : "fixed inset-y-0 left-0 z-50 flex w-[min(92vw,380px)] flex-col rounded-r-3xl bg-surface shadow-card"
             }
             initial={isBottom ? { y: "100%" } : { x: "-100%" }}
             animate={isBottom ? { y: 0 } : { x: 0 }}
             exit={isBottom ? { y: "100%" } : { x: "-100%" }}
-            transition={{ type: "spring", stiffness: 320, damping: 34 }}
+            transition={{ type: "spring", stiffness: 300, damping: 32 }}
           >
-            <div className="flex shrink-0 items-center justify-between gap-3 border-b-[3px] border-line px-4 py-3">
-              <h2 className="font-display text-sm uppercase tracking-[0.18em]">{title}</h2>
+            {isBottom && <span className="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-white/20" aria-hidden="true" />}
+            <div className="flex shrink-0 items-center justify-between gap-3 px-5 pb-3 pt-3">
+              <h2 className="font-display text-lg text-cream">{title}</h2>
               <button
                 data-testid="sheet-close"
                 onClick={onClose}
                 aria-label="Close"
-                className="grid size-9 place-items-center rounded-xl border-[3px] border-line bg-raised transition-transform hover:-translate-y-0.5"
+                className="grid size-9 place-items-center rounded-full bg-white/10 text-cream transition hover:bg-white/20"
               >
                 <X className="size-4" />
               </button>
             </div>
-            <div className="scrollbar-brut min-h-0 flex-1 overflow-y-auto">{children}</div>
+            <div className="scrollbar-soft min-h-0 flex-1 overflow-y-auto">{children}</div>
           </motion.div>
         </>
       )}

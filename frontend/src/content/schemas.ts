@@ -93,10 +93,36 @@ export const profileSchema = z.object({
   links: z.array(z.object({ label: z.string().min(1), url: z.string() })),
 });
 
-export const askSchema = z.array(
-  z.object({
-    id: z.string().min(1),
-    question: z.string().min(1),
-    answer: z.string(),
-  })
-);
+export const nowSchema = z.object({
+  updated: z.string().min(1),
+  reading: z.object({
+    cover: z.string(),
+    title: z.string().min(1),
+    author: z.string().min(1),
+    progress: z.number().min(0).max(1),
+    take: z.string(),
+  }),
+  watching: z.array(
+    z.object({
+      title: z.string().min(1),
+      kind: z.string().optional(),
+      note: z.string(),
+      image: z.string().optional(),
+    })
+  ),
+  writing: z.array(
+    z.object({
+      platform: z.enum(["substack", "dev", "medium", "blog"]),
+      title: z.string().min(1),
+      url: z.string().min(1),
+    })
+  ),
+  life: z.array(
+    z.object({
+      id: z.string().min(1),
+      label: z.string().min(1),
+      detail: z.string().optional(),
+      streak: z.number().int().nonnegative().optional(),
+    })
+  ),
+});

@@ -1,36 +1,43 @@
 # Dynamo Feed — PRD
 
 ## Original Problem Statement
-Personal portfolio "Dynamo Feed" styled as a short-video app: centre = endless vertical feed of animated cartoon "reels" about the owner; left = static condensed portfolio; right = comments + "Ask me" chat. **This session: project setup and layout only** — no scrolling feed, animations or characters yet. Frontend only, static, Vercel-hostable. React + Vite + TypeScript + Tailwind + Framer Motion. Content from four zod-validated JSON files in src/content.
+Personal portfolio "Dynamo Feed" styled as a short-video app: centre = feed of cartoon "reels"; left = condensed portfolio; right = "The Clock" (was comments/ask). This phase: project setup + layout only — no scrolling feed, animations or characters. Frontend only, static, Vercel-hostable. React + Vite + TypeScript + Tailwind + Framer Motion. Content from zod-validated JSON files in src/content.
+
+## Design Revision (2026-10-31, v2 — current)
+Neo-brutalism removed. Warm dark rounded theme:
+- bg warm charcoal #211C1F, surfaces #2B2428, text warm cream #F2EAE2, muted #B9ADA6
+- accent sage #93B29C with dark green #1A3122 text on sage buttons
+- cast colours (dusty pastels): lavender #C7B3D9, peach #E0A5EC, butter #DEC490, rose #D9A5AE (user hex had typo #T9A5AE), me = dusty blue #A9BED6
+- 16–24px rounded corners, pill buttons, subtle shadows only; Nunito headings/captions, Inter body; sentence case everywhere
 
 ## Architecture
-- Vite 6 + React 19 + TypeScript in /app/frontend (CRA template fully removed; `yarn start` → Vite on :3000, supervisor-managed).
-- No backend, no database. Static build; deployable to Vercel as-is (`vite build`).
-- Tailwind 3.4 with neo-brutalist tokens; fonts: Archivo Black (display) + Inter (body) via Google Fonts.
-- Content layer: src/content/{profile,cast,reels,ask}.json → types.ts (hand-written TS types) → schemas.ts (zod) → index.ts (safeParse at module load; throws on invalid content).
+- Vite 6 + React 19 + TS in /app/frontend (`yarn start` → Vite :3000, supervisor-managed). No backend/db. `vite build` → static Vercel deploy.
+- Content layer: src/content/{profile,cast,reels,now}.json + types.ts + schemas.ts (zod) + index.ts (safeParse at load, throws on invalid; timeAgo helper).
 
-## Design Tokens
-- ink #0B0B10 (bg), surface #14141E, raised #1C1C2A, line #F4F2EC (text/borders), muted #8E8CA0, accent #B026FF (electric purple = "me").
-- Cast colours: narrator #FFC53D, saurav #3DE0FF, prof #7CFF6B, hype #FF5CA8, self #B026FF.
-- 3px outlines, hard offset shadows (no blur), flat blocks, custom bolt logo mark (also favicon).
+## Layout (verified in preview)
+- ≥1200px: portfolio (320px) / 9:16 rounded player (Shorts-style) / The Clock (360px). Like/dislike/comment/share rail outside player right; up/down nav arrows far right.
+- 768–1199px: portfolio behind avatar button; Clock column kept.
+- <768px: feed fills screen; avatar opens portfolio sheet (left, full height); The Clock button opens bottom sheet; comments slide up INSIDE player covering bottom 60% with close button.
+- Left column: round photo → name → one-liner → circular social icon row (logos only); placeholder sections: stories rings, stats, now, highlights, experience, projects, education & certs, resume pill button. (Wordmark, ep-0 badge, marquee, profile card all removed per request.)
+- Player: character name chip + caption over soft dark fade, beat progress strip, no clock/handle/counter/phone bezel.
 
-## User Personas
-- **Visitor/recruiter**: scans portfolio in left column, watches reels, downloads resume.
-- **Friend/follower**: comments and asks questions in the right rail.
+## The Clock (right column / sheet)
+- Title + "Updated 2 days ago" with gentle pulsing sage dot (relative time computed from now.json `updated`).
+- Cards from now.json: Now reading (cover, title, author, progress bar, take), Watch this (recommendations, swipe deck later), Latest writing (links with platform icons), Volunteering + Learning Spanish (Duolingo streak with flame icon).
+- ask.json deleted; Comments/Ask tabs removed; comments live in the player overlay.
 
-## Core Requirements (static)
-1. Layout: 3 columns ≥1200px (320 / phone-frame 9:16 / 360 with Comments + Ask me tabs); 768–1199 left behind Profile button; <768 feed fills screen, top-bar avatar opens portfolio sheet, comments/ask open as bottom sheets.
-2. Components: Layout, LeftColumn, FeedFrame, ActionRail, RightColumn, Sheet (+ Logo).
-3. Left column sections: photo/name/one-liner, story rings, stats strip, Now (reading/watching), highlights, experience, projects, education & certs, links + resume download.
-4. Phone frame: reel placeholder, action rail (like/comment/share/ask), caption area, beat progress strip.
+## Personas
+- Recruiter/visitor: scans portfolio, downloads resume, watches reels.
+- Follower: comments on reels, follows The Clock updates.
 
-## Implemented (2026-10-31)
-- Vite+TS migration, all tokens, fonts, favicon/logo, content JSONs + zod validation, all six components, all three responsive modes, marquee strip, masked wordmark reveal, spring phone-frame entrance, working local comment/ask composers, data-testids throughout.
+## Implemented
+- 2026-10-31: v1 neo-brutalist shell; same day: v2 warm rounded redesign (current), now.json + schema, comments overlay, Shorts-style rail + nav arrows, all responsive modes.
 
-## Backlog (next sessions)
-- P0: reel beat player (timed beats, progress), character rig with poses.
-- P1: scroll-snap feed with /r/:slug routing; template overlays (review, breaking_news, myth_vs_fact...).
-- P2: "joke counter" like mechanics, share cards, voices (audioSrc), ask-me chat bot.
+## Backlog
+- P0: reel beat player (timed beats), character rig with 8 poses.
+- P1: scroll-snap feed with /r/:slug routing; template overlays (review, breaking_news, myth_vs_fact…); Watch-this swipe deck.
+- P2: joke-counter likes, share cards, voices (audioSrc), profile.json "now" section merge with The Clock, real photo/resume/covers.
 
 ## Notes
-- Resume button downloads placeholder /resume.txt; photo is /avatar.svg placeholder — replace with real assets later.
+- Placeholders: /avatar.svg, /covers/reading.svg, /resume.txt — swap for real assets later.
+- No credentials/auth; static frontend only.

@@ -1,0 +1,46 @@
+{
+  "updated": "2026-10-29T09:00:00Z",
+  "reading": {
+    "cover": "/covers/reading.svg",
+    "title": "The Design of Everyday Things",
+    "author": "Don Norman",
+    "progress": 0.62,
+    "take": "Chapter seven keeps rewiring how I look at doors."
+  },
+  "watching": [
+    {
+      "title": "Arcane",
+      "kind": "Series",
+      "note": "Rewatching for the painterly frames."
+    },
+    {
+      "title": "Perfect Days",
+      "kind": "Film",
+      "note": "A whole film about looking at trees."
+    }
+  ],
+  "writing": [
+    {
+      "platform": "substack",
+      "title": "Why my portfolio pretends to be a video app",
+      "url": "https://substack.com"
+    },
+    {
+      "platform": "dev",
+      "title": "A love letter to CSS grid",
+      "url": "https://dev.to"
+    }
+  ],
+  "life": [
+    {
+      "id": "volunteering",
+      "label": "Volunteering",
+      "detail": "Code club at the local library, Saturday mornings."
+    },
+    {
+      "id": "spanish",
+      "label": "Learning Spanish",
+      "streak": 128
+    }
+  ]
+}
