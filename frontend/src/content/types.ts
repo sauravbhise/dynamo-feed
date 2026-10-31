@@ -47,7 +47,8 @@ export interface CastMember {
   name: string;
   role: string;
   color: string;
-  personality: string;
+  scale: number;
+  framing: "full" | "waist";
 }
 
 export interface StoryItem {
@@ -146,4 +147,31 @@ export interface Now {
   watching: WatchingItem[];
   writing: WritingLink[];
   life: LifeItem[];
+}
+
+export interface ReviewData {
+  stars?: number;
+  verdict?: string;
+}
+
+export interface BreakingNewsData {
+  headline?: string;
+  ticker?: string;
+}
+
+export interface DocumentaryData {
+  title?: string;
+}
+
+export interface MythVsFactData {
+  myth?: string;
+  fact?: string;
+}
+
+export interface StatRevealData {
+  value?: number;
+  unit?: string;
+  label?: string;
+  before?: string;
+  after?: string;
 }

@@ -1,232 +1,294 @@
 [
   {
-    "id": "reel-001",
-    "slug": "i-built-a-sitcom-about-myself",
+    "id": "r01",
+    "slug": "breaking-built-by-voice",
     "template": "breaking_news",
-    "hostId": "narrator",
-    "likes": 412,
+    "hostId": "blaze",
+    "likes": 9001,
     "beats": [
       {
-        "characterId": "narrator",
+        "characterId": "blaze",
         "pose": "talking",
-        "caption": "Breaking: local developer replaces personality with a video feed.",
-        "durationMs": 2600
+        "caption": "Good evening. We interrupt your scrolling with a story so big it needed its own feed.",
+        "durationMs": 3500,
+        "data": {
+          "headline": "Local engineer builds entire portfolio by talking at his laptop",
+          "ticker": "Keyboard reportedly feeling left out  •  Wispr Flow confirms involvement  •  Emergent credits described as nervous  •  More at eleven"
+        }
+      },
+      {
+        "characterId": "blaze",
+        "pose": "pointing",
+        "caption": "Sources confirm he spoke every idea out loud. No typing. Not even a semicolon.",
+        "durationMs": 3500
       },
       {
         "characterId": "saurav",
-        "pose": "sceptical",
-        "caption": "You did WHAT?",
-        "durationMs": 1800
-      },
-      {
-        "characterId": "hype",
-        "pose": "celebrating",
-        "caption": "I SUPPORT THIS.",
-        "durationMs": 1500
-      }
-    ],
-    "comments": [
-      { "authorId": "saurav", "text": "The sceptic is the best character, objectively." },
-      { "authorId": "visitor", "text": "Following for the drama." },
-      { "authorId": "prof", "text": "Chart of my confusion incoming." }
-    ]
-  },
-  {
-    "id": "reel-002",
-    "slug": "myth-i-read-the-docs",
-    "template": "myth_vs_fact",
-    "hostId": "prof",
-    "likes": 288,
-    "beats": [
-      {
-        "characterId": "prof",
-        "pose": "pointing",
-        "caption": "Myth: I read the docs before debugging.",
-        "durationMs": 2200
-      },
-      {
-        "characterId": "prof",
-        "pose": "thinking",
-        "caption": "Fact: I read the docs WHILE debugging.",
-        "durationMs": 2400,
-        "audioSrc": "/audio/tba-narration.mp3",
-        "data": { "verdict": "BUSTED" }
-      }
-    ],
-    "comments": [{ "authorId": "visitor", "text": "Called out in 4K." }]
-  },
-  {
-    "id": "reel-003",
-    "slug": "shipping-on-fridays-ep1",
-    "template": "documentary",
-    "hostId": "narrator",
-    "seriesId": "series-friday",
-    "part": 1,
-    "likes": 731,
-    "beats": [
-      {
-        "characterId": "narrator",
-        "pose": "neutral",
-        "caption": "Friday, 4:59 PM. A developer reaches for the deploy button.",
+        "pose": "talking",
+        "caption": "It's genuinely faster. I think in sentences, not in keystrokes.",
         "durationMs": 3000
       },
       {
-        "characterId": "saurav",
+        "characterId": "blaze",
         "pose": "shocked",
-        "caption": "Don't.",
-        "durationMs": 1200
-      }
-    ],
-    "comments": [{ "authorId": "hype", "text": "PART 2 WHEN" }]
-  },
-  {
-    "id": "reel-004",
-    "slug": "shipping-on-fridays-ep2",
-    "template": "documentary",
-    "hostId": "narrator",
-    "seriesId": "series-friday",
-    "part": 2,
-    "likes": 804,
-    "beats": [
-      {
-        "characterId": "narrator",
-        "pose": "talking",
-        "caption": "He deployed. Nature is healing.",
-        "durationMs": 2600
+        "caption": "Thinking in SENTENCES, folks. Experts are calling it: talking.",
+        "durationMs": 3000
       },
       {
-        "characterId": "hype",
-        "pose": "laughing",
-        "caption": "The pager said hi at 2 AM.",
-        "durationMs": 2200
-      },
-      {
-        "characterId": "saurav",
-        "pose": "sceptical",
-        "caption": "We fixed it by Monday. Mostly.",
-        "durationMs": 2000
+        "characterId": "blaze",
+        "pose": "celebrating",
+        "caption": "Back to you, Reginald. Reginald? He's asleep. Classic Reginald.",
+        "durationMs": 3000
       }
     ],
     "comments": [
-      { "authorId": "visitor", "text": "The Monday part is too real." },
-      { "authorId": "prof", "text": "Incident report: 10/10 storytelling." }
+      { "authorId": "reginald", "text": "I was not asleep. I was observing. Quietly." },
+      { "authorId": "marge", "text": "A man talks to a computer. In my day we called that a phone call." },
+      { "authorId": "tia", "text": "the ticker is giving ✨production value✨" }
     ]
   },
   {
-    "id": "reel-005",
-    "slug": "hype-reviews-my-desk",
-    "template": "review",
-    "hostId": "hype",
-    "likes": 655,
+    "id": "r02",
+    "slug": "the-campus-builder",
+    "template": "documentary",
+    "hostId": "reginald",
+    "likes": 3141,
     "beats": [
       {
-        "characterId": "hype",
-        "pose": "celebrating",
-        "caption": "Desk setup review! Ten out of ten.",
-        "durationMs": 2000
-      },
-      {
-        "characterId": "hype",
-        "pose": "shocked",
-        "caption": "The cable management? CRIMINAL.",
-        "durationMs": 2400,
-        "data": { "stars": 10 }
-      },
-      {
-        "characterId": "narrator",
+        "characterId": "reginald",
         "pose": "neutral",
-        "caption": "He gave his own desk a ten.",
-        "durationMs": 1800
-      }
-    ],
-    "comments": [{ "authorId": "saurav", "text": "Bribed with snacks, clearly." }]
-  },
-  {
-    "id": "reel-006",
-    "slug": "i-talked-to-my-plants",
-    "template": "storytime",
-    "hostId": "saurav",
-    "likes": 523,
-    "beats": [
-      {
-        "characterId": "saurav",
-        "pose": "talking",
-        "caption": "Story time: he talked to his plants for a week.",
-        "durationMs": 2600
+        "caption": "Here, in the corridors of a Pune university, we find a rare creature.",
+        "durationMs": 4000,
+        "data": { "title": "Episode 1: The Campus Builder" }
       },
       {
-        "characterId": "prof",
+        "characterId": "reginald",
         "pose": "pointing",
-        "caption": "The fern grew 4% faster. Coincidence?",
-        "durationMs": 2400
+        "caption": "The young engineer has found something missing. A place for builders to gather.",
+        "durationMs": 4000
       },
       {
-        "characterId": "narrator",
-        "pose": "thinking",
-        "caption": "The cactus remains unconvinced.",
-        "durationMs": 2000
-      }
-    ],
-    "comments": [{ "authorId": "visitor", "text": "Justice for the cactus." }]
-  },
-  {
-    "id": "reel-007",
-    "slug": "renaming-variables-the-stats",
-    "template": "stat_reveal",
-    "hostId": "prof",
-    "likes": 377,
-    "beats": [
-      {
-        "characterId": "prof",
+        "characterId": "reginald",
         "pose": "talking",
-        "caption": "This week's data: hours spent renaming variables.",
-        "durationMs": 2400
+        "caption": "So he does what few of his kind attempt. He builds the community himself, from nothing.",
+        "durationMs": 4000
       },
       {
-        "characterId": "prof",
+        "characterId": "reginald",
         "pose": "shocked",
-        "caption": "Six. Six whole hours. data2_final_v3.",
-        "durationMs": 2600,
-        "data": { "statValue": "6h" }
+        "caption": "Two hundred members. Hackathons of a hundred. Sponsors. Remarkable.",
+        "durationMs": 3500
       },
       {
-        "characterId": "hype",
-        "pose": "laughing",
-        "caption": "data2_final_v3 deserves its own reel.",
-        "durationMs": 1800
-      }
-    ],
-    "comments": [{ "authorId": "visitor", "text": "v3 with no v2 in sight. Classic." }]
-  },
-  {
-    "id": "reel-008",
-    "slug": "keyboard-emergency-broadcast",
-    "template": "breaking_news",
-    "hostId": "saurav",
-    "likes": 902,
-    "beats": [
-      {
-        "characterId": "saurav",
-        "pose": "talking",
-        "caption": "Emergency broadcast: he bought another mechanical keyboard.",
-        "durationMs": 2600
-      },
-      {
-        "characterId": "narrator",
-        "pose": "neutral",
-        "caption": "That's number five. The wall is accepting donations.",
-        "durationMs": 2400
-      },
-      {
-        "characterId": "hype",
-        "pose": "celebrating",
-        "caption": "CLACK CLACK CLACK.",
-        "durationMs": 1600
+        "characterId": "reginald",
+        "pose": "thinking",
+        "caption": "And the creature's reward? A title. GitHub Campus Expert. The only one his university has ever had.",
+        "durationMs": 4500
       }
     ],
     "comments": [
-      { "authorId": "visitor", "text": "The clack is worth it, tell him." },
-      { "authorId": "prof", "text": "Cost per clack is trending down. This is fine." }
+      { "authorId": "blaze", "text": "TWO HUNDRED MEMBERS?? That's a stadium, Reggie!" },
+      { "authorId": "reginald", "text": "It is not a stadium, Blaze. It is a WhatsApp group." },
+      { "authorId": "marge", "text": "Did anyone bring snacks to these gatherings. Asking for myself." }
+    ]
+  },
+  {
+    "id": "r03",
+    "slug": "the-streak",
+    "template": "stat_reveal",
+    "hostId": "blaze",
+    "likes": 600,
+    "beats": [
+      {
+        "characterId": "blaze",
+        "pose": "talking",
+        "caption": "Ladies and gentlemen, let's go to the numbers.",
+        "durationMs": 3000,
+        "data": { "value": 600, "unit": "+ days", "label": "Duolingo streak, unbroken" }
+      },
+      {
+        "characterId": "blaze",
+        "pose": "shocked",
+        "caption": "Six hundred days. Every. Single. Day. Spanish.",
+        "durationMs": 3500
+      },
+      {
+        "characterId": "saurav",
+        "pose": "neutral",
+        "caption": "Hola. That's most of what I can say with confidence.",
+        "durationMs": 3000
+      },
+      {
+        "characterId": "blaze",
+        "pose": "celebrating",
+        "caption": "That's commitment, folks. That's a man the owl fears.",
+        "durationMs": 3000
+      }
+    ],
+    "comments": [
+      { "authorId": "tia", "text": "obsessed with consistency as a personality trait" },
+      { "authorId": "marge", "text": "Six hundred days and he still can't order a coffee. Impressive, in a way." },
+      { "authorId": "reginald", "text": "Persistence. The most underrated survival trait." }
+    ]
+  },
+  {
+    "id": "r04",
+    "slug": "marge-reviews-saurav",
+    "template": "review",
+    "hostId": "marge",
+    "likes": 404,
+    "beats": [
+      {
+        "characterId": "marge",
+        "pose": "neutral",
+        "caption": "Leaving a review for Saurav.",
+        "durationMs": 2500,
+        "data": { "stars": 3.5 }
+      },
+      {
+        "characterId": "marge",
+        "pose": "sceptical",
+        "caption": "Builds things nobody asked for. Then everybody ends up using them.",
+        "durationMs": 3500
+      },
+      {
+        "characterId": "marge",
+        "pose": "talking",
+        "caption": "Very polite. Answers emails. Suspiciously organised.",
+        "durationMs": 3000
+      },
+      {
+        "characterId": "marge",
+        "pose": "thinking",
+        "caption": "Made a whole website about himself starring cartoon animals. Including me. Unpaid.",
+        "durationMs": 3500
+      },
+      {
+        "characterId": "marge",
+        "pose": "sceptical",
+        "caption": "Three and a half stars. Half a star off for the unpaid part.",
+        "durationMs": 3000,
+        "data": { "verdict": "Acceptable. Barely." }
+      }
+    ],
+    "comments": [
+      { "authorId": "blaze", "text": "THREE AND A HALF is Marge's HIGHEST SCORE EVER" },
+      { "authorId": "marge", "text": "It is not. I gave a radiator four once." },
+      { "authorId": "saurav", "text": "I'll take it." }
+    ]
+  },
+  {
+    "id": "r05",
+    "slug": "myth-you-need-a-referral",
+    "template": "myth_vs_fact",
+    "hostId": "marge",
+    "likes": 1024,
+    "beats": [
+      {
+        "characterId": "marge",
+        "pose": "neutral",
+        "caption": "Today's myth. One I hear far too often.",
+        "durationMs": 3000,
+        "data": {
+          "myth": "You need a referral to land your first internship.",
+          "fact": "Saurav cold-emailed his way into his first one. The audacity."
+        }
+      },
+      {
+        "characterId": "marge",
+        "pose": "sceptical",
+        "caption": "No connections. No referral. Just a polite, specific email to the right person.",
+        "durationMs": 3500
+      },
+      {
+        "characterId": "marge",
+        "pose": "pointing",
+        "caption": "Write to people. Most of them answer. Some of them even hire you.",
+        "durationMs": 3500
+      }
+    ],
+    "comments": [
+      { "authorId": "tia", "text": "cold emailing is literally just sliding into DMs for LinkedIn people" },
+      { "authorId": "reginald", "text": "Bold behaviour for a young engineer. I approve." }
+    ]
+  },
+  {
+    "id": "r06",
+    "slug": "the-outreach-part-1",
+    "template": "storytime",
+    "hostId": "tia",
+    "seriesId": "outreach",
+    "part": 1,
+    "likes": 2718,
+    "beats": [
+      {
+        "characterId": "tia",
+        "pose": "talking",
+        "caption": "Okay so listen. Saurav's family runs a manufacturing business.",
+        "durationMs": 3000
+      },
+      {
+        "characterId": "tia",
+        "pose": "pointing",
+        "caption": "And they need new buyers. Like, actual factories that buy metal parts.",
+        "durationMs": 3500
+      },
+      {
+        "characterId": "tia",
+        "pose": "shocked",
+        "caption": "So instead of cold calling, he builds a whole automated outreach pipeline. Himself. On weekends.",
+        "durationMs": 4000
+      },
+      {
+        "characterId": "tia",
+        "pose": "thinking",
+        "caption": "The tools say every email address is verified. Perfect, right? Right??",
+        "durationMs": 3500
+      }
+    ],
+    "comments": [
+      { "authorId": "blaze", "text": "I'm on the edge of my seat and I'm not even sitting" },
+      { "authorId": "marge", "text": "Verified by whom. That's what I'd like to know." }
+    ]
+  },
+  {
+    "id": "r07",
+    "slug": "the-outreach-part-2",
+    "template": "storytime",
+    "hostId": "tia",
+    "seriesId": "outreach",
+    "part": 2,
+    "likes": 2719,
+    "beats": [
+      {
+        "characterId": "tia",
+        "pose": "talking",
+        "caption": "Okay so. He doesn't just trust the tool. He actually checks.",
+        "durationMs": 3000
+      },
+      {
+        "characterId": "tia",
+        "pose": "shocked",
+        "caption": "Two of the five \"verified\" addresses he could test were just... wrong.",
+        "durationMs": 3500
+      },
+      {
+        "characterId": "tia",
+        "pose": "sceptical",
+        "caption": "So now every campaign gets checked by hand before anything goes out. The tool is a suggestion, not a fact.",
+        "durationMs": 4000
+      },
+      {
+        "characterId": "tia",
+        "pose": "laughing",
+        "caption": "Lesson of the day: trust, but verify the verified. Iconic.",
+        "durationMs": 3000
+      }
+    ],
+    "comments": [
+      { "authorId": "marge", "text": "Told you. Verified by whom." },
+      { "authorId": "reginald", "text": "A healthy scepticism. Rare, and valuable." },
+      { "authorId": "tia", "text": "part 3 when he finds the buyers?? 👀" }
     ]
   }
 ]

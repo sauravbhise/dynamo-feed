@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Share2, ThumbsDown } from "lucide-react";
+import { Heart, MessageCircle, Share2 } from "lucide-react";
 import type { ReactNode } from "react";
 
 function RailButton({
@@ -36,22 +36,11 @@ interface ActionRailProps {
   comments: number;
   liked: boolean;
   onLike: () => void;
-  disliked: boolean;
-  onDislike: () => void;
   onComments: () => void;
   className?: string;
 }
 
-export function ActionRail({
-  likes,
-  comments,
-  liked,
-  onLike,
-  disliked,
-  onDislike,
-  onComments,
-  className = "",
-}: ActionRailProps) {
+export function ActionRail({ likes, comments, liked, onLike, onComments, className = "" }: ActionRailProps) {
   const [copied, setCopied] = useState(false);
 
   const share = async () => {
@@ -68,9 +57,6 @@ export function ActionRail({
     <div className={`flex flex-col items-center gap-4 ${className}`} data-testid="action-rail">
       <RailButton label="Like" testId="action-like" onClick={onLike} active={liked} count={(likes + (liked ? 1 : 0)).toLocaleString()}>
         <Heart className="size-5" fill={liked ? "currentColor" : "none"} />
-      </RailButton>
-      <RailButton label="Dislike" testId="action-dislike" onClick={onDislike} active={disliked}>
-        <ThumbsDown className="size-5" />
       </RailButton>
       <RailButton label="Comments" testId="action-comment" onClick={onComments} count={comments}>
         <MessageCircle className="size-5" />

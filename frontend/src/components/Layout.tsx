@@ -49,7 +49,7 @@ export function Layout() {
       <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_360px] desk:grid-cols-[320px_minmax(0,1fr)_360px]">
         <aside
           data-testid="left-column"
-          className="scrollbar-soft hidden min-h-0 overflow-y-auto border-r border-white/5 bg-ink desk:block"
+          className="no-scrollbar hidden min-h-0 overflow-y-auto border-r border-white/5 bg-ink desk:block"
         >
           <LeftColumn />
         </aside>

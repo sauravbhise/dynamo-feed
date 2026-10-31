@@ -17,12 +17,11 @@ module.exports = {
           deep: "#1A3122",
         },
         cast: {
-          narrator: "#C7B3D9",
-          saurav: "#E0A5EC",
-          prof: "#DEC490",
-          hype: "#D9A5AE",
-          self: "#A9BED6",
-          visitor: "#B9ADA6",
+          reginald: "#C7B3D9",
+          blaze: "#E0A58C",
+          marge: "#DEC490",
+          tia: "#D9A5AE",
+          saurav: "#A9BED6",
         },
       },
       fontFamily: {

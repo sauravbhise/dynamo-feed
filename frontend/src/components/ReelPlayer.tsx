@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, useMotionValue, useReducedMotion } from "framer-motion";
 import { Pause } from "lucide-react";
-import { castById, castColor } from "../content";
+import { ReelBackground } from "../templates/ReelBackground";
+import { TEMPLATES } from "../templates/registry";
 import type { Reel } from "../content/types";
 
 interface ReelPlayerProps {
@@ -15,6 +16,7 @@ interface ReelPlayerProps {
 export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: ReelPlayerProps) {
   const reduceMotion = useReducedMotion();
   const [beatIndex, setBeatIndex] = useState(0);
+  const beatProgress = useMotionValue(0);
   const [audioDurations, setAudioDurations] = useState<Record<number, number>>({});
 
   const durationsRef = useRef<number[]>([]);
@@ -50,15 +52,18 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: Reel
 
   // Reels that leave the view pause and reset.
   useEffect(() => {
-    if (active) return;
+    if (active) {
+      return;
+    }
     cancelAnimationFrame(rafRef.current);
     elapsedRef.current = 0;
     loopedRef.current = false;
     setBeatIndex(0);
+    beatProgress.set(0);
     segmentRefs.current.forEach((segment) => {
       if (segment) segment.style.transform = "scaleX(0)";
     });
-  }, [active, reel.id]);
+  }, [active, reel.id, beatProgress]);
 
   // Single elapsed-time clock — pause/resume are exact.
   useEffect(() => {
@@ -82,78 +87,73 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: Reel
       let acc = 0;
       let index = 0;
       for (let i = 0; i < durations.length; i++) {
-        const duration = durations[i];
+        const start = acc;
+        acc += durations[i];
+        // finished → full, current → animating, upcoming → empty
         const segment = segmentRefs.current[i];
         if (segment) {
-          const progress = Math.min(Math.max((elapsed - acc) / duration, 0), 1);
-          segment.style.transform = `scaleX(${progress})`;
+          const fill = elapsed >= acc ? 1 : elapsed > start ? (elapsed - start) / durations[i] : 0;
+          segment.style.transform = `scaleX(${fill})`;
         }
-        if (elapsed >= acc + duration) {
-          acc += duration;
-          index = i + 1;
-        }
+        if (elapsed >= acc) index = i + 1;
       }
+      beatProgress.set(Math.min(Math.max((elapsed - acc) / (durations[index] ?? 1), 0), 1));
       setBeatIndex((prev) => (prev === index ? prev : index));
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [active, paused, reel.id, onLoop]);
+  }, [active, paused, reel.id, onLoop, beatProgress]);
 
+  // The current beat plus every earlier beat's extras stay in effect.
   const beat = reel.beats[beatIndex] ?? reel.beats[0];
-  const character = castById[beat?.characterId ?? ""];
-  const color = castColor(beat?.characterId ?? "");
-  const poseLabel = (beat?.pose ?? "")
-    .replace(/_/g, " ")
-    .replace(/^\w/, (c) => c.toUpperCase());
+  const effectiveData = useMemo(() => {
+    const acc: Record<string, unknown> = {};
+    for (let i = 0; i <= beatIndex && i < reel.beats.length; i++) {
+      Object.assign(acc, reel.beats[i].data ?? {});
+    }
+    return acc;
+  }, [reel, beatIndex]);
+
+  const Template = TEMPLATES[reel.template];
 
   return (
-    <motion.div
+    <div
       data-testid="reel-player"
       className="relative h-full w-full cursor-pointer select-none overflow-hidden"
-      style={{ backgroundColor: color }}
       onClick={onTogglePause}
     >
-      <div className="absolute inset-x-0 top-0 z-10 flex gap-1 px-3 pt-3" data-testid="beat-progress">
+      <Template
+        reel={reel}
+        beat={beat}
+        beatIndex={beatIndex}
+        progress={beatProgress}
+        data={effectiveData}
+        reducedMotion={!!reduceMotion}
+      />
+
+      {/* Thin segmented progress bar — one segment per beat */}
+      <div className="absolute inset-x-0 top-0 z-30 flex gap-1 px-3 pt-3" data-testid="beat-progress">
         {reel.beats.map((_, i) => (
-          <span key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-black/20">
+          <span key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-black/30">
             <span
               ref={(el) => {
                 segmentRefs.current[i] = el;
               }}
-              className="block h-full w-full origin-left rounded-full bg-cream"
+              className="block h-full w-full origin-left bg-white"
               style={{ transform: "scaleX(0)" }}
             />
           </span>
         ))}
       </div>
 
-      <motion.div
-        key={beatIndex}
-        data-testid="beat-content"
-        className="relative z-[1] flex h-full flex-col items-center justify-center gap-4 px-8 text-center max-md:pr-20"
-        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 28, scale: 0.94, rotate: -1 }}
-        animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
-        transition={reduceMotion ? { duration: 0.25 } : { type: "spring", stiffness: 320, damping: 24 }}
-      >
-        <span className="rounded-full bg-ink/80 px-3 py-1 text-xs font-bold text-cream backdrop-blur" data-testid="beat-character">
-          {character?.name ?? "Unknown"}
-        </span>
-        <span className="text-xs font-semibold text-ink/60" data-testid="beat-pose">
-          {poseLabel}
-        </span>
-        <p className="font-display text-2xl leading-snug text-ink" data-testid="beat-caption">
-          {beat?.caption}
-        </p>
-      </motion.div>
-
       {paused && active && (
-        <div className="absolute inset-0 z-[2] grid place-items-center" data-testid="pause-indicator">
+        <div className="absolute inset-0 z-40 grid place-items-center" data-testid="pause-indicator">
           <span className="grid size-16 place-items-center rounded-full bg-ink/70 text-cream backdrop-blur">
             <Pause className="size-7" fill="currentColor" />
           </span>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

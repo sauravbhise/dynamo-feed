@@ -20,31 +20,36 @@
 }
 
 @layer utilities {
-  .scrollbar-soft {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(242, 234, 226, 0.15) transparent;
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
-  .scrollbar-soft::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .scrollbar-soft::-webkit-scrollbar-thumb {
-    background: rgba(242, 234, 226, 0.15);
-    border-radius: 999px;
-  }
-
-  .scrollbar-soft::-webkit-scrollbar-track {
-    background: transparent;
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
   .glow-stage {
     background: radial-gradient(ellipse 60% 50% at 50% 45%, rgba(147, 178, 156, 0.08), transparent 70%);
   }
+
+  .animate-ticker {
+    animation: ticker 18s linear infinite;
+  }
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-ping {
+  .animate-ping,
+  .animate-ticker {
     animation: none;
   }
 }

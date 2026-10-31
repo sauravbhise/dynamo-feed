@@ -34,11 +34,15 @@ Neo-brutalism removed. Warm dark rounded theme:
 - 2026-10-31: v1 neo-brutalist shell; same day: v2 warm rounded redesign (current), now.json + schema, comments overlay, Shorts-style rail + nav arrows, all responsive modes.
 - 2026-10-31: Feed engine — snap scroll (in player on desktop, full-bleed on mobile), windowed mounting (±1), leave = pause + reset, endless generations with series grouping (parts adjacent, in order) + five-position no-repeat seam rule (bug: seam check was off by one — fixed by walking the live feed), /r/:slug replaceState URL sync + deep-link start, keyboard (↓/J, ↑/K, Space), first-visit + after-loop "Swipe up" hints (localStorage flag), vercel.json rewrite for /r/:slug.
 - 2026-10-31: Reel player — single rAF elapsed-time clock (exact pause/resume), beat sequence by durationMs with audio-duration override (metadata preloaded, no playback; missing file falls back), top segmented progress bar (per-frame DOM writes, no per-frame re-render), tap to pause with pause icon, loop on end, beat placeholder render (character colour bg, name chip, pose label, caption with punchy spring entrance; reduced-motion = fades), reels.json now 8 reels covering all six templates + a two-part series.
+- 2026-10-31: Real cast + templates — sprite sheets (2000×354, 8 frames of 250×354; user brief said 3840×680 — files are downscaled, sprite math is proportional) preloaded at boot; CharacterSlot (frame-index swap + squash bounce, idle/speak bob, mount slide-in, Reginald 180ms neutral↔talking flip while speaking, waist framing = 200% sprite clipped to slot, Saurav = soft rounded placeholder); cast.json updated to reginald/blaze/marge/tia/saurav with scale + framing (personality field dropped — not in new spec); template registry + six templates (review card w/ 3.5-star fill + verdict stamp, breaking news banner/lower-third/looping ticker, documentary letterbox + Ken Burns + title card + subtitles, storytime chat bubbles + typing indicator + Part X of Y + next-part card, myth-vs-fact 3D flip, stat count-up + before/after wipe); ReelBackground loads /backgrounds/{template}.webp with host-colour two-tone fallback + bottom fade; beat data merged forward across beats and validated per template with zod (strict) at load. Fixes: segment fill three-state (accumulator bug made upcoming segments animate), dislike button removed, all scrollbars hidden (scroll intent preserved).
+
+## User's reels.json (authoritative, used verbatim)
+7 reels: r01 breaking_news (blaze), r02 documentary (reginald), r03 stat_reveal (blaze, value 600), r04 review (marge, stars 3.5 → verdict), r05 myth_vs_fact (marge), r06/r07 storytime series "outreach" parts 1-2 (tia). Schema unchanged apart from cast; audioSrc still optional/unused.
 
 ## Backlog
-- P0: character rig with 8 poses inside ReelPlayer; audio playback when voices land.
-- P1: template overlays (review stars, breaking_news headline, myth_vs_fact verdict, stat_reveal value); Watch-this swipe deck; /r/:slug share preview meta.
-- P2: joke-counter likes, like/dislike persistence, profile.json "now" section merge with The Clock, real photo/resume/covers.
+- P0: backgrounds (drop webp files into public/backgrounds/ — no code change needed), like/dislike persistence.
+- P1: template extras polish (review per-beat lines from data, more templates), Watch-this swipe deck, /r/:slug share preview meta.
+- P2: joke-counter likes, Saurav sprite when art lands, profile.json "now" section merge with The Clock, real photo/resume/covers.
 
 ## Notes
 - Placeholders: /avatar.svg, /covers/reading.svg, /resume.txt — swap for real assets later.

@@ -57,7 +57,7 @@ export function Sheet({ open, onClose, side, title, children, testId }: SheetPro
                 <X className="size-4" />
               </button>
             </div>
-            <div className="scrollbar-soft min-h-0 flex-1 overflow-y-auto">{children}</div>
+            <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">{children}</div>
           </motion.div>
         </>
       )}

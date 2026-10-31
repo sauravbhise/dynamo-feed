@@ -41,7 +41,6 @@ export function FeedFrame() {
 
   const [paused, setPaused] = useState(false);
   const [likedIds, setLikedIds] = useState<Record<string, boolean>>({});
-  const [dislikedIds, setDislikedIds] = useState<Record<string, boolean>>({});
   const [extraComments, setExtraComments] = useState<Record<string, ReelComment[]>>({});
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [showIntroHint, setShowIntroHint] = useState(
@@ -136,8 +135,6 @@ export function FeedFrame() {
       comments={activeReel.comments.length + (extraComments[activeReel.id]?.length ?? 0)}
       liked={!!likedIds[activeReel.id]}
       onLike={() => setLikedIds((prev) => ({ ...prev, [activeReel.id]: !prev[activeReel.id] }))}
-      disliked={!!dislikedIds[activeReel.id]}
-      onDislike={() => setDislikedIds((prev) => ({ ...prev, [activeReel.id]: !prev[activeReel.id] }))}
       onComments={() => setCommentsOpen(true)}
     />
   );
@@ -152,7 +149,7 @@ export function FeedFrame() {
           ref={scrollRef}
           onScroll={handleScroll}
           data-testid="feed-scroller"
-          className="scrollbar-soft h-full snap-y snap-mandatory overflow-y-auto overscroll-contain"
+          className="no-scrollbar h-full snap-y snap-mandatory overflow-y-auto overscroll-contain"
         >
           {order.map((reel, i) => (
             <div key={`${reel.id}-${i}`} className="h-full w-full snap-start" data-testid={`feed-slot-${i}`}>
@@ -204,7 +201,7 @@ export function FeedFrame() {
               role="dialog"
               aria-label="Comments"
               onClick={(event) => event.stopPropagation()}
-              className="absolute inset-x-0 bottom-0 z-30 flex h-[60%] flex-col rounded-t-3xl bg-surface/95 shadow-soft backdrop-blur-md"
+              className="absolute inset-x-0 bottom-0 z-50 flex h-[60%] flex-col rounded-t-3xl bg-surface/95 shadow-soft backdrop-blur-md"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}

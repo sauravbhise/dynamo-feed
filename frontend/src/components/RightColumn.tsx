@@ -37,7 +37,7 @@ export function RightColumn({ showTitle = true }: { showTitle?: boolean }) {
         </p>
       </div>
 
-      <div className="scrollbar-soft flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 pb-6 md:py-0 md:px-6 md:pb-6" data-testid="clock-cards">
+      <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 pb-6 md:py-0 md:px-6 md:pb-6" data-testid="clock-cards">
         <section className="rounded-2xl bg-surface p-5 shadow-soft" data-testid="now-reading">
           <CardTitle icon={BookOpen}>Now reading</CardTitle>
           <div className="mt-4 flex gap-4">

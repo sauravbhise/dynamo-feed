@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
-import { castColor } from "../content";
+import { castById, castColor } from "../content";
 import type { ReelComment } from "../content/types";
 
 function CommentRow({ comment }: { comment: ReelComment }) {
   const isVisitor = comment.authorId === "visitor";
-  const name = isVisitor ? "You" : comment.authorId;
+  const member = castById[comment.authorId];
+  const name = isVisitor ? "You" : member?.name ?? comment.authorId;
   const color = castColor(comment.authorId);
 
   return (
@@ -41,7 +42,7 @@ export function CommentsPanel({ comments, onAdd }: CommentsPanelProps) {
 
   return (
     <div className="flex h-full flex-col" data-testid="comments-panel">
-      <ol className="scrollbar-soft flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-2" data-testid="comments-list">
+      <ol className="no-scrollbar flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-2" data-testid="comments-list">
         {comments.map((comment, i) => (
           <CommentRow key={comment.authorId + i} comment={comment} />
         ))}

@@ -72,7 +72,7 @@ export function LeftColumn() {
           src={profile.photo}
           alt={profile.name}
           data-testid="profile-photo"
-          className="size-36 rounded-full object-cover shadow-card ring-4 ring-cast-self/30"
+          className="size-36 rounded-full object-cover shadow-card ring-4 ring-cast-saurav/30"
         />
         <motion.div variants={headerItem}>
           <h1 className="font-display text-3xl leading-tight text-cream" data-testid="profile-name">
@@ -103,7 +103,7 @@ export function LeftColumn() {
 
       <motion.section {...rise} data-testid="story-rings">
         <SectionTitle>Stories</SectionTitle>
-        <div className="scrollbar-soft mt-3 flex gap-4 overflow-x-auto pb-1">
+        <div className="no-scrollbar mt-3 flex gap-4 overflow-x-auto pb-1">
           {rings.map((ring) => (
             <StoryRing key={ring.title} {...ring} />
           ))}

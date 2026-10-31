@@ -1,30 +1,42 @@
 [
   {
-    "id": "narrator",
-    "name": "The Narrator",
+    "id": "reginald",
+    "name": "Sir Reginald",
     "role": "Narrator",
     "color": "#C7B3D9",
-    "personality": "Deadpan. Makes my life sound like a nature documentary."
+    "scale": 1,
+    "framing": "full"
+  },
+  {
+    "id": "blaze",
+    "name": "Blaze",
+    "role": "Hype Host",
+    "color": "#E0A58C",
+    "scale": 1,
+    "framing": "full"
+  },
+  {
+    "id": "marge",
+    "name": "Marge",
+    "role": "Critic",
+    "color": "#DEC490",
+    "scale": 0.85,
+    "framing": "full"
+  },
+  {
+    "id": "tia",
+    "name": "Tia",
+    "role": "Storyteller",
+    "color": "#D9A5AE",
+    "scale": 1.1,
+    "framing": "waist"
   },
   {
     "id": "saurav",
     "name": "Saurav",
-    "role": "Best friend / sceptic",
-    "color": "#E0A5EC",
-    "personality": "Pokes holes in every plan. Usually right."
-  },
-  {
-    "id": "prof",
-    "name": "Prof. Pixel",
-    "role": "The explainer",
-    "color": "#DEC490",
-    "personality": "Explains feelings with bar charts."
-  },
-  {
-    "id": "hype",
-    "name": "Hype",
-    "role": "Hype machine",
-    "color": "#D9A5AE",
-    "personality": "Reacts to everything at 200% volume."
+    "role": "The subject",
+    "color": "#A9BED6",
+    "scale": 1,
+    "framing": "full"
   }
 ]

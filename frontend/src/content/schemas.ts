@@ -46,8 +46,35 @@ export const castMemberSchema = z.object({
   name: z.string().min(1),
   role: z.string().min(1),
   color: z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "must be a hex colour"),
-  personality: z.string().min(1),
+  scale: z.number().positive(),
+  framing: z.enum(["full", "waist"]),
 });
+
+// Per-template beat data — a wrong field fails at load time.
+export const templateDataSchemas: Partial<Record<z.infer<typeof templateSchema>, z.ZodTypeAny>> = {
+  review: z
+    .object({ stars: z.number().min(0).max(5), verdict: z.string() })
+    .partial()
+    .strict(),
+  breaking_news: z
+    .object({ headline: z.string(), ticker: z.string() })
+    .partial()
+    .strict(),
+  documentary: z.object({ title: z.string() }).partial().strict(),
+  myth_vs_fact: z.object({ myth: z.string(), fact: z.string() }).partial().strict(),
+  stat_reveal: z
+    .object({
+      value: z.number(),
+      unit: z.string(),
+      label: z.string(),
+      before: z.string(),
+      after: z.string(),
+    })
+    .partial()
+    .strict(),
+  // storytime keeps no template extras (yet)
+  storytime: z.object({}).passthrough(),
+};
 
 export const profileSchema = z.object({
   name: z.string().min(1),
