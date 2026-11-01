@@ -7,26 +7,15 @@ import type { WatchItem } from "../content/types";
 const COMMIT_DISTANCE = 110;
 const FLING_VELOCITY = 550;
 
-type DeckDir = 1 | -1; // 1 = next, -1 = previous
-
-interface DeckCustom {
-  dir: DeckDir;
-  exitX: number;
-}
-
 const cardVariants: Variants = {
-  enter: ({ dir }: DeckCustom) => ({
-    // Next: the new card settles into place BENEATH the exiting card.
-    // Previous: the previous card slides in from the left, OVER the current one.
-    zIndex: dir === 1 ? 1 : 3,
-    ...(dir === 1
-      ? { scale: 0.96, y: 10, opacity: 0.85 }
-      : { x: -480, opacity: 0.9 }),
-    transition:
-      dir === 1
-        ? { type: "spring", stiffness: 320, damping: 28 }
-        : { type: "spring", stiffness: 260, damping: 28 },
-  }),
+  enter: {
+    // The next card settles into place BENEATH the leaving card.
+    zIndex: 1,
+    scale: 0.96,
+    y: 10,
+    opacity: 0.85,
+    transition: { type: "spring", stiffness: 320, damping: 28 },
+  },
   center: {
     x: 0,
     y: 0,
@@ -34,11 +23,10 @@ const cardVariants: Variants = {
     opacity: 1,
     transition: { type: "spring", stiffness: 320, damping: 28 },
   },
-  exit: ({ dir, exitX }: DeckCustom) => ({
-    // Next: the top card flies off the way it was swiped, ON TOP of the pile.
-    // Previous: the top card slides out to the right, beneath the incoming one.
-    zIndex: dir === 1 ? 3 : 1,
-    x: dir === 1 ? exitX : 480,
+  exit: (exitX: number) => ({
+    // The leaving card stays ON TOP of the pile while it flies away.
+    zIndex: 3,
+    x: exitX,
     opacity: 0,
     transition: { duration: 0.3, ease: "easeOut" },
   }),
@@ -46,14 +34,14 @@ const cardVariants: Variants = {
 
 function DeckCard({
   item,
-  custom,
+  exitX,
   wiggle,
   reduceMotion,
   onSwipeStart,
   onSwipe,
 }: {
   item: WatchItem;
-  custom: DeckCustom;
+  exitX: number;
   wiggle: boolean;
   reduceMotion: boolean;
   onSwipeStart: () => void;
@@ -80,7 +68,7 @@ function DeckCard({
         wiggle ? "deck-wiggle-once" : ""
       }`}
       style={{ x, rotate }}
-      custom={custom}
+      custom={exitX}
       variants={cardVariants}
       initial={reduceMotion ? "center" : "enter"}
       animate="center"
@@ -106,7 +94,7 @@ function DeckCard({
 
 export function SwipeDeck({ items }: { items: WatchItem[] }) {
   const reduceMotion = !!useReducedMotion();
-  const [[index, dir], setDeck] = useState<[number, DeckDir]>([0, 1]);
+  const [index, setIndex] = useState(0);
   // The wiggle plays once; reduced motion skips it and keeps the hint text.
   const [hintDone, setHintDone] = useState(reduceMotion);
   const [hintDismissed, setHintDismissed] = useState(false);
@@ -130,28 +118,18 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
     setHintDismissed(true);
   };
 
-  // A swipe in EITHER direction moves to the next card — the card flies off in
-  // the direction it was swiped, on top of the pile. The right arrow and next
-  // chevron swipe right.
+  // Every control does the same thing: the top card flies off in the given
+  // direction, on top of the pile, and the next card settles into place
+  // beneath it. The deck loops endlessly, so a full cycle brings any card back.
   const handleSwipe = (swipeDir: 1 | -1) => {
     if (busyRef.current) return;
     busyRef.current = true;
     interacted();
     exitXRef.current = swipeDir === 1 ? 480 : -480;
-    setDeck(([i]) => [(i + 1) % count, 1]);
-  };
-
-  // Previous: the left arrow, left chevron or left key — the top card slides
-  // out to the right while the previous card slides in from the left.
-  const goPrev = () => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    interacted();
-    setDeck(([i]) => [(i - 1 + count) % count, -1]);
+    setIndex((value) => (value + 1) % count);
   };
 
   const top = items[index % count];
-  const custom: DeckCustom = { dir, exitX: exitXRef.current };
 
   return (
     <div>
@@ -163,7 +141,7 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
         onKeyDown={(event) => {
           if (event.key === "ArrowLeft") {
             event.preventDefault();
-            goPrev();
+            handleSwipe(-1);
           } else if (event.key === "ArrowRight") {
             event.preventDefault();
             handleSwipe(1);
@@ -180,12 +158,13 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
           <div className="absolute inset-x-0 top-4 z-0 h-[calc(100%-20px)] rotate-2 scale-[0.9] rounded-2xl bg-raised/40" aria-hidden="true" />
         )}
 
-        {/* Faint chevrons on hover — previous / next card */}
+        {/* Faint chevrons on hover — fly the top card off left or right */}
         <button
           type="button"
           data-testid="deck-prev"
-          aria-label="Previous"
-          onClick={goPrev}
+          aria-label="Next card"
+          title="Swipe left"
+          onClick={() => handleSwipe(-1)}
           className="absolute left-1 top-1/2 z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-ink/40 text-cream/70 opacity-0 backdrop-blur transition hover:text-cream group-hover:opacity-100 focus-visible:opacity-100"
         >
           <ChevronLeft className="size-4" />
@@ -193,7 +172,8 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
         <button
           type="button"
           data-testid="deck-next"
-          aria-label="Next"
+          aria-label="Next card"
+          title="Swipe right"
           onClick={() => handleSwipe(1)}
           className="absolute right-1 top-1/2 z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-ink/40 text-cream/70 opacity-0 backdrop-blur transition hover:text-cream group-hover:opacity-100 focus-visible:opacity-100"
         >
@@ -203,7 +183,7 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
         <AnimatePresence
           initial={false}
           mode="sync"
-          custom={custom}
+          custom={exitXRef.current}
           onExitComplete={() => {
             busyRef.current = false;
           }}
@@ -211,7 +191,7 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
           <DeckCard
             key={index}
             item={top}
-            custom={custom}
+            exitX={exitXRef.current}
             wiggle={inView && !hintDone}
             reduceMotion={reduceMotion}
             onSwipeStart={() => setHintDone(true)}
