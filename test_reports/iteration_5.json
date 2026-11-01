@@ -1,0 +1,56 @@
+{
+  "summary": "Round 5 scoped re-test of the 3 round-4 fixes in Dynamo Feed. ALL THREE PASS. (A) SwipeDeck forward nav works: deck-next advances exactly one card per click (fly-off x->480, opacity->0, 0.3s), ArrowRight advances, ArrowLeft goes back and wraps, drag past 110px commits, small drag spring-back returns, rapid double-click during fly-off produces exactly ONE advance (busyRef guard holds), deck-hint hides after first commit, wiggle only plays once on first entry. (B) Peek cards now render with h-full: visible heights ~236px and ~235px, rotations ~-3deg and ~+3deg (matrix 0.99863,+/-0.052336), peek 26px and 46px below the top card's bottom edge -> clearly visible pile. (C) Verdict stamp on /r/marge-reviews-saurav last beat is fully inside review-card bbox on all four sides (verdict.top=53.73 vs card.top=49.55, inset ~4.19px; left/right/bottom all inside). Sanity checks pass. No code changes made.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Right column Watch deck + Now reading", "issues": ["Carried over from iter 4: now.json still ships REPLACE: placeholders (REPLACE: show 1 / film 1 / show 2 / film 2 / show 3, REPLACE: book title, REPLACE: author, REPLACE: one line on why, REPLACE: one-line take so far). Not in scope for this retest but still user-visible."]}
+    ]
+  },
+  "test_results_detail": {
+    "A_swipe_deck_forward_navigation": {
+      "deck_next_click": "PASS (show 1 -> film 1 -> show 2 -> film 2 -> show 3, exactly one advance per click)",
+      "arrow_right": "PASS (focused deck, ArrowRight advanced show 3 -> show 1 via wrap)",
+      "arrow_left_back_and_wrap": "PASS (ArrowLeft show 1 -> show 3; 4 consecutive ArrowLefts from show 3 cycled back to show 1 across 5 items)",
+      "drag_past_110px": "PASS (160px drag committed, title advanced show 1 -> film 1)",
+      "small_drag_springback": "PASS (40px drag released -> title unchanged, card returns)",
+      "rapid_double_click_guard": "PASS (two deck-next clicks within 0.3s fly-off produced exactly ONE advance: film 2 -> show 3, not film 2 -> show 1)",
+      "loop_endlessly": "PASS (itemAt uses modulo count; wrap confirmed via arrow-left wrap and continuous cycling)",
+      "deck_hint_hides_after_commit": "PASS",
+      "wiggle_once_on_first_view": "PASS (plays once ~450ms after inView, does not replay)"
+    },
+    "B_peek_cards": {
+      "status": "PASS",
+      "peek1": {"height_px": 236.2, "rotation_matrix": "0.99863,-0.052336 (~-3deg)", "translate_y_px": 12, "peek_below_top_card_px": 26.1},
+      "peek2": {"height_px": 235.4, "rotation_matrix": "0.99863,+0.052336 (~+3deg)", "translate_y_px": 24, "peek_below_top_card_px": 45.7},
+      "note": "Both peek divs clearly tall (h-full), rotated as spec, and bottom edges visibly peek below top card's bottom edge."
+    },
+    "C_verdict_stamp_inside_card": {
+      "status": "PASS",
+      "verdict_rect": {"top": 53.73, "left": 695.07, "right": 852.18, "bottom": 117.36},
+      "card_rect": {"top": 49.55, "left": 402.38, "right": 857.63, "bottom": 204.42},
+      "inside_all_four_sides": true,
+      "top_inset_px": 4.19,
+      "note": "Previously overhanging 7.45px above card top; now sits 4.19px inside. top-5 (20px) with -rotate-12 fits."
+    }
+  },
+  "critical_code_review_comments": [
+    "commit() correctly uses controls.start(...).then(...) as the single advance path. onAnimationComplete handler was removed from the motion.div, so there's no double-advance risk. Verified by rapid double-click producing one advance.",
+    "setIndex((v) => v + 1) uses an unbounded counter and relies on itemAt doing modulo count. Works, but counter grows unbounded over long sessions; a modulo at setIndex would be cleaner. Non-blocking.",
+    "Peek divs use h-full inside an h-56 relatively positioned container plus translate-y - renders as spec. Works.",
+    "ReviewTemplate verdict at right-2 top-5 with -rotate-12 is now inside the card. Works.",
+    "Carried-over content issue (not in scope but worth flagging again): src/content/now.json still has REPLACE: placeholders for watch items, now-reading book, and spanish streak take."
+  ],
+  "updated_files": [],
+  "test_report_links": ["/app/test_reports/iteration_5.json"],
+  "success_rate": {"backend": "N/A (skipped)", "frontend": "100% (all 3 scoped fixes + 4 sanity checks pass)"},
+  "test_credentials": "n/a (static)",
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "action_items": [
+    "Optional: replace REPLACE: placeholders in src/content/now.json with real content before shipping (carried over from iter 4, not in this round's scope)."
+  ],
+  "context_for_next_testing_agent": "Round 4's three bugs are all resolved in Round 5. now.json watch deck actually has 5 items (show 1, film 1, show 2, film 2, show 3) not 3 - matters when writing loop assertions. commit() single-advance path is controls.start(...).then(setIndex); onAnimationComplete was intentionally removed. Peek divs rely on h-full inside h-56 parent + translate-y to peek. Verdict at right-2 top-5 -rotate-12 is the final geometry."
+}
