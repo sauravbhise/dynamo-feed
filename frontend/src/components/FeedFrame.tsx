@@ -6,12 +6,18 @@ import { CommentsPanel } from "./CommentsPanel";
 import { ReelPlayer } from "./ReelPlayer";
 import { nextGeneration } from "../feed/order";
 import { audioUrl, preloadAudio } from "../audio/engine";
-import { SoundProvider, useSound } from "../audio/SoundContext";
+import { SoundContext, SoundProvider, useSound } from "../audio/SoundContext";
 import type { Reel, ReelComment } from "../content/types";
 
 const LIKED_PREFIX = "dynamo:liked:";
 const NUDGE_AFTER_REELS = 10;
 const NUDGE_AFTER_MS = 3 * 60 * 1000;
+
+// Wording matches the trigger that fired.
+const NUDGE_COPY = {
+  time: "You've been scrolling a resume for 3 minutes. Want to talk to the human instead?",
+  reels: "You've watched 10 reels about me. Want to talk to the human instead?",
+} as const;
 
 // The nudge reel — inserted once per visit by the engagement rule, never in reels.json.
 const NUDGE_REEL: Reel = {
@@ -91,36 +97,80 @@ function FeedFrameInner() {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [loopHint, setLoopHint] = useState(false);
 
-  // The nudge: 10 reels watched or 3 minutes in the feed, whichever comes first.
+  // The nudge: 10 different reels viewed or 3 minutes in the feed, whichever
+  // comes first — inserted once per visit, worded for its trigger.
   const nudgeInsertedRef = useRef(false);
-  const watchedRef = useRef(0);
   const startedAtRef = useRef(Date.now());
 
-  const insertNudge = useCallback(() => {
+  const insertNudge = useCallback((trigger: "reels" | "time") => {
     if (nudgeInsertedRef.current) return;
     nudgeInsertedRef.current = true;
     const next = [...orderRef.current];
-    next.splice(Math.min(activeIndexRef.current + 2, next.length), 0, NUDGE_REEL);
+    // The reel-count trigger puts the nudge in place as the VERY NEXT reel.
+    const at = Math.min(activeIndexRef.current + (trigger === "reels" ? 1 : 2), next.length);
+    next.splice(at, 0, {
+      ...NUDGE_REEL,
+      beats: [{ ...NUDGE_REEL.beats[0], caption: NUDGE_COPY[trigger] }],
+    });
     orderRef.current = next;
     setOrder(next);
   }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      if (Date.now() - startedAtRef.current >= NUDGE_AFTER_MS) insertNudge();
+      if (Date.now() - startedAtRef.current >= NUDGE_AFTER_MS) insertNudge("time");
     }, 2000);
     return () => window.clearInterval(timer);
   }, [insertNudge]);
 
+  // A reel counts as viewed each time a DIFFERENT reel becomes the active one,
+  // however the visitor got there (scrolling, swiping, arrow keys, the
+  // up/down buttons or a "Watch the reel" chip) — including the reel they land
+  // on first. The tenth view triggers the nudge immediately.
+  const lastViewedIdRef = useRef<string | null>(null);
+  const viewedCountRef = useRef(0);
+  useEffect(() => {
+    const id = order[Math.min(activeIndex, order.length - 1)]?.id;
+    if (!id || id === lastViewedIdRef.current) return;
+    lastViewedIdRef.current = id;
+    viewedCountRef.current += 1;
+    if (viewedCountRef.current >= NUDGE_AFTER_REELS) insertNudge("reels");
+  }, [activeIndex, order, insertNudge]);
+
   const activeReel = order[Math.min(activeIndex, order.length - 1)];
 
-  // First reel in the feed that has any voice audio — the "Tap for sound"
-  // pill lives there while sound is off.
-  const firstAudioReelId = useMemo(
-    () =>
-      order.find((reel) => reel.beats.some((_, i) => !!manifest[`${reel.slug}:${i}`]))?.id,
-    [order, manifest]
+  // ?audiotest=1 — check the pill and playback on ANY reel: the sample file is
+  // attached to the current reel's first beat, in memory only.
+  const audioTest = useMemo(
+    () => new URLSearchParams(window.location.search).get("audiotest") === "1",
+    []
   );
+  const effectiveManifest = useMemo(
+    () => (audioTest ? { ...manifest, [`${activeReel.slug}:0`]: "audio/sample.wav" } : manifest),
+    [audioTest, manifest, activeReel.slug]
+  );
+  const reelHasAudio = useMemo(
+    () => activeReel.beats.some((_, i) => !!effectiveManifest[`${activeReel.slug}:${i}`]),
+    [activeReel, effectiveManifest]
+  );
+  // Sound UI (pill + rail button) renders only on reels that have audio —
+  // with an empty manifest no sound UI shows anywhere.
+  const contextValue = useMemo(
+    () => ({ soundOn, toggleSound, manifest: effectiveManifest }),
+    [soundOn, toggleSound, effectiveManifest]
+  );
+
+  // The pill hides as soon as it's tapped or after 5 seconds; a reel change
+  // brings it back on the next reel with audio.
+  const [pillHidden, setPillHidden] = useState(false);
+  useEffect(() => {
+    setPillHidden(false);
+  }, [activeIndex]);
+  useEffect(() => {
+    if (!reelHasAudio || soundOn || pillHidden) return;
+    const timer = window.setTimeout(() => setPillHidden(true), 5000);
+    return () => window.clearTimeout(timer);
+  }, [reelHasAudio, soundOn, pillHidden]);
 
   // Preload the next reel's voice audio while the current one plays.
   useEffect(() => {
@@ -128,10 +178,10 @@ function FeedFrameInner() {
     const next = order[activeIndex + 1];
     if (!next) return;
     next.beats.forEach((_, i) => {
-      const path = manifest[`${next.slug}:${i}`];
+      const path = effectiveManifest[`${next.slug}:${i}`];
       if (path) preloadAudio(audioUrl(path));
     });
-  }, [activeIndex, order, manifest, soundOn]);
+  }, [activeIndex, order, effectiveManifest, soundOn]);
 
 
   // Deep link: jump to the opening reel before first paint.
@@ -168,8 +218,6 @@ function FeedFrameInner() {
     if (index !== activeIndexRef.current) {
       activeIndexRef.current = index;
       setActiveIndex(index);
-      watchedRef.current += 1;
-      if (watchedRef.current >= NUDGE_AFTER_REELS) insertNudge();
     }
     setLoopHint(false);
     // Endless feed: near the end, append a reshuffled generation.
@@ -261,10 +309,12 @@ function FeedFrameInner() {
       onLike={() => toggleLike(activeReel.id)}
       onComments={() => setCommentsOpen(true)}
       slug={activeReel.slug}
+      hasAudio={reelHasAudio}
     />
   );
 
   return (
+    <SoundContext.Provider value={contextValue}>
     <div className="flex h-full w-full items-center justify-center gap-5 md:gap-6" data-testid="feed-stage-inner">
       <div
         data-testid="feed-frame"
@@ -292,16 +342,17 @@ function FeedFrameInner() {
           ))}
         </div>
 
-        {/* Sound off until the visitor opts in — the pill sits on the first
-            reel that has voice audio. */}
-        {!soundOn && activeReel.id === firstAudioReelId && (
+        {/* Sound off until the visitor opts in — the pill sits near the TOP of
+            the reel (never over captions, names or chips), hides on tap or
+            after 5 seconds. */}
+        {!soundOn && reelHasAudio && !pillHidden && (
           <button
             data-testid="sound-pill"
             onClick={(event) => {
               event.stopPropagation();
               toggleSound();
             }}
-            className="absolute bottom-[30%] left-3 z-30 flex items-center gap-1.5 rounded-full bg-sage px-3 py-2 text-xs font-bold text-sage-deep shadow-soft transition hover:scale-105 active:scale-95"
+            className="absolute left-1/2 top-3 z-30 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-sage px-3 py-2 text-xs font-bold text-sage-deep shadow-soft transition hover:scale-105 active:scale-95"
           >
             <Volume2 className="size-3.5" />
             Tap for sound
@@ -403,5 +454,6 @@ function FeedFrameInner() {
         </div>
       ) : null}
     </div>
+    </SoundContext.Provider>
   );
 }

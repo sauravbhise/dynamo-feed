@@ -56,8 +56,8 @@ function DeckCard({
     } else if (info.offset.x < -COMMIT_DISTANCE || info.velocity.x < -FLING_VELOCITY) {
       onSwipe(-1);
     } else {
-      // No drag constraints — spring the card back to centre ourselves,
-      // so a committed swipe never gets pulled back mid-exit.
+      // Swipe not committed — the card ALWAYS springs back to centre,
+      // so nothing is ever left stranded off-centre.
       animate(x, 0, { type: "spring", stiffness: 320, damping: 28 });
     }
   };
@@ -94,11 +94,13 @@ function DeckCard({
 
 export function SwipeDeck({ items }: { items: WatchItem[] }) {
   const reduceMotion = !!useReducedMotion();
-  const [index, setIndex] = useState(0);
+  // One EVER-INCREASING counter, bumped once per swipe: it is the top card's
+  // AnimatePresence key, so a card that comes around after a full loop can
+  // never share its key with one that is still exiting.
+  const [counter, setCounter] = useState(0);
   // The wiggle plays once; reduced motion skips it and keeps the hint text.
   const [hintDone, setHintDone] = useState(reduceMotion);
   const [hintDismissed, setHintDismissed] = useState(false);
-  const busyRef = useRef(false);
   const deckRef = useRef<HTMLDivElement>(null);
   const exitXRef = useRef(480);
   const count = items.length;
@@ -120,16 +122,15 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
 
   // Every control does the same thing: the top card flies off in the given
   // direction, on top of the pile, and the next card settles into place
-  // beneath it. The deck loops endlessly, so a full cycle brings any card back.
+  // beneath it. No busy lock — several cards may exit at once (mode="sync"),
+  // so rapid swipes keep advancing through the deck endlessly, loops included.
   const handleSwipe = (swipeDir: 1 | -1) => {
-    if (busyRef.current) return;
-    busyRef.current = true;
     interacted();
     exitXRef.current = swipeDir === 1 ? 480 : -480;
-    setIndex((value) => (value + 1) % count);
+    setCounter((value) => value + 1);
   };
 
-  const top = items[index % count];
+  const top = items[counter % count];
 
   return (
     <div>
@@ -180,16 +181,9 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
           <ChevronRight className="size-4" />
         </button>
 
-        <AnimatePresence
-          initial={false}
-          mode="sync"
-          custom={exitXRef.current}
-          onExitComplete={() => {
-            busyRef.current = false;
-          }}
-        >
+        <AnimatePresence initial={false} mode="sync" custom={exitXRef.current}>
           <DeckCard
-            key={index}
+            key={counter}
             item={top}
             exitX={exitXRef.current}
             wiggle={inView && !hintDone}

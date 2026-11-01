@@ -39,10 +39,11 @@ interface ActionRailProps {
   onLike: () => void;
   onComments: () => void;
   slug: string;
+  hasAudio: boolean;
   className?: string;
 }
 
-export function ActionRail({ likes, comments, liked, onLike, onComments, slug, className = "" }: ActionRailProps) {
+export function ActionRail({ likes, comments, liked, onLike, onComments, slug, hasAudio, className = "" }: ActionRailProps) {
   const { soundOn, toggleSound } = useSound();
   const share = async () => {
     const url = `${window.location.origin}/r/${slug}`;
@@ -74,14 +75,17 @@ export function ActionRail({ likes, comments, liked, onLike, onComments, slug, c
       <RailButton label="Share" testId="action-share" onClick={share}>
         <Share2 className="size-5" />
       </RailButton>
-      <RailButton
-        label={soundOn ? "Mute voices" : "Turn voices on"}
-        testId="action-sound"
-        onClick={toggleSound}
-        active={soundOn}
-      >
-        {soundOn ? <Volume2 className="size-5" /> : <VolumeX className="size-5" />}
-      </RailButton>
+      {/* The speaker toggle only exists on reels that actually have audio. */}
+      {hasAudio && (
+        <RailButton
+          label={soundOn ? "Mute voices" : "Turn voices on"}
+          testId="action-sound"
+          onClick={toggleSound}
+          active={soundOn}
+        >
+          {soundOn ? <Volume2 className="size-5" /> : <VolumeX className="size-5" />}
+        </RailButton>
+      )}
     </div>
   );
 }

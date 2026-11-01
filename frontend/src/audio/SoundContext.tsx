@@ -21,6 +21,9 @@ const SoundContext = createContext<SoundState>({
   manifest: {},
 });
 
+// Re-provided by FeedFrame with the ?audiotest=1 override merged in.
+export { SoundContext };
+
 export const useSound = () => useContext(SoundContext);
 
 export function SoundProvider({ children }: { children: ReactNode }) {
