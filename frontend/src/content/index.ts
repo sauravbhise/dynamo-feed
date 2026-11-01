@@ -12,6 +12,7 @@ import {
   templateSchema,
 } from "./schemas";
 import type {
+  Beat,
   CastMember,
   Now,
   Profile,
@@ -63,6 +64,15 @@ export function seriesInfo(reel: Reel): { part: number; total: number } | null {
     .filter((r) => r.seriesId === reel.seriesId)
     .sort((a, b) => (a.part ?? 0) - (b.part ?? 0));
   return { part: reel.part ?? parts.findIndex((r) => r.id === reel.id) + 1, total: parts.length };
+}
+
+// Reading time: the caption drives the beat length (1200ms + 55ms per
+// character, clamped to 2.5–7s); storytime adds a 700ms typing lead-in.
+// Hand-tuned durationMs only wins when it is longer than the computed time.
+export function beatDurationMs(beat: Beat, template: ReelTemplate): number {
+  const computed = Math.min(Math.max(1200 + 55 * beat.caption.length, 2500), 7000);
+  const withTyping = template === "storytime" ? computed + 700 : computed;
+  return Math.max(withTyping, beat.durationMs);
 }
 
 // Which portfolio item does this reel's slug belong to? Ids match the

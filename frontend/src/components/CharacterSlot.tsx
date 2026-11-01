@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { CSSProperties } from "react";
 import { castById } from "../content";
+import { usePaused } from "./PausedContext";
 import type { Pose } from "../content/types";
 
 const POSE_ORDER: Pose[] = [
@@ -18,12 +19,21 @@ const POSE_ORDER: Pose[] = [
 /** Percent of the reel height reserved for captions — characters stand on top of it. */
 export const CAPTION_ZONE = 22;
 
+/**
+ * Percent of the reel height where the character's head starts, measured from
+ * the top. Top-zone cards must end above this line (with a small gap).
+ */
+export function headTopPercent(characterId: string, heightPercent: number): number {
+  const character = castById[characterId];
+  if (!character) return 100 - CAPTION_ZONE;
+  const visible = heightPercent * character.scale;
+  return character.framing === "waist" ? 100 - visible : 100 - CAPTION_ZONE - visible;
+}
+
 interface CharacterSlotProps {
   characterId: string;
   pose: Pose;
   isSpeaking: boolean;
-  /** Freezes the idle motion while the reel is paused. */
-  paused?: boolean;
   /** Visible character height (before scale), as a percentage of the reel height. */
   heightPercent: number;
   align?: "left" | "center" | "right";
@@ -33,12 +43,13 @@ export function CharacterSlot({
   characterId,
   pose,
   isSpeaking,
-  paused = false,
   heightPercent,
   align = "center",
 }: CharacterSlotProps) {
   const character = castById[characterId];
   const reduceMotion = useReducedMotion();
+  const paused = usePaused();
+  const frozen = paused || reduceMotion;
   const [flip, setFlip] = useState(false);
 
   // Reginald alternates neutral/talking every 180ms while he speaks.
@@ -95,7 +106,7 @@ export function CharacterSlot({
       <motion.div
         className="absolute inset-0"
         style={{ transformOrigin: "bottom center" }}
-        initial={reduceMotion ? { opacity: 0 } : { y: "10%", opacity: 0 }}
+        initial={reduceMotion ? { opacity: 0 } : paused ? false : { y: "10%", opacity: 0 }}
         animate={reduceMotion ? { opacity: 1 } : { y: "0%", opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 24 }}
       >
@@ -103,7 +114,7 @@ export function CharacterSlot({
           className="absolute inset-0"
           style={{ transformOrigin: "bottom center" }}
           animate={
-            paused || reduceMotion
+            frozen
               ? { y: "0%" }
               : { y: isSpeaking ? ["0%", "-1%", "0%"] : ["0%", "-2%", "0%"] }
           }
@@ -113,9 +124,9 @@ export function CharacterSlot({
             key={pose}
             className="absolute inset-0"
             style={{ transformOrigin: "bottom center" }}
-            initial={reduceMotion ? undefined : { scaleY: 0.94, scaleX: 1.04 }}
+            initial={frozen ? undefined : { scaleY: 0.94, scaleX: 1.04 }}
             animate={{ scaleY: 1, scaleX: 1 }}
-            transition={reduceMotion ? { duration: 0.2 } : { type: "spring", stiffness: 500, damping: 22 }}
+            transition={frozen ? { duration: 0.2 } : { type: "spring", stiffness: 500, damping: 22 }}
           >
             <div className="absolute inset-0 overflow-hidden">
               {characterId === "saurav" ? (

@@ -3,6 +3,8 @@ import { motion, useMotionValue, useReducedMotion } from "framer-motion";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Heart, Pause } from "lucide-react";
 import { TEMPLATES } from "../templates/registry";
+import { beatDurationMs } from "../content";
+import { PausedProvider } from "./PausedContext";
 import type { Reel } from "../content/types";
 
 const BURST_HEARTS = [
@@ -37,7 +39,11 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
   const rafRef = useRef(0);
   const loopedRef = useRef(false);
 
-  const durations = reel.beats.map((beat, i) => audioDurations[i] ?? beat.durationMs);
+  // Beat length: computed from the caption (1200 + 55/char, 2.5–7s, storytime
+  // +700ms typing), overridden by audio duration, or by durationMs when longer.
+  const durations = reel.beats.map(
+    (beat, i) => audioDurations[i] ?? beatDurationMs(beat, reel.template)
+  );
   durationsRef.current = durations;
 
   // Beat length comes from the audio file's duration when it exists — no playback yet.
@@ -53,7 +59,7 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
         }
       });
       audio.addEventListener("error", () => {
-        /* audio not shipped yet — fall back to durationMs */
+        /* audio not shipped yet — fall back to the computed duration */
       });
       audio.src = beat.audioSrc;
     });
@@ -162,16 +168,17 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
       className="relative h-full w-full cursor-pointer select-none overflow-hidden"
       onClick={handleClick}
     >
-      <Template
-        reel={reel}
-        beat={beat}
-        beatIndex={beatIndex}
-        progress={beatProgress}
-        data={effectiveData}
-        reducedMotion={!!reduceMotion}
-        active={active}
-        paused={paused && active}
-      />
+      <PausedProvider paused={paused && active}>
+        <Template
+          reel={reel}
+          beat={beat}
+          beatIndex={beatIndex}
+          progress={beatProgress}
+          data={effectiveData}
+          reducedMotion={!!reduceMotion}
+          active={active}
+        />
+      </PausedProvider>
 
       {/* Heart burst where the visitor double-tapped */}
       {burst && (

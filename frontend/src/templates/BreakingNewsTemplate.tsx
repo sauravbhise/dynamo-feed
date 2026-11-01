@@ -2,11 +2,13 @@ import { motion } from "framer-motion";
 import { CharacterSlot } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
 import { ProfileReelChip } from "../components/ProfileReelChip";
+import { usePaused } from "../components/PausedContext";
 import { ReelBackground } from "./ReelBackground";
 import { castById } from "../content";
 import { str, type TemplateProps } from "./registry";
 
-export function BreakingNewsTemplate({ reel, beat, beatIndex, data, reducedMotion, paused }: TemplateProps) {
+export function BreakingNewsTemplate({ reel, beat, beatIndex, data, reducedMotion, active }: TemplateProps) {
+  const paused = usePaused();
   const headline = str(data.headline) ?? reel.beats[0].caption;
   const ticker = str(data.ticker);
 
@@ -16,7 +18,7 @@ export function BreakingNewsTemplate({ reel, beat, beatIndex, data, reducedMotio
 
       <motion.div
         className="absolute left-4 top-[4%] z-10"
-        initial={reducedMotion ? { opacity: 0 } : { y: -48, opacity: 0 }}
+        initial={paused || reducedMotion ? false : { y: -48, opacity: 0 }}
         animate={reducedMotion ? { opacity: 1 } : { y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.1 }}
         data-testid="breaking-banner"
@@ -26,7 +28,7 @@ export function BreakingNewsTemplate({ reel, beat, beatIndex, data, reducedMotio
         </span>
       </motion.div>
 
-      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking paused={paused} heightPercent={40} />
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={40} />
 
       {/* Caption zone: speaker + spoken line, lower-third headline, ticker at the bottom */}
       <div className="absolute inset-x-3 bottom-11 z-10 flex flex-col gap-2">
@@ -35,7 +37,7 @@ export function BreakingNewsTemplate({ reel, beat, beatIndex, data, reducedMotio
         </ReelCaption>
         <motion.div
           className="flex items-center gap-3 rounded-2xl bg-ink/85 px-4 py-3 backdrop-blur"
-          initial={reducedMotion ? { opacity: 0 } : { x: "-30%", opacity: 0 }}
+          initial={paused || reducedMotion ? false : { x: "-30%", opacity: 0 }}
           animate={reducedMotion ? { opacity: 1 } : { x: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 220, damping: 24, delay: 0.25 }}
           data-testid="lower-third"
@@ -47,10 +49,14 @@ export function BreakingNewsTemplate({ reel, beat, beatIndex, data, reducedMotio
         </motion.div>
       </div>
 
-      {/* Ticker scrolls along the bottom on loop, badge-free */}
+      {/* Ticker scrolls along the bottom on loop; freezes when paused */}
       {ticker && (
         <div className="absolute inset-x-0 bottom-1 z-10 flex overflow-hidden bg-ink/90 py-1.5" data-testid="news-ticker">
-          <div className="flex w-max animate-ticker motion-reduce:animate-none">
+          <div
+            className={`flex w-max animate-ticker motion-reduce:animate-none ${
+              paused ? "[animation-play-state:paused]" : ""
+            }`}
+          >
             {[0, 1].map((copy) => (
               <span key={copy} aria-hidden={copy === 1} className="whitespace-nowrap pr-8 text-xs font-semibold text-cream/90">
                 {ticker}

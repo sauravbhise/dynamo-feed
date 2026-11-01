@@ -20,8 +20,8 @@ export interface TemplateProps {
   reducedMotion: boolean;
   /** True when the reel is the active one (neighbours render pre-mounted). */
   active: boolean;
-  /** True when the active reel is paused — sprites and graphics freeze. */
-  paused: boolean;
+  // Pause state is shared through PausedContext (usePaused) so every animation
+  // inside the template can freeze without prop threading.
 }
 
 export const str = (value: unknown): string | undefined =>

@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { motion, useMotionValueEvent } from "framer-motion";
-import { CharacterSlot } from "../components/CharacterSlot";
+import { CharacterSlot, headTopPercent } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
 import { ProfileReelChip } from "../components/ProfileReelChip";
+import { usePaused } from "../components/PausedContext";
 import { ReelBackground } from "./ReelBackground";
 import { castById } from "../content";
 import type { TemplateProps } from "./registry";
 
-export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, reducedMotion, paused }: TemplateProps) {
+const CHAR_HEIGHT = 40;
+
+export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, reducedMotion, active }: TemplateProps) {
+  const paused = usePaused();
   const myth = typeof data.myth === "string" ? data.myth : undefined;
   const fact = typeof data.fact === "string" ? data.fact : undefined;
   const flipOnThisBeat = myth !== undefined && fact !== undefined && typeof beat.data?.myth === "string";
@@ -19,11 +23,17 @@ export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, redu
   // Once the card has flipped it stays flipped for the rest of the reel.
   const isFlipped = flipOnThisBeat ? flipped : fact !== undefined && beatIndex > 0;
 
+  // The card may never grow down over the character's head.
+  const headTop = headTopPercent(beat.characterId, CHAR_HEIGHT);
+
   return (
     <div className="absolute inset-0">
       <ReelBackground reel={reel} />
 
-      <div className="absolute inset-x-3 top-[3%] z-10 flex justify-center" style={{ perspective: "1100px" }}>
+      <div
+        className="absolute inset-x-3 top-[3%] z-10 flex justify-center overflow-hidden"
+        style={{ perspective: "1100px", maxHeight: `${Math.max(headTop - 5, 18)}%` }}
+      >
         <motion.div
           className="relative w-full"
           style={{ transformStyle: "preserve-3d" }}
@@ -48,7 +58,7 @@ export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, redu
         </motion.div>
       </div>
 
-      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking paused={paused} heightPercent={40} />
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={CHAR_HEIGHT} />
 
       <div className="absolute inset-x-4 bottom-5 z-10">
         <ReelCaption name={castById[beat.characterId]?.name ?? ""} chip={<ProfileReelChip slug={reel.slug} />}>

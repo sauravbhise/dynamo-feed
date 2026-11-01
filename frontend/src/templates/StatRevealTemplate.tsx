@@ -1,15 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useTransform } from "framer-motion";
 import { CharacterSlot } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
 import { ProfileReelChip } from "../components/ProfileReelChip";
+import { usePaused } from "../components/PausedContext";
 import { ReelBackground } from "./ReelBackground";
 import { castById } from "../content";
 import { num, str, type TemplateProps } from "./registry";
 
 const COUNT_UP_MS = 1400;
 
-export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, reducedMotion, active, paused }: TemplateProps) {
+export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, reducedMotion, active }: TemplateProps) {
+  const paused = usePaused();
   const value = num(data.value);
   const unit = str(data.unit) ?? "";
   const label = str(data.label);
@@ -17,27 +19,32 @@ export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, redu
   const after = str(data.after);
   const valueOnThisBeat = typeof num(beat.data?.value) === "number";
 
-  // The number counts up on its own clock while its beat is on screen — never
-  // left stuck at 0 by a pause or an early scroll.
+  // The number counts up while its beat plays, FREEZES mid-count on pause and
+  // resumes from the same point; when not counting it shows the final value
+  // (never stuck at 0 on pre-mounted neighbours).
   const [display, setDisplay] = useState(value ?? 0);
+  const accRef = useRef<{ beat: number; ms: number }>({ beat: -1, ms: 0 });
   useEffect(() => {
     if (!active || !valueOnThisBeat || reducedMotion) {
       setDisplay(value ?? 0);
       return;
     }
+    if (paused) return; // frozen mid-count; the accumulator keeps its value
+    if (accRef.current.beat !== beatIndex) accRef.current = { beat: beatIndex, ms: 0 };
     let raf = 0;
-    const start = performance.now();
-    const target = value ?? 0;
+    let last = performance.now();
     const tick = (now: number) => {
-      const p = Math.min((now - start) / COUNT_UP_MS, 1);
-      setDisplay(Math.round(p * target));
+      accRef.current.ms += now - last;
+      last = now;
+      const p = Math.min(accRef.current.ms / COUNT_UP_MS, 1);
+      setDisplay(Math.round(p * (value ?? 0)));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [active, valueOnThisBeat, beatIndex, value, reducedMotion]);
+  }, [active, paused, valueOnThisBeat, beatIndex, value, reducedMotion]);
 
-  // Before/after split screen wipes across with the beat.
+  // Before/after split screen wipes across with the beat (freezes on pause).
   const wipe = useTransform(progress, (p) => `inset(0 0 0 ${(Math.min(p, 1) * 100).toFixed(2)}%)`);
 
   const showSplit = before !== undefined && after !== undefined;
@@ -66,7 +73,7 @@ export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, redu
           <div className="absolute inset-x-0 top-[10%] z-10 flex flex-col items-center gap-1.5 text-center" data-testid="stat-reveal">
             <motion.span
               className="rounded-3xl bg-ink/55 px-6 py-3 font-display text-6xl text-cream backdrop-blur"
-              initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8 }}
+              initial={paused || reducedMotion ? false : { opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={reducedMotion ? { duration: 0.3 } : { type: "spring", stiffness: 240, damping: 20 }}
             >
@@ -80,7 +87,7 @@ export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, redu
         )
       )}
 
-      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking paused={paused} heightPercent={40} />
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={40} />
 
       <div className="absolute inset-x-4 bottom-5 z-10">
         <ReelCaption name={castById[beat.characterId]?.name ?? ""} chip={<ProfileReelChip slug={reel.slug} />}>

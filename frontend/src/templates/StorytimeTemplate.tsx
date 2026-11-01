@@ -4,23 +4,28 @@ import { ChevronUp } from "lucide-react";
 import { CharacterSlot } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
 import { ProfileReelChip } from "../components/ProfileReelChip";
+import { usePaused } from "../components/PausedContext";
 import { ReelBackground } from "./ReelBackground";
-import { castById, seriesInfo } from "../content";
+import { beatDurationMs, castById, seriesInfo } from "../content";
 import type { TemplateProps } from "./registry";
 
-export function StorytimeTemplate({ reel, beat, beatIndex, progress, reducedMotion, paused }: TemplateProps) {
+const TYPING_MS = 700;
+
+export function StorytimeTemplate({ reel, beat, beatIndex, progress, reducedMotion, active }: TemplateProps) {
+  const paused = usePaused();
   const info = seriesInfo(reel);
   const isLastBeat = beatIndex === reel.beats.length - 1;
   const hasNextPart = info !== null && info.part < info.total;
-  // A typing indicator shows before each new line drops into the caption.
+  // A typing indicator shows for the first 700ms of each beat (the beat is
+  // lengthened by exactly that), then the line drops in as the newest bubble.
   const [typing, setTyping] = useState(true);
   useMotionValueEvent(progress, "change", (value) => {
-    setTyping(value < 0.22);
+    setTyping(value < TYPING_MS / beatDurationMs(beat, "storytime"));
   });
 
-  // Only the PREVIOUS lines stay in the bubble stack — the current line lives
-  // in the caption zone, so the text never appears twice.
-  const visible = reel.beats.slice(0, beatIndex).slice(-3);
+  // The bubbles ARE the caption here: the current line plus the one before it,
+  // older ones fading out. Never more than two.
+  const visible = reel.beats.slice(0, beatIndex + 1).slice(-2);
   const showNextCard = isLastBeat && hasNextPart && !typing;
 
   return (
@@ -35,27 +40,22 @@ export function StorytimeTemplate({ reel, beat, beatIndex, progress, reducedMoti
         </div>
       )}
 
-      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking paused={paused} heightPercent={40} />
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={40} />
 
-      {/* Chat bubbles run from 8% to 50% of the reel; older ones fade out */}
+      {/* Bubbles run from 8% to 50% — always ending above Tia's head */}
       <div
         className="absolute inset-x-3 top-[8%] bottom-[50%] z-10 flex flex-col justify-start gap-2.5"
         data-testid="story-bubbles"
       >
-        {visible.map((b, i) => {
-          const age = visible.length - 1 - i; // 0 = most recent
-          const opacity = age === 0 ? 0.95 : age === 1 ? 0.65 : 0.4;
-          return (
-            <div
-              key={b.caption}
-              style={{ opacity }}
-              className="w-[92%] shrink-0 rounded-2xl rounded-bl-md bg-surface/85 px-4 py-3 text-[17px] leading-snug text-cream/70 backdrop-blur"
-            >
-              {b.caption}
-            </div>
-          );
-        })}
-        {typing && (
+        {visible.slice(0, -1).map((b) => (
+          <div
+            key={b.caption}
+            className="w-[92%] shrink-0 rounded-2xl rounded-bl-md bg-surface/85 px-4 py-3 text-[17px] leading-snug text-cream/70 opacity-60 backdrop-blur"
+          >
+            {b.caption}
+          </div>
+        ))}
+        {typing ? (
           <div
             className="flex w-[92%] shrink-0 items-center gap-1.5 rounded-2xl rounded-bl-md bg-surface/90 px-4 py-3.5 backdrop-blur"
             data-testid="typing-indicator"
@@ -63,16 +63,29 @@ export function StorytimeTemplate({ reel, beat, beatIndex, progress, reducedMoti
             {[0, 1, 2].map((dot) => (
               <span
                 key={dot}
-                className="size-2 animate-bounce rounded-full bg-cream/70 motion-reduce:animate-none"
+                className={`size-2 animate-bounce rounded-full bg-cream/70 motion-reduce:animate-none ${
+                  paused ? "[animation-play-state:paused]" : ""
+                }`}
                 style={{ animationDelay: `${dot * 0.15}s` }}
               />
             ))}
           </div>
+        ) : (
+          <motion.div
+            key={beat.caption}
+            className="w-[92%] shrink-0 rounded-2xl rounded-bl-md bg-surface/90 px-4 py-3 text-[17px] leading-snug text-cream shadow-soft backdrop-blur"
+            initial={paused || reducedMotion ? false : { opacity: 0, y: 14, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 340, damping: 24 }}
+            data-testid="story-bubble-current"
+          >
+            {beat.caption}
+          </motion.div>
         )}
         {showNextCard && (
           <motion.div
             className="flex w-max items-center gap-1.5 rounded-full bg-sage px-4 py-2 text-sm font-bold text-sage-deep shadow-soft"
-            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
+            initial={paused || reducedMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: reducedMotion ? 0 : 0.5, type: "spring", stiffness: 300, damping: 24 }}
             data-testid="next-part-card"
@@ -83,10 +96,9 @@ export function StorytimeTemplate({ reel, beat, beatIndex, progress, reducedMoti
         )}
       </div>
 
+      {/* The bubbles carry the caption here — only the speaker name below */}
       <div className="absolute inset-x-4 bottom-5 z-10">
-        <ReelCaption name={castById[beat.characterId]?.name ?? ""} chip={<ProfileReelChip slug={reel.slug} />}>
-          {beat.caption}
-        </ReelCaption>
+        <ReelCaption name={castById[beat.characterId]?.name ?? ""} chip={<ProfileReelChip slug={reel.slug} />} />
       </div>
     </div>
   );
