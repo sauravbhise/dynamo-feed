@@ -81,6 +81,8 @@ Likes: double-tap (heart burst at tap point) or heart; +1 shown; localStorage dy
 
 - 2026-11-02 (round 14, user request): resume circle in SocialLinks now matches the other social circles (bg-surface, cream icon, sage hover) with a FileText document icon — opens the resume Google Drive link for VIEWING (download comes later). tsc + vite build clean.
 
+- 2026-11-02 (round 15, bug report, testing_agent verified /app/test_reports/iteration_7.json — 100% pass): LEFT-COLUMN INVISIBILITY BUG FIXED — the per-section whileInView entrances never fired inside the column's own scroll container, leaving Projects/Writing/Community/Education at opacity 0. All scroll-triggered entrances REMOVED (CollapsibleSection, SocialLinks, SkillChips are plain visible elements now); LeftColumn root has ONE mount-time fade (0.4s, not scroll-tied); ProfileHeader keeps its mount stagger; right column verified free of the pattern. Verified by agent: all 5 sections opacity=1 pre-scroll + post-scroll, previews (writing "IoTaaS… · Enhancing…", education "+1"), independent toggles (opening writing keeps experience open), order header→socials→chips→sections, no stats-strip/footer, resume circle matches others, mobile sheet sections visible. Known non-code finding: 'REPLACE: show 1' strings visible in the Watch-this card — user's own placeholder data in now.json (P0 backlog), not a defect.
+
 ## Backlog
 - P0: real backgrounds (public/backgrounds/*.webp), real content for now.json (user's own "REPLACE:" strings pending).
 - P1: real voices (voiceIds + ELEVENLABS_API_KEY → scripts/generate-voices.mjs), me.jpg + og.png assets, resume real link.
