@@ -19,7 +19,7 @@ export function DocumentaryTemplate({ reel, beat, beatIndex, progress, data, red
         {title && beatIndex === 0 && (
           <motion.div
             key="title-card"
-            className="absolute left-1/2 top-[30%] z-10 -translate-x-1/2 rounded-2xl bg-black/60 px-5 py-3 backdrop-blur"
+            className="absolute left-1/2 top-[8%] z-10 -translate-x-1/2 rounded-2xl bg-black/60 px-5 py-3 backdrop-blur"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -31,12 +31,10 @@ export function DocumentaryTemplate({ reel, beat, beatIndex, progress, data, red
         )}
       </AnimatePresence>
 
-      <div className="absolute inset-y-0 left-3 z-[5] flex items-end">
-        <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking height="34%" />
-      </div>
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={46} />
 
-      {/* Italic subtitle-style caption */}
-      <div className="absolute inset-x-0 bottom-[8%] z-10 flex justify-center px-6" data-testid="doc-subtitle">
+      {/* Italic subtitle-style caption, inside the caption zone above the letterbox */}
+      <div className="absolute inset-x-0 bottom-[10%] z-10 flex justify-center px-6" data-testid="doc-subtitle">
         <p className="max-w-[88%] rounded-xl bg-black/45 px-4 py-2 text-center text-sm italic leading-relaxed text-cream/95 backdrop-blur-sm">
           {beat.caption}
         </p>

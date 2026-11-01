@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionValue, useReducedMotion } from "framer-motion";
 import { Pause } from "lucide-react";
-import { ReelBackground } from "../templates/ReelBackground";
 import { TEMPLATES } from "../templates/registry";
 import type { Reel } from "../content/types";
 
@@ -17,10 +16,10 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: Reel
   const reduceMotion = useReducedMotion();
   const [beatIndex, setBeatIndex] = useState(0);
   const beatProgress = useMotionValue(0);
+  const reelProgress = useMotionValue(0);
   const [audioDurations, setAudioDurations] = useState<Record<number, number>>({});
 
   const durationsRef = useRef<number[]>([]);
-  const segmentRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const elapsedRef = useRef(0);
   const rafRef = useRef(0);
   const loopedRef = useRef(false);
@@ -52,18 +51,14 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: Reel
 
   // Reels that leave the view pause and reset.
   useEffect(() => {
-    if (active) {
-      return;
-    }
+    if (active) return;
     cancelAnimationFrame(rafRef.current);
     elapsedRef.current = 0;
     loopedRef.current = false;
     setBeatIndex(0);
     beatProgress.set(0);
-    segmentRefs.current.forEach((segment) => {
-      if (segment) segment.style.transform = "scaleX(0)";
-    });
-  }, [active, reel.id, beatProgress]);
+    reelProgress.set(0);
+  }, [active, reel.id, beatProgress, reelProgress]);
 
   // Single elapsed-time clock — pause/resume are exact.
   useEffect(() => {
@@ -84,18 +79,17 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: Reel
       }
       const elapsed = elapsedRef.current;
 
+      // One continuous bar across the whole reel; resets to 0 on loop.
+      reelProgress.set(total > 0 ? Math.min(elapsed / total, 1) : 0);
+
+      // Per-beat progress for the template.
       let acc = 0;
       let index = 0;
       for (let i = 0; i < durations.length; i++) {
-        const start = acc;
-        acc += durations[i];
-        // finished → full, current → animating, upcoming → empty
-        const segment = segmentRefs.current[i];
-        if (segment) {
-          const fill = elapsed >= acc ? 1 : elapsed > start ? (elapsed - start) / durations[i] : 0;
-          segment.style.transform = `scaleX(${fill})`;
+        if (elapsed >= acc + durations[i]) {
+          acc += durations[i];
+          index = i + 1;
         }
-        if (elapsed >= acc) index = i + 1;
       }
       beatProgress.set(Math.min(Math.max((elapsed - acc) / (durations[index] ?? 1), 0), 1));
       setBeatIndex((prev) => (prev === index ? prev : index));
@@ -103,7 +97,7 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: Reel
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [active, paused, reel.id, onLoop, beatProgress]);
+  }, [active, paused, reel.id, onLoop, beatProgress, reelProgress]);
 
   // The current beat plus every earlier beat's extras stay in effect.
   const beat = reel.beats[beatIndex] ?? reel.beats[0];
@@ -132,19 +126,9 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: Reel
         reducedMotion={!!reduceMotion}
       />
 
-      {/* Thin segmented progress bar — one segment per beat */}
-      <div className="absolute inset-x-0 top-0 z-30 flex gap-1 px-3 pt-3" data-testid="beat-progress">
-        {reel.beats.map((_, i) => (
-          <span key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-black/30">
-            <span
-              ref={(el) => {
-                segmentRefs.current[i] = el;
-              }}
-              className="block h-full w-full origin-left bg-white"
-              style={{ transform: "scaleX(0)" }}
-            />
-          </span>
-        ))}
+      {/* One continuous thin bar along the bottom edge of the reel */}
+      <div className="absolute inset-x-0 bottom-0 z-30 h-1 bg-white/20" data-testid="reel-progress">
+        <motion.span className="block h-full w-full origin-left bg-cream" style={{ scaleX: reelProgress }} />
       </div>
 
       {paused && active && (

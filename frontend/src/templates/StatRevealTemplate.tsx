@@ -41,12 +41,12 @@ export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, redu
           >
             <p className="px-6 text-center font-display text-xl text-cream/85">{after}</p>
           </motion.div>
-          <span className="absolute left-4 top-11 z-10 rounded-full bg-ink/70 px-2.5 py-0.5 text-[10px] font-bold text-cream">Before</span>
-          <span className="absolute right-4 top-11 z-10 rounded-full bg-sage px-2.5 py-0.5 text-[10px] font-bold text-sage-deep">After</span>
+          <span className="absolute left-4 top-[8%] z-10 rounded-full bg-ink/70 px-2.5 py-0.5 text-[10px] font-bold text-cream">Before</span>
+          <span className="absolute right-4 top-[8%] z-10 rounded-full bg-sage px-2.5 py-0.5 text-[10px] font-bold text-sage-deep">After</span>
         </div>
       ) : (
         value !== undefined && (
-          <div className="absolute inset-x-0 top-[26%] z-10 flex flex-col items-center gap-1 text-center" data-testid="stat-reveal">
+          <div className="absolute inset-x-0 top-[10%] z-10 flex flex-col items-center gap-1.5 text-center" data-testid="stat-reveal">
             <motion.span
               className="rounded-3xl bg-ink/55 px-6 py-3 font-display text-6xl text-cream backdrop-blur"
               initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8 }}
@@ -63,11 +63,10 @@ export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, redu
         )
       )}
 
-      <div className="absolute inset-y-0 left-3 z-[5] flex items-end">
-        <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking height="36%" />
-      </div>
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={46} />
 
-      <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center px-6 max-md:pr-20" data-testid="stat-caption">
+      {/* Caption inside the caption zone */}
+      <div className="absolute inset-x-0 bottom-[6%] z-10 flex justify-center px-6 max-md:pr-20" data-testid="stat-caption">
         <p className="max-w-[85%] rounded-xl bg-ink/55 px-4 py-2 text-center text-sm font-semibold leading-relaxed text-cream backdrop-blur">
           {beat.caption}
         </p>

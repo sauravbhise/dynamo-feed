@@ -167,7 +167,7 @@ export function FeedFrame() {
         </div>
 
         <AnimatePresence>
-          {(showIntroHint || loopHint) && (
+          {(showIntroHint || loopHint) && activeReel.template !== "breaking_news" && (
             <motion.div
               key="swipe-hint"
               data-testid="swipe-hint"
