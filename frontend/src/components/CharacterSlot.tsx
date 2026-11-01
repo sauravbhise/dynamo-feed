@@ -110,15 +110,17 @@ export function CharacterSlot({
         animate={reduceMotion ? { opacity: 1 } : { y: "0%", opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 24 }}
       >
-        <motion.div
+        {/* Idle/speaking bob as a CSS keyframe — freezes mid-motion on pause
+            and resumes from the same point (framer's repeat kept replaying). */}
+        <div
           className="absolute inset-0"
-          style={{ transformOrigin: "bottom center" }}
-          animate={
-            frozen
-              ? { y: "0%" }
-              : { y: isSpeaking ? ["0%", "-1%", "0%"] : ["0%", "-2%", "0%"] }
-          }
-          transition={{ duration: isSpeaking ? 0.8 : 2.5, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            transformOrigin: "bottom center",
+            animation: reduceMotion
+              ? undefined
+              : `${isSpeaking ? "char-bob-speak" : "char-bob"} ${isSpeaking ? 0.8 : 2.5}s ease-in-out infinite`,
+            animationPlayState: paused ? "paused" : "running",
+          }}
         >
           <motion.div
             key={pose}
@@ -144,7 +146,7 @@ export function CharacterSlot({
               )}
             </div>
           </motion.div>
-        </motion.div>
+        </div>
       </motion.div>
     </div>
   );

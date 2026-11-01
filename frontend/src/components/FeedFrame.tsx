@@ -7,7 +7,6 @@ import { ReelPlayer } from "./ReelPlayer";
 import { nextGeneration } from "../feed/order";
 import type { Reel, ReelComment } from "../content/types";
 
-const HINT_KEY = "dynamo:swipe-hint-seen";
 const LIKED_PREFIX = "dynamo:liked:";
 const NUDGE_AFTER_REELS = 10;
 const NUDGE_AFTER_MS = 3 * 60 * 1000;
@@ -79,10 +78,6 @@ export function FeedFrame() {
   const [likedIds, setLikedIds] = useState<Record<string, boolean>>(readLikedIds);
   const [extraComments, setExtraComments] = useState<Record<string, ReelComment[]>>({});
   const [commentsOpen, setCommentsOpen] = useState(false);
-  const [showIntroHint, setShowIntroHint] = useState(
-    () => localStorage.getItem(HINT_KEY) !== "1"
-  );
-  const introHintRef = useRef(showIntroHint);
   const [loopHint, setLoopHint] = useState(false);
 
   // The nudge: 10 reels watched or 3 minutes in the feed, whichever comes first.
@@ -145,11 +140,6 @@ export function FeedFrame() {
       watchedRef.current += 1;
       if (watchedRef.current >= NUDGE_AFTER_REELS) insertNudge();
     }
-    if (introHintRef.current) {
-      introHintRef.current = false;
-      localStorage.setItem(HINT_KEY, "1");
-      setShowIntroHint(false);
-    }
     setLoopHint(false);
     // Endless feed: near the end, append a reshuffled generation.
     if (index >= orderRef.current.length - 2) {
@@ -200,7 +190,7 @@ export function FeedFrame() {
     return () => window.removeEventListener("dynamo:goto-reel", goToSlug);
   }, [goTo]);
 
-  // A new reel autoplays; the loop nudge resets on reel change.
+  // A new reel autoplays; the loop hint resets on reel change.
   useEffect(() => {
     setPaused(false);
     setLoopHint(false);
@@ -271,12 +261,13 @@ export function FeedFrame() {
           ))}
         </div>
 
+        {/* Shown only after a reel's first loop, above the caption zone */}
         <AnimatePresence>
-          {(showIntroHint || loopHint) && activeReel.template !== "breaking_news" && (
+          {loopHint && activeReel.template !== "breaking_news" && (
             <motion.div
               key="swipe-hint"
               data-testid="swipe-hint"
-              className="pointer-events-none absolute bottom-5 left-1/2 z-30"
+              className="pointer-events-none absolute bottom-[24%] left-1/2 z-30"
               initial={{ opacity: 0, x: "-50%", y: 10 }}
               animate={{ opacity: 1, x: "-50%", y: 0 }}
               exit={{ opacity: 0, x: "-50%", y: 10 }}

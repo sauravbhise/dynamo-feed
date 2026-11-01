@@ -47,6 +47,28 @@
   }
 }
 
+/* Character idle/speaking bob — CSS keyframes so pause can freeze the
+   character mid-motion and resume from the same point. */
+@keyframes char-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2%);
+  }
+}
+
+@keyframes char-bob-speak {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-ping,
   .animate-ticker {
