@@ -47,10 +47,22 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
   const commit = (dir: "left" | "right") => {
     if (busyRef.current) return;
     busyRef.current = true;
-    controls.stop();
     setHintDone(true);
     setHintDismissed(true);
     setExitDir(dir);
+    // Fly the top card off; advance when the animation completes.
+    controls
+      .start({
+        x: dir === "right" ? 480 : -480,
+        opacity: 0,
+        transition: { duration: 0.3, ease: "easeOut" },
+      })
+      .then(() => {
+        x.set(0);
+        setExitDir(null);
+        busyRef.current = false;
+        setIndex((value) => value + 1);
+      });
   };
 
   const goPrev = () => {
@@ -90,10 +102,10 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
       >
         {/* Two cards peek out below the top one, slightly rotated — reads as a pile */}
         {count > 1 && (
-          <div className="absolute inset-x-4 top-2 -rotate-3 translate-y-3 rounded-2xl bg-raised/60 shadow-soft" aria-hidden="true" />
+          <div className="absolute inset-x-4 top-2 h-full -rotate-3 translate-y-3 rounded-2xl bg-raised/60 shadow-soft" aria-hidden="true" />
         )}
         {count > 2 && (
-          <div className="absolute inset-x-6 top-4 rotate-3 translate-y-6 rounded-2xl bg-raised/40" aria-hidden="true" />
+          <div className="absolute inset-x-6 top-4 h-full rotate-3 translate-y-6 rounded-2xl bg-raised/40" aria-hidden="true" />
         )}
 
         {/* Faint chevrons on hover — previous / next card */}
@@ -130,14 +142,6 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
             setHintDone(true);
           }}
           onDragEnd={handleDragEnd}
-          onAnimationComplete={() => {
-            if (exitDir) {
-              x.set(0);
-              setExitDir(null);
-              busyRef.current = false;
-              setIndex((value) => value + 1);
-            }
-          }}
           data-testid="deck-card"
         >
           <div className="flex h-full flex-col justify-center px-1">

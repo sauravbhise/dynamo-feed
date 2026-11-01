@@ -52,7 +52,7 @@ export function ReviewTemplate({ reel, beat, beatIndex, progress, data, reducedM
           {verdict !== undefined && isLast && (
             <motion.div
               data-testid="review-verdict"
-              className="absolute right-2 top-2 z-10 -rotate-12 rounded-xl border-2 border-[#D96A6A] bg-surface px-3 py-1 font-display text-sm text-[#D96A6A]"
+              className="absolute right-2 top-5 z-10 -rotate-12 rounded-xl border-2 border-[#D96A6A] bg-surface px-3 py-1 font-display text-sm text-[#D96A6A]"
               initial={paused || reducedMotion ? false : { opacity: 0, scale: 1.7, rotate: -28 }}
               animate={{ opacity: 1, scale: 1, rotate: -12 }}
               transition={reducedMotion ? { duration: 0.3 } : { type: "spring", stiffness: 320, damping: 18 }}
