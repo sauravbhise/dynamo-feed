@@ -1,0 +1,35 @@
+{
+  "summary": "Round 6 frontend-only verification of the two SwipeDeck fixes (stacking order via variant zIndex + removal of dragConstraints/elastic with custom onDragEnd). All targeted behaviours pass on desktop 1440x900 against the external preview URL. No code changes were made.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "SwipeDeck.tsx cleanly implements both fixes (variants carry zIndex, mode='sync', dragSnapToOrigin=false, animate() fallback for sub-threshold drags). No further issues observed in that file.",
+    "Minor nit (not blocking): the previous-direction enter variant uses opacity 0.9 — fine, but worth noting the incoming card is briefly ~90% opaque while on top of the outgoing one; visually acceptable."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100%"},
+  "test_credentials": "n/a",
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Deck geometry unchanged (bbox ~271x240 in right column at ~x=1125,y=372 on 1440x900). Items array has 5 WatchItems and advances show1→film1→show2→film2→show3→wrap. zIndex sampling via getComputedStyle(card).zIndex works; mid-transition there are exactly 2 deck-card elements for ~300ms. The exiting card's title can be used to disambiguate exiting vs entering across samples. Fresh page reload resets the hint and wiggle one-shot.",
+  "test_evidence": {
+    "A1_drag_right": {"exiting_zIndex": "3", "entering_zIndex": "1", "exiting_tx_series": [167.7, 208.7, 353.0, 372.4, 452.3, 471.1], "monotonic_toward_480": true, "title_advanced": "show 1 → film 1"},
+    "A2_drag_left": {"exiting_zIndex": "3", "entering_zIndex": "1", "exiting_tx_series": [-160.0, -196.6, -422.1, -479.5], "monotonic_toward_minus_480": true, "title_advanced": "film 1 → show 2 (dir=1, swipe-left still advances)"},
+    "A3_click_deck_prev": {"exiting_zIndex": "1", "entering_zIndex": "3", "incoming_passes_over_outgoing": true},
+    "B2_small_drag_snap_back": {"title_before_eq_after": true, "value": "REPLACE: film 1"},
+    "C_sanity": {
+      "title_sequence_next_arrowRight_arrowLeft": ["film 1","show 2","film 2","show 2"],
+      "hint_hidden_after_first_commit": true,
+      "hint_bbox_intersects_any_card_or_peek": false,
+      "rapid_three_clicks_advance_once": true
+    }
+  },
+  "rca_of_the_issue": "No bugs reproduced. Both prescribed fixes work as described: (a) framer-motion applies variant zIndex as an inline style — exiting card renders at z=3 and entering at z=1 for next (dir=1), and inverted (enter z=3, exit z=1) for previous (dir=-1); pile peek divs are z-0. (b) With dragConstraints/elastic removed and dragSnapToOrigin={false}, a committed swipe's x value increases monotonically from the released position toward ±480 with no back-flicker; sub-threshold drags spring back via animate(x,0,...) without changing the index."
+}
