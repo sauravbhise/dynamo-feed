@@ -5,7 +5,7 @@
         "template": "storytime",
         "hostId": "tia",
         "beats": [
-          { "characterId": "tia", "pose": "talking", "caption": "Okay so Saurav is {progress}% into {title} by {author}." },
+          { "characterId": "tia", "pose": "talking", "caption": "Okay so Saurav is {progress} pages into {title} by {author}." },
           { "characterId": "tia", "pose": "shocked", "caption": "His official verdict: “{take}”" },
           { "characterId": "tia", "pose": "laughing", "caption": "He said it exactly like that. I'm just the messenger." }
         ]

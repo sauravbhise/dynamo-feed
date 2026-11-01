@@ -261,19 +261,21 @@ export function FeedFrame() {
           ))}
         </div>
 
-        {/* Shown only after a reel's first loop, above the caption zone */}
+        {/* Shown only after a reel's first full loop, tucked at the left edge
+            just above the caption zone — never over the (centered) character.
+            Hides as soon as the visitor scrolls. */}
         <AnimatePresence>
           {loopHint && activeReel.template !== "breaking_news" && (
             <motion.div
               key="swipe-hint"
               data-testid="swipe-hint"
-              className="pointer-events-none absolute bottom-[24%] left-1/2 z-30"
-              initial={{ opacity: 0, x: "-50%", y: 10 }}
-              animate={{ opacity: 1, x: "-50%", y: 0 }}
-              exit={{ opacity: 0, x: "-50%", y: 10 }}
+              className="pointer-events-none absolute bottom-[23%] left-3 z-30"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
             >
-              <span className="flex items-center gap-1.5 rounded-full bg-ink/70 px-3.5 py-2 text-xs font-bold text-cream backdrop-blur">
-                <ChevronUp className="size-4" />
+              <span className="flex items-center gap-1 rounded-full bg-ink/70 px-2.5 py-1.5 text-[11px] font-bold text-cream backdrop-blur">
+                <ChevronUp className="size-3.5" />
                 Swipe up
               </span>
             </motion.div>

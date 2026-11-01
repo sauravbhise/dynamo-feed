@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-11-01",
+  "updatedAt": "2026-10-01",
   "reading": {
-    "title": "REPLACE: book title",
-    "author": "REPLACE: author",
+    "title": "Harry Potter",
+    "author": "J.K. Rowling",
     "cover": "",
     "progress": 40,
-    "take": "REPLACE: one-line take so far"
+    "take": "Pretty good"
   },
   "watch": [
     { "title": "REPLACE: show 1", "kind": "show", "year": 2024, "why": "REPLACE: one line on why" },

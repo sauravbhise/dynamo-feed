@@ -52,16 +52,23 @@ export function CharacterSlot({
   const frozen = paused || reduceMotion;
   const [flip, setFlip] = useState(false);
 
-  // Reginald alternates neutral/talking every 180ms while he speaks.
-  useEffect(() => {
-    if (characterId !== "reginald" || !isSpeaking || paused || reduceMotion) return;
-    const timer = setInterval(() => setFlip((value) => !value), 180);
-    return () => clearInterval(timer);
-  }, [characterId, isSpeaking, paused, reduceMotion]);
+  // Reginald alternates neutral/talking every 180ms while he speaks — but only
+  // on beats whose pose is neutral or talking. Any other pose (sceptical,
+  // pointing, shocked, laughing, celebrating, thinking) holds for the whole
+  // beat. The same rule will apply once audio drives the mouth.
+  const flaps =
+    characterId === "reginald" && isSpeaking && (pose === "neutral" || pose === "talking");
 
   useEffect(() => {
-    if (!isSpeaking) setFlip(false);
-  }, [isSpeaking]);
+    if (!flaps || paused || reduceMotion) return;
+    const timer = setInterval(() => setFlip((value) => !value), 180);
+    return () => clearInterval(timer);
+  }, [flaps, paused, reduceMotion]);
+
+  // A new beat or a speaking change starts from the beat's own pose.
+  useEffect(() => {
+    setFlip(false);
+  }, [isSpeaking, pose]);
 
   if (!character) return null;
 
@@ -87,12 +94,7 @@ export function CharacterSlot({
     ...alignStyle,
   };
 
-  const shownPose: Pose =
-    characterId === "reginald" && isSpeaking && !reduceMotion
-      ? flip
-        ? "talking"
-        : "neutral"
-      : pose;
+  const shownPose: Pose = flaps && !reduceMotion ? (flip ? "talking" : "neutral") : pose;
   const frameIndex = Math.max(0, POSE_ORDER.indexOf(shownPose));
 
   return (
