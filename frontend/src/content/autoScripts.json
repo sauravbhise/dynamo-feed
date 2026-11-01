@@ -16,7 +16,7 @@
         "data": { "title": "Field notes: {title}" },
         "beats": [
           { "characterId": "reginald", "pose": "neutral", "caption": "The engineer, observed mid-chapter." },
-          { "characterId": "reginald", "pose": "sceptical", "caption": "Page {progress} percent. The author has earned another hour." },
+          { "characterId": "reginald", "pose": "sceptical", "caption": "Finished {progress} percent. The author has earned another hour." },
           { "characterId": "reginald", "pose": "talking", "caption": "His verdict, for the record: “{take}”" }
         ]
       }

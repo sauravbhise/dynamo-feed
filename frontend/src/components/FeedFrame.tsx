@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Volume2, X } from "lucide-react";
 import { ActionRail } from "./ActionRail";
 import { CommentsPanel } from "./CommentsPanel";
 import { ReelPlayer } from "./ReelPlayer";
 import { nextGeneration } from "../feed/order";
+import { audioUrl, preloadAudio } from "../audio/engine";
+import { SoundProvider, useSound } from "../audio/SoundContext";
 import type { Reel, ReelComment } from "../content/types";
 
 const LIKED_PREFIX = "dynamo:liked:";
@@ -57,6 +59,15 @@ function useIsDesktop() {
 }
 
 export function FeedFrame() {
+  return (
+    <SoundProvider>
+      <FeedFrameInner />
+    </SoundProvider>
+  );
+}
+
+function FeedFrameInner() {
+  const { soundOn, toggleSound, manifest } = useSound();
   const reduceMotion = useReducedMotion();
   const isDesktop = useIsDesktop();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -102,6 +113,26 @@ export function FeedFrame() {
   }, [insertNudge]);
 
   const activeReel = order[Math.min(activeIndex, order.length - 1)];
+
+  // First reel in the feed that has any voice audio — the "Tap for sound"
+  // pill lives there while sound is off.
+  const firstAudioReelId = useMemo(
+    () =>
+      order.find((reel) => reel.beats.some((_, i) => !!manifest[`${reel.slug}:${i}`]))?.id,
+    [order, manifest]
+  );
+
+  // Preload the next reel's voice audio while the current one plays.
+  useEffect(() => {
+    if (!soundOn) return;
+    const next = order[activeIndex + 1];
+    if (!next) return;
+    next.beats.forEach((_, i) => {
+      const path = manifest[`${next.slug}:${i}`];
+      if (path) preloadAudio(audioUrl(path));
+    });
+  }, [activeIndex, order, manifest, soundOn]);
+
 
   // Deep link: jump to the opening reel before first paint.
   useLayoutEffect(() => {
@@ -260,6 +291,22 @@ export function FeedFrame() {
             </div>
           ))}
         </div>
+
+        {/* Sound off until the visitor opts in — the pill sits on the first
+            reel that has voice audio. */}
+        {!soundOn && activeReel.id === firstAudioReelId && (
+          <button
+            data-testid="sound-pill"
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleSound();
+            }}
+            className="absolute bottom-[30%] left-3 z-30 flex items-center gap-1.5 rounded-full bg-sage px-3 py-2 text-xs font-bold text-sage-deep shadow-soft transition hover:scale-105 active:scale-95"
+          >
+            <Volume2 className="size-3.5" />
+            Tap for sound
+          </button>
+        )}
 
         {/* Shown only after a reel's first full loop, tucked at the left edge
             just above the caption zone — never over the (centered) character.

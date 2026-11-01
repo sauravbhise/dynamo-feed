@@ -1,6 +1,7 @@
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import type { ReactNode } from "react";
+import { useSound } from "../audio/SoundContext";
 
 function RailButton({
   label,
@@ -42,6 +43,7 @@ interface ActionRailProps {
 }
 
 export function ActionRail({ likes, comments, liked, onLike, onComments, slug, className = "" }: ActionRailProps) {
+  const { soundOn, toggleSound } = useSound();
   const share = async () => {
     const url = `${window.location.origin}/r/${slug}`;
     // Phones that support it get the native share sheet.
@@ -71,6 +73,14 @@ export function ActionRail({ likes, comments, liked, onLike, onComments, slug, c
       </RailButton>
       <RailButton label="Share" testId="action-share" onClick={share}>
         <Share2 className="size-5" />
+      </RailButton>
+      <RailButton
+        label={soundOn ? "Mute voices" : "Turn voices on"}
+        testId="action-sound"
+        onClick={toggleSound}
+        active={soundOn}
+      >
+        {soundOn ? <Volume2 className="size-5" /> : <VolumeX className="size-5" />}
       </RailButton>
     </div>
   );

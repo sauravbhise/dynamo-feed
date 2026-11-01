@@ -26,7 +26,6 @@ export const beatSchema = z.object({
   pose: poseSchema,
   caption: z.string().min(1),
   durationMs: z.number().positive(),
-  audioSrc: z.string().optional(),
   data: z.record(z.unknown()).optional(),
 });
 
@@ -51,6 +50,8 @@ export const castMemberSchema = z.object({
   scale: z.number().positive(),
   headroom: z.number().min(0).max(1),
   framing: z.enum(["full", "waist"]),
+  // TTS voice for the character, filled by scripts/generate-voices.mjs users.
+  voiceId: z.string().optional(),
 });
 
 // Per-template beat data — a wrong field fails at load time.

@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Heart, Pause } from "lucide-react";
 import { TEMPLATES } from "../templates/registry";
 import { beatDurationMs } from "../content";
 import { autoReelsFresh } from "../feed/autoReels";
+import { audioSrcFor, connectAnalyser, readLoudness } from "../audio/engine";
+import { useSound } from "../audio/SoundContext";
+import { VoiceProvider } from "../audio/VoiceContext";
 import { PausedProvider } from "./PausedContext";
 import type { Reel } from "../content/types";
 
@@ -32,12 +35,27 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
   const reduceMotion = useReducedMotion();
   const reelProgress = useMotionValue(0);
   const [audioDurations, setAudioDurations] = useState<Record<number, number>>({});
+  const { soundOn, manifest } = useSound();
+  const [loopEpoch, setLoopEpoch] = useState(0);
 
-  // Beat lengths: computed from captions (see beatDurationMs), overridden by
-  // audio duration when present, or by durationMs when it is longer.
+  // A beat has audio only when its {slug}:{beatIndex} key is in the manifest.
+  const audioSrcs = useMemo(
+    () => reel.beats.map((_, i) => audioSrcFor(manifest, reel.slug, i)),
+    [reel, manifest]
+  );
+
+  // Beat lengths: computed from captions (see beatDurationMs). With sound on,
+  // a beat with audio lasts the audio duration plus 300 ms — or the reading
+  // time when that is longer. Sound off: exactly the reading time.
   const durations = useMemo(
-    () => reel.beats.map((beat, i) => audioDurations[i] ?? beatDurationMs(beat, reel.template)),
-    [reel, audioDurations]
+    () =>
+      reel.beats.map((beat, i) => {
+        const reading = beatDurationMs(beat, reel.template);
+        if (!soundOn) return reading;
+        const audioMs = audioDurations[i];
+        return audioMs ? Math.max(audioMs + 300, reading) : reading;
+      }),
+    [reel, audioDurations, soundOn]
   );
   const starts = useMemo(() => {
     let acc = 0;
@@ -86,11 +104,23 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
     return Math.min(Math.max((elapsed - startedAtMs) / (durations[index] ?? 1), 0), 1);
   });
 
-  // Beat length comes from the audio file's duration when it exists — no playback yet.
+  // ---- Voice playback + loudness ------------------------------------------
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const smoothRef = useRef(0);
+  const loudness = useMotionValue(0);
+
+  // With sound on, each beat's file length decides the beat length — load the
+  // metadata once per reel. A failed file simply never sets a duration, so the
+  // reading time covers that beat silently.
   useEffect(() => {
+    if (!soundOn) {
+      setAudioDurations({});
+      return;
+    }
     let cancelled = false;
-    reel.beats.forEach((beat, i) => {
-      if (!beat.audioSrc) return;
+    audioSrcs.forEach((src, i) => {
+      if (!src) return;
       const audio = new Audio();
       audio.preload = "metadata";
       audio.addEventListener("loadedmetadata", () => {
@@ -99,14 +129,59 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
         }
       });
       audio.addEventListener("error", () => {
-        /* audio not shipped yet — fall back to the computed duration */
+        /* file failed — fall back silently to reading-time timing */
       });
-      audio.src = beat.audioSrc;
+      audio.src = src;
     });
     return () => {
       cancelled = true;
     };
-  }, [reel]);
+  }, [audioSrcs, soundOn]);
+
+  const ensureAudio = useCallback(
+    (src: string): HTMLAudioElement => {
+      if (audioRef.current?.dataset.src === src) return audioRef.current;
+      const element = new Audio(src);
+      element.preload = "auto";
+      element.dataset.src = src;
+      analyserRef.current = connectAnalyser(element);
+      audioRef.current = element;
+      return element;
+    },
+    []
+  );
+
+  // The beat's audio always sits at the elapsed position: a fresh beat starts
+  // at zero, a resumed beat continues exactly where the clock stopped. Looping
+  // restarts the audio via loopEpoch; scrolling away (active=false) stops it.
+  useEffect(() => {
+    const src = audioSrcs[beatState.index];
+    if (!active || paused || !soundOn || !src) {
+      audioRef.current?.pause();
+      loudness.set(0);
+      smoothRef.current = 0;
+      return;
+    }
+    const element = ensureAudio(src);
+    const offset = Math.max(
+      0,
+      (elapsedRef.current - (startsRef.current[beatState.index] ?? 0)) / 1000
+    );
+    const start = () => {
+      if (element.duration > 0 && Math.abs(element.currentTime - offset) > 0.05) {
+        element.currentTime = offset;
+      }
+      void element.play().catch(() => {
+        /* file failed or playback blocked — silent fallback */
+        loudness.set(0);
+      });
+    };
+    if (element.duration > 0 || element.readyState >= 2) start();
+    else element.addEventListener("loadedmetadata", start, { once: true });
+    return () => {
+      element.pause();
+    };
+  }, [audioSrcs, beatState.index, active, paused, soundOn, loopEpoch, ensureAudio, loudness]);
 
   // Reels that leave the view pause and reset — index first, then progress.
   useEffect(() => {
@@ -133,6 +208,15 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
           loopedRef.current = true;
           onLoop();
         }
+        // Every wrap restarts the beat audio (see the playback effect).
+        setLoopEpoch((epoch) => epoch + 1);
+      }
+
+      // Voice loudness feeds the mouths — sampled on the same clock.
+      const analyser = analyserRef.current;
+      if (soundOn && analyser) {
+        smoothRef.current += (readLoudness(analyser) - smoothRef.current) * 0.35;
+        loudness.set(smoothRef.current);
       }
 
       // The ONLY publication point: reel progress drives the beat index and
@@ -142,7 +226,7 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [active, paused, reel.id, onLoop, reelProgress]);
+  }, [active, paused, reel.id, onLoop, reelProgress, soundOn, loudness]);
 
   // The current beat plus every earlier beat's extras stay in effect.
   const beat = reel.beats[beatState.index] ?? reel.beats[0];
@@ -195,15 +279,22 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
       onClick={handleClick}
     >
       <PausedProvider paused={paused && active}>
-        <Template
-          reel={reel}
-          beat={beat}
-          beatIndex={beatState.index}
-          progress={beatProgress}
-          data={effectiveData}
-          reducedMotion={!!reduceMotion}
-          active={active}
-        />
+        <VoiceProvider
+          value={{
+            loudness,
+            hasVoice: active && soundOn && !!audioSrcs[beatState.index],
+          }}
+        >
+          <Template
+            reel={reel}
+            beat={beat}
+            beatIndex={beatState.index}
+            progress={beatProgress}
+            data={effectiveData}
+            reducedMotion={!!reduceMotion}
+            active={active}
+          />
+        </VoiceProvider>
       </PausedProvider>
 
       {/* Auto-generated reels carry a small "New" chip while now.json is fresh */}

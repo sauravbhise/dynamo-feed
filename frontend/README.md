@@ -56,6 +56,45 @@ field fails loudly in the console instead of rendering broken.
   `profile.json`: add an object to add an item, remove it to remove the item.
   Empty arrays hide their whole section.
 
+### Voices
+
+Reels can speak their captions. Audio files live in `public/audio/`, listed in
+`public/audio/manifest.json`, which maps `{reelSlug}:{beatIndex}` keys to file
+paths — a beat has audio only if its key is in the manifest (missing files are
+never probed). At runtime the app is fully manifest-driven:
+
+- sound is **off by default** — a "Tap for sound" pill shows on the first reel
+  that has audio, a speaker button in the action rail toggles it, and the choice
+  is remembered in localStorage;
+- with sound on, each beat plays its file and lasts the audio duration plus
+  300 ms (or the reading time, whichever is longer); pause/resume/scroll/loop
+  all stay in sync with the audio, and the current + next reel are preloaded;
+- an `AnalyserNode` measures the playing voice's loudness: Reginald's mouth
+  switches neutral/talking on a loudness threshold, other characters get a
+  small extra bob scaled to it; with sound off everything is timer-driven.
+
+**Generating the voices** — `scripts/generate-voices.mjs`, run locally with Node
+(never in the browser):
+
+1. Pick a voice for each character from your TTS provider's voice library and
+   put its id in `cast.json` as `voiceId` (characters with an empty `voiceId`
+   are skipped).
+2. Export the API key — `ELEVENLABS_API_KEY` for the default provider. The key
+   is read from the environment and never committed.
+3. `node scripts/generate-voices.mjs --dry-run` lists every beat it would
+   generate with the character and the number of characters of text.
+4. `node scripts/generate-voices.mjs` writes one file per beat into
+   `public/audio/` and updates `manifest.json`. Files are cached by a hash of
+   the character + caption, so unchanged lines are never regenerated —
+   re-running after editing one caption is cheap (`--force` regenerates all).
+
+The provider sits behind a small adapter interface (see `adapters` in the
+script); ElevenLabs is the default, add another adapter and set
+`VOICE_PROVIDER` to switch. `public/audio/sample.wav` is a short test sound
+(already listed in the manifest for the first reel's first beat) so playback can
+be checked before any real voice exists. Auto-reels are included automatically —
+the script reads the same generated reels as the app.
+
 ### Auto-reels
 
 Besides the hand-made reels in `reels.json`, the feed also contains reels generated

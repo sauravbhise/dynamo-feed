@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion";
 import type { CSSProperties } from "react";
 import { castById } from "../content";
+import { useVoice } from "../audio/VoiceContext";
 import { usePaused } from "./PausedContext";
 import type { Pose } from "../content/types";
+
+// Loudness above which Reginald's mouth opens (voice-driven talking).
+const MOUTH_THRESHOLD = 0.3;
 
 const POSE_ORDER: Pose[] = [
   "neutral",
@@ -52,18 +56,27 @@ export function CharacterSlot({
   const frozen = paused || reduceMotion;
   const [flip, setFlip] = useState(false);
 
-  // Reginald alternates neutral/talking every 180ms while he speaks — but only
-  // on beats whose pose is neutral or talking. Any other pose (sceptical,
-  // pointing, shocked, laughing, celebrating, thinking) holds for the whole
-  // beat. The same rule will apply once audio drives the mouth.
+  // Reginald alternates neutral/talking while he speaks — but only on beats
+  // whose pose is neutral or talking. Any other pose (sceptical, pointing,
+  // shocked, laughing, celebrating, thinking) holds for the whole beat.
   const flaps =
     characterId === "reginald" && isSpeaking && (pose === "neutral" || pose === "talking");
 
+  // With a voice playing, the mouth follows the measured loudness instead of
+  // the fixed timer.
+  const voice = useVoice();
+  const [voiceTalking, setVoiceTalking] = useState(false);
+  useMotionValueEvent(voice.loudness, "change", (value) => {
+    if (!voice.hasVoice) return;
+    const talking = value > MOUTH_THRESHOLD;
+    setVoiceTalking((prev) => (prev === talking ? prev : talking));
+  });
+
   useEffect(() => {
-    if (!flaps || paused || reduceMotion) return;
+    if (!flaps || voice.hasVoice || paused || reduceMotion) return;
     const timer = setInterval(() => setFlip((value) => !value), 180);
     return () => clearInterval(timer);
-  }, [flaps, paused, reduceMotion]);
+  }, [flaps, voice.hasVoice, paused, reduceMotion]);
 
   // A new beat or a speaking change starts from the beat's own pose.
   useEffect(() => {
@@ -94,8 +107,24 @@ export function CharacterSlot({
     ...alignStyle,
   };
 
-  const shownPose: Pose = flaps && !reduceMotion ? (flip ? "talking" : "neutral") : pose;
+  const shownPose: Pose = !flaps
+    ? pose
+    : voice.hasVoice
+      ? voiceTalking
+        ? "talking"
+        : "neutral"
+      : reduceMotion
+        ? pose
+        : flip
+          ? "talking"
+          : "neutral";
   const frameIndex = Math.max(0, POSE_ORDER.indexOf(shownPose));
+
+  // A small extra bob scaled by the voice loudness (everyone but Reginald,
+  // whose mouth does the work) — zero without a voice.
+  const voiceBob = useTransform(voice.loudness, (value) =>
+    characterId === "reginald" ? 0 : -value * 5
+  );
 
   return (
     <div
@@ -124,6 +153,9 @@ export function CharacterSlot({
             animationPlayState: paused ? "paused" : "running",
           }}
         >
+          {/* A small extra bob scaled by the voice loudness (everyone but
+              Reginald, whose mouth does the work) — zero without a voice. */}
+          <motion.div className="absolute inset-0" style={{ y: voiceBob }}>
           <motion.div
             key={pose}
             className="absolute inset-0"
@@ -147,6 +179,7 @@ export function CharacterSlot({
                 />
               )}
             </div>
+          </motion.div>
           </motion.div>
         </div>
       </motion.div>

@@ -22,7 +22,6 @@ export interface Beat {
   pose: Pose;
   caption: string;
   durationMs: number;
-  audioSrc?: string;
   data?: Record<string, unknown>;
 }
 

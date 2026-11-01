@@ -6,7 +6,8 @@
     "color": "#C7B3D9",
     "scale": 1,
     "headroom": 0.29,
-    "framing": "full"
+    "framing": "full",
+    "voiceId": ""
   },
   {
     "id": "blaze",
@@ -15,7 +16,8 @@
     "color": "#E0A58C",
     "scale": 1,
     "headroom": 0.33,
-    "framing": "full"
+    "framing": "full",
+    "voiceId": ""
   },
   {
     "id": "marge",
@@ -24,7 +26,8 @@
     "color": "#DEC490",
     "scale": 1,
     "headroom": 0.43,
-    "framing": "full"
+    "framing": "full",
+    "voiceId": ""
   },
   {
     "id": "tia",
@@ -33,7 +36,8 @@
     "color": "#D9A5AE",
     "scale": 1.1,
     "headroom": 0.31,
-    "framing": "waist"
+    "framing": "waist",
+    "voiceId": ""
   },
   {
     "id": "saurav",
@@ -42,6 +46,7 @@
     "color": "#A9BED6",
     "scale": 1,
     "headroom": 0,
-    "framing": "full"
+    "framing": "full",
+    "voiceId": ""
   }
 ]
