@@ -4,6 +4,7 @@ import type { MouseEvent as ReactMouseEvent } from "react";
 import { Heart, Pause } from "lucide-react";
 import { TEMPLATES } from "../templates/registry";
 import { beatDurationMs } from "../content";
+import { autoReelsFresh } from "../feed/autoReels";
 import { PausedProvider } from "./PausedContext";
 import type { Reel } from "../content/types";
 
@@ -204,6 +205,16 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
           active={active}
         />
       </PausedProvider>
+
+      {/* Auto-generated reels carry a small "New" chip while now.json is fresh */}
+      {reel.auto && autoReelsFresh && (
+        <span
+          className="absolute right-3 top-3 z-30 rounded-full bg-sage px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-sage-deep shadow-soft"
+          data-testid="reel-new-chip"
+        >
+          New
+        </span>
+      )}
 
       {/* Heart burst where the visitor double-tapped */}
       {burst && (

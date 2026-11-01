@@ -1,0 +1,170 @@
+{
+  "reading": {
+    "scripts": [
+      {
+        "template": "storytime",
+        "hostId": "tia",
+        "beats": [
+          { "characterId": "tia", "pose": "talking", "caption": "Okay so Saurav is {progress}% into {title} by {author}." },
+          { "characterId": "tia", "pose": "shocked", "caption": "His official verdict: “{take}”" },
+          { "characterId": "tia", "pose": "laughing", "caption": "He said it exactly like that. I'm just the messenger." }
+        ]
+      },
+      {
+        "template": "documentary",
+        "hostId": "reginald",
+        "data": { "title": "Field notes: {title}" },
+        "beats": [
+          { "characterId": "reginald", "pose": "neutral", "caption": "The engineer, observed mid-chapter." },
+          { "characterId": "reginald", "pose": "sceptical", "caption": "Page {progress} percent. The author has earned another hour." },
+          { "characterId": "reginald", "pose": "talking", "caption": "His verdict, for the record: “{take}”" }
+        ]
+      }
+    ],
+    "comments": [
+      { "authorId": "marge", "text": "Three stars for the reading pace. Generous." },
+      { "authorId": "blaze", "text": "FINISH THE BOOK, Saurav." },
+      { "authorId": "tia", "text": "he annotates the margins too, it's adorable" },
+      { "authorId": "reginald", "text": "A gentleman always finishes what he highlights." }
+    ]
+  },
+  "watch": {
+    "scripts": [
+      {
+        "template": "storytime",
+        "hostId": "tia",
+        "beats": [
+          { "characterId": "tia", "pose": "shocked", "caption": "You guys. Saurav will not stop talking about {title}." },
+          { "characterId": "tia", "pose": "talking", "caption": "It's a {kind} from {year}. His exact words: “{why}”" },
+          { "characterId": "tia", "pose": "laughing", "caption": "Watch it so we can talk about it. Please. I'm begging." }
+        ]
+      },
+      {
+        "template": "breaking_news",
+        "hostId": "blaze",
+        "data": {
+          "headline": "{title}",
+          "ticker": "{kind} · {year} · Saurav-approved · watch responsibly · film at eleven"
+        },
+        "beats": [
+          { "characterId": "blaze", "pose": "pointing", "caption": "Breaking: Saurav says you need to watch {title}." },
+          { "characterId": "blaze", "pose": "talking", "caption": "It's a {kind} from {year}. His review: “{why}”" }
+        ]
+      },
+      {
+        "template": "storytime",
+        "hostId": "tia",
+        "beats": [
+          { "characterId": "tia", "pose": "thinking", "caption": "Hear me out: {title}." },
+          { "characterId": "tia", "pose": "talking", "caption": "A {kind}, from {year}. Saurav's case: “{why}”" },
+          { "characterId": "tia", "pose": "sceptical", "caption": "That's all I'm saying. Make of it what you will." }
+        ]
+      }
+    ],
+    "comments": [
+      { "authorId": "marge", "text": "He calls every recommendation life-changing. Every. Single. One." },
+      { "authorId": "blaze", "text": "BREAKING: he has taste. Confirmed." },
+      { "authorId": "reginald", "text": "Noted. The committee will consider it." },
+      { "authorId": "tia", "text": "no notes, perfect pick" }
+    ]
+  },
+  "spanish": {
+    "scripts": [
+      {
+        "template": "stat_reveal",
+        "hostId": "blaze",
+        "data": { "value": "{streak}", "unit": "+ days", "label": "Duolingo streak, unbroken" },
+        "beats": [
+          { "characterId": "blaze", "pose": "shocked", "caption": "The number goes up: {streak} days of Spanish. He has NOT missed." },
+          { "characterId": "blaze", "pose": "pointing", "caption": "Respect the streak. Do not talk to him before the lesson." }
+        ]
+      },
+      {
+        "template": "stat_reveal",
+        "hostId": "blaze",
+        "data": { "value": "{streak}", "unit": "+ days", "label": "Duolingo streak, unbroken" },
+        "beats": [
+          { "characterId": "blaze", "pose": "talking", "caption": "Day {streak} of Spanish. The owl sends its regards." },
+          { "characterId": "blaze", "pose": "pointing", "caption": "Zero missed days. Say it louder for the people in the back." }
+        ]
+      }
+    ],
+    "milestoneScript": {
+      "template": "stat_reveal",
+      "hostId": "blaze",
+      "data": { "value": "{streak}", "unit": "+ days", "label": "Duolingo milestone unlocked" },
+      "beats": [
+        { "characterId": "blaze", "pose": "celebrating", "caption": "{streak} DAYS. That is a multiple of one hundred, people." },
+        { "characterId": "blaze", "pose": "celebrating", "caption": "Cake. Confetti. A national holiday. The streak demands it." }
+      ]
+    },
+    "comments": [
+      { "authorId": "tia", "text": "he does it at 11pm every night, sweating, it's hilarious" },
+      { "authorId": "marge", "text": "Consistency is the least interesting virtue. Fine. It's impressive." },
+      { "authorId": "blaze", "text": "STREAK NATION, RISE UP" },
+      { "authorId": "reginald", "text": "One admires the discipline from a safe distance." }
+    ]
+  },
+  "volunteering": {
+    "scripts": [
+      {
+        "template": "documentary",
+        "hostId": "reginald",
+        "data": { "title": "Off the clock: quiet work" },
+        "beats": [
+          { "characterId": "reginald", "pose": "neutral", "caption": "Away from the terminal, the subject lends a hand." },
+          { "characterId": "reginald", "pose": "talking", "caption": "{text}" },
+          { "characterId": "reginald", "pose": "pointing", "caption": "Current status: {status}. Enquiries welcome." }
+        ]
+      },
+      {
+        "template": "documentary",
+        "hostId": "reginald",
+        "data": { "title": "The volunteer hours" },
+        "beats": [
+          { "characterId": "reginald", "pose": "talking", "caption": "Every documentary needs a field season. His: {text}" },
+          { "characterId": "reginald", "pose": "sceptical", "caption": "Status: {status}. The camera crew remains available." }
+        ]
+      }
+    ],
+    "comments": [
+      { "authorId": "tia", "text": "genuinely the best part of this whole feed" },
+      { "authorId": "blaze", "text": "MVP behaviour. That's the post." },
+      { "authorId": "marge", "text": "Fine. It's admirable. Don't tell him." }
+    ]
+  },
+  "writing": {
+    "scripts": [
+      {
+        "template": "breaking_news",
+        "hostId": "blaze",
+        "data": {
+          "headline": "New post: {title}",
+          "ticker": "Fresh writing · {platform} · hot off the keyboard · go read it"
+        },
+        "beats": [
+          { "characterId": "blaze", "pose": "talking", "caption": "New post just dropped: {title}." },
+          { "characterId": "blaze", "pose": "pointing", "caption": "Fresh from Saurav's keyboard, live on {platform}." }
+        ]
+      },
+      {
+        "template": "breaking_news",
+        "hostId": "blaze",
+        "data": {
+          "headline": "{title}",
+          "ticker": "New writing alert · {platform} · Saurav wrote a thing"
+        },
+        "beats": [
+          { "characterId": "blaze", "pose": "pointing", "caption": "Saurav wrote a thing: {title}." },
+          { "characterId": "blaze", "pose": "talking", "caption": "It's on {platform} now. The comments section awaits." }
+        ]
+      }
+    ],
+    "comments": [
+      { "authorId": "marge", "text": "Readable. Rare, in this genre." },
+      { "authorId": "tia", "text": "he spent three days on the intro, be nice" },
+      { "authorId": "blaze", "text": "CLICK IT. That's the news." },
+      { "authorId": "reginald", "text": "Well argued. The committee concurs." }
+    ]
+  }
+}

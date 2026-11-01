@@ -55,3 +55,27 @@ field fails loudly in the console instead of rendering broken.
 - **Left-column sections and items** come straight from the arrays in
   `profile.json`: add an object to add an item, remove it to remove the item.
   Empty arrays hide their whole section.
+
+### Auto-reels
+
+Besides the hand-made reels in `reels.json`, the feed also contains reels generated
+at runtime from `now.json` — the Now-reading update, each Watch-this pick, the
+Duolingo streak, volunteering and every writing link. All of the wording lives in
+`src/content/autoScripts.json`:
+
+- each kind of update has two or three script variants; a variant picks the
+  template and the host character and lists its beats (character, pose, caption);
+- captions can use placeholders — `{title}`, `{author}`, `{progress}`, `{take}`,
+  `{why}`, `{year}`, `{kind}`, `{streak}`, `{text}`, `{status}` and `{platform}` —
+  which are filled from `now.json` when the reel is built;
+- the `comments` pools are the cast comments shown on generated reels;
+- the Spanish streak has a `milestoneScript` with extra hype, used whenever the
+  streak is a multiple of 100.
+
+Updating `now.json` creates new reels automatically — no extra code. Items whose
+fields are empty or contain the word "REPLACE" are skipped, so placeholder drafts
+never reach the feed. Generated reels pass the exact same validation as
+`reels.json`, get stable share links (`/r/auto-watch-…`, built from the content) and
+stable joke like counts, are sprinkled through the feed (never two in a row), and
+show a small "New" chip while `now.json`'s `updatedAt` is within the last 7 days.
+

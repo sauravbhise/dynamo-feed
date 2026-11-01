@@ -40,6 +40,7 @@ export const reelSchema = z.object({
   likes: z.number().int().nonnegative(),
   beats: z.array(beatSchema).min(1),
   comments: z.array(z.object({ authorId: z.string(), text: z.string().min(1) })),
+  auto: z.boolean().optional(),
 });
 
 export const castMemberSchema = z.object({

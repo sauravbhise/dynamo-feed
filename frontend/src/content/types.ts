@@ -41,6 +41,8 @@ export interface Reel {
   likes: number;
   beats: Beat[];
   comments: ReelComment[];
+  /** True for reels generated at runtime from now.json. */
+  auto?: boolean;
 }
 
 export interface CastMember {
