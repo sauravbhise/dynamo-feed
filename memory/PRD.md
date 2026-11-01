@@ -22,14 +22,14 @@ Warm dark rounded theme: bg #211C1F, surfaces #2B2428, raised #352C30, cream #F2
 
 ## Unified template layout (one layout for every template)
 - Top zone (0–35%): template card/graphic — review card, myth card, news banner, stat number, doc title, chat bubbles (storytime exception: 8%→50%).
+- OVERLAP RULE (all templates): top-zone cards end above the character's head with a gap — headTopPercent(characterId, heightPercent) helper (CharacterSlot.tsx) computes the head line from size+framing; review + myth cards sit in maxHeight/overflow-hidden wrappers (headTop−5%). Content shows only the latest lines (older faded 0.55) instead of growing over the character (fixed Marge's review card).
 - Middle: character on the ground line just above the caption zone (full) or flush bottom (waist).
-- Caption zone (bottom 22%): speaker name (data-testid=speaker-name) + beat caption (ReelCaption.tsx) + profile chip in the same row (ProfileReelChip.tsx, only when slug matches profile.json) + progress bar at the very bottom.
-- Every template renders ReelBackground (breaking news now does too).
-- Storytime: bubbles = previous beats only (last 3, fading 0.95/0.65/0.4), typing indicator before the current line, current line ONLY in the caption zone (no duplicate text). "Part X of Y" chip + next-part card kept.
-- Breaking news: spoken line is the caption (no right-side bubble); caption zone column holds ReelCaption + lower-third headline; ticker at the very bottom.
-- StatReveal: counter runs on its OWN 1.4s rAF clock when active on the value beat (was beat-progress-coupled and stuck at 0 when paused/neighbour-mounted); shows final value whenever not counting (data-testid=stat-count).
-- Sprites FREEZE when paused: TemplateProps gained active+paused; ReelPlayer passes paused={paused && active}; CharacterSlot stops bob + Reginald flip while paused.
-- NudgeTemplate (template "nudge", slug talk-to-the-human): message + Email/LinkedIn/Resume buttons, speaker name line, CharacterSlot paused-aware.
+- Caption zone (bottom 22%): speaker name (data-testid=speaker-name, NAME ONLY — no role) + profile chip in the same row (ProfileReelChip) + progress bar at the very bottom. Storytime shows ONLY the name row — its bubbles are the caption (last TWO including the current line, older faded 0.6, typing indicator for the first 700ms of each beat).
+- Every template renders ReelBackground (breaking news does too). Breaking news: spoken line is the caption; caption column = ReelCaption + lower-third; ticker at the bottom.
+- StatReveal: pause-aware count-up — accumulator freezes mid-count on pause and RESUMES from the same point; final value shown when inactive/not counting (never stuck at 0).
+- PAUSE FREEZES EVERYTHING: PausedContext (PausedProvider/usePaused) from ReelPlayer (paused && active). Freezes: sprite idle bob, squash-on-pose, mount slide (renders final state while paused), Reginald 180ms flip, news ticker + typing dots (CSS animation-play-state:paused), stat count-up (resume-from-point), entrance animations (initial={false} while paused). Unpause resumes all.
+- READING TIME: beatDurationMs(beat, template) in content/index.ts = clamp(1200 + 55×caption.length, 2500, 7000), storytime +700ms typing lead-in, beat.durationMs only wins when longer, audio metadata overrides when present. The continuous progress bar follows the computed total.
+- NudgeTemplate (template "nudge", slug talk-to-the-human): message + Email/LinkedIn/Resume buttons.
 
 ## Left column
 Header (photo /avatar.svg fallback, name, one-liner, location chip) → SocialLinks (logo circles + sage resume circle) → StatsStrip → 5 collapsible sections (all collapsed, one open, counts; empty hidden): Experience, Projects, Writing and research, Community, Education and certifications → FooterCta "Talk to the human instead". ItemCard: title/subtitle/dates/one line/links + "Watch the reel" chip (reelSlug → dynamo:goto-reel → FeedFrame appends generations until found, scrolls, autoplays). Reel chip → dynamo:focus-profile-item → opens section, scrolls, sage ring flash; Layout opens the portfolio sheet <1200px.
@@ -42,6 +42,7 @@ Likes: double-tap (heart burst at tap point) or heart; +1 shown; localStorage dy
 
 ## Testing
 - 2026-11-02 (round 1, /app/test_reports/iteration_1.json): ALL 7 user-reported bugs verified FIXED via headless Playwright (sprite pause freeze, chip in caption row + click-to-highlight, Marge visible 40% no overlap, bubbles 8–50% no clipping, name-only speaker, no duplicate text, counter reaches 600 incl. neighbour-mount case) + regressions (breaking news background, double-tap like persistence, swipe deck stripped, both columns, deep-link by /r/:slug — feed shuffles per load so test reels via slug URLs). tsc --noEmit + vite build clean.
+- 2026-11-02 (round 2, /app/test_reports/iteration_2.json): all 4 new requirement families PASS with measured evidence — pause freezes bob/flip/ticker/typing-dots (animation-play-state paused) and the stat count-up froze at 490 → resumed → reached 600; reading time matches 1200+55/char math (r03 beat 3.75s/4.07s/4.08s measured, loop total = computed sum, not json 12.5s); storytime caption zone = name + chip only, ≤2 bubbles, current line in newest bubble, 10% head gap; review card bottom 21.2% and myth card 20.6% vs Marge head 38%. No bugs or action items.
 
 ## Backlog
 - P0: real backgrounds (public/backgrounds/*.webp), real content for now.json (user's own "REPLACE:" strings pending).
