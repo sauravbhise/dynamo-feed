@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { AnimatePresence, motion, useInView, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
+import { AnimatePresence, animate, motion, useInView, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
 import type { PanInfo, Variants } from "framer-motion";
 import { ChevronLeft, ChevronRight, Hand } from "lucide-react";
 import type { WatchItem } from "../content/types";
@@ -16,8 +16,9 @@ interface DeckCustom {
 
 const cardVariants: Variants = {
   enter: ({ dir }: DeckCustom) => ({
-    // Next: the new card settles into place from the pile.
-    // Previous: the previous card slides in from the left.
+    // Next: the new card settles into place BENEATH the exiting card.
+    // Previous: the previous card slides in from the left, OVER the current one.
+    zIndex: dir === 1 ? 1 : 3,
     ...(dir === 1
       ? { scale: 0.96, y: 10, opacity: 0.85 }
       : { x: -480, opacity: 0.9 }),
@@ -34,8 +35,9 @@ const cardVariants: Variants = {
     transition: { type: "spring", stiffness: 320, damping: 28 },
   },
   exit: ({ dir, exitX }: DeckCustom) => ({
-    // Next: the top card flies off the way it was swiped.
-    // Previous: the top card slides out to the right.
+    // Next: the top card flies off the way it was swiped, ON TOP of the pile.
+    // Previous: the top card slides out to the right, beneath the incoming one.
+    zIndex: dir === 1 ? 3 : 1,
     x: dir === 1 ? exitX : 480,
     opacity: 0,
     transition: { duration: 0.3, ease: "easeOut" },
@@ -47,18 +49,30 @@ function DeckCard({
   custom,
   wiggle,
   reduceMotion,
-  onDragStart,
-  onDragEnd,
+  onSwipeStart,
+  onSwipe,
 }: {
   item: WatchItem;
   custom: DeckCustom;
   wiggle: boolean;
   reduceMotion: boolean;
-  onDragStart: () => void;
-  onDragEnd: (info: PanInfo) => void;
+  onSwipeStart: () => void;
+  onSwipe: (swipeDir: 1 | -1) => void;
 }) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-220, 220], [-14, 14]);
+
+  const handleDragEnd = (_event: unknown, info: PanInfo) => {
+    if (info.offset.x > COMMIT_DISTANCE || info.velocity.x > FLING_VELOCITY) {
+      onSwipe(1);
+    } else if (info.offset.x < -COMMIT_DISTANCE || info.velocity.x < -FLING_VELOCITY) {
+      onSwipe(-1);
+    } else {
+      // No drag constraints — spring the card back to centre ourselves,
+      // so a committed swipe never gets pulled back mid-exit.
+      animate(x, 0, { type: "spring", stiffness: 320, damping: 28 });
+    }
+  };
 
   return (
     <motion.div
@@ -72,10 +86,9 @@ function DeckCard({
       animate="center"
       exit="exit"
       drag="x"
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.9}
-      onDragStart={onDragStart}
-      onDragEnd={(_event, info) => onDragEnd(info)}
+      dragSnapToOrigin={false}
+      onDragStart={onSwipeStart}
+      onDragEnd={handleDragEnd}
       data-testid="deck-card"
     >
       <div className="flex h-full flex-col justify-center px-1">
@@ -117,30 +130,24 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
     setHintDismissed(true);
   };
 
-  // Next: a swipe in either direction (the card flies the way you swiped),
-  // the right arrow, the next chevron or the right key.
-  const goNext = (exitX: number) => {
+  // A swipe in EITHER direction moves to the next card — the card flies off in
+  // the direction it was swiped, on top of the pile. The right arrow and next
+  // chevron swipe right.
+  const handleSwipe = (swipeDir: 1 | -1) => {
     if (busyRef.current) return;
     busyRef.current = true;
     interacted();
-    exitXRef.current = exitX;
+    exitXRef.current = swipeDir === 1 ? 480 : -480;
     setDeck(([i]) => [(i + 1) % count, 1]);
   };
 
-  // Previous: the left arrow, left chevron or left key.
+  // Previous: the left arrow, left chevron or left key — the top card slides
+  // out to the right while the previous card slides in from the left.
   const goPrev = () => {
     if (busyRef.current) return;
     busyRef.current = true;
     interacted();
     setDeck(([i]) => [(i - 1 + count) % count, -1]);
-  };
-
-  const handleDragEnd = (info: PanInfo) => {
-    if (info.offset.x > COMMIT_DISTANCE || info.velocity.x > FLING_VELOCITY) {
-      goNext(480);
-    } else if (info.offset.x < -COMMIT_DISTANCE || info.velocity.x < -FLING_VELOCITY) {
-      goNext(-480);
-    }
   };
 
   const top = items[index % count];
@@ -159,18 +166,18 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
             goPrev();
           } else if (event.key === "ArrowRight") {
             event.preventDefault();
-            goNext(480);
+            handleSwipe(1);
           }
         }}
       >
         {/* Two cards peek out below the top one, slightly rotated — reads as a
             pile. Same size as the top card, scaled down and moved down, so the
-            edges stay inside the deck area. */}
+            edges stay inside the deck area. Always beneath the moving cards. */}
         {count > 1 && (
-          <div className="absolute inset-x-0 top-2 h-[calc(100%-20px)] -rotate-2 scale-[0.95] rounded-2xl bg-raised/60 shadow-soft" aria-hidden="true" />
+          <div className="absolute inset-x-0 top-2 z-0 h-[calc(100%-20px)] -rotate-2 scale-[0.95] rounded-2xl bg-raised/60 shadow-soft" aria-hidden="true" />
         )}
         {count > 2 && (
-          <div className="absolute inset-x-0 top-4 h-[calc(100%-20px)] rotate-2 scale-[0.9] rounded-2xl bg-raised/40" aria-hidden="true" />
+          <div className="absolute inset-x-0 top-4 z-0 h-[calc(100%-20px)] rotate-2 scale-[0.9] rounded-2xl bg-raised/40" aria-hidden="true" />
         )}
 
         {/* Faint chevrons on hover — previous / next card */}
@@ -187,7 +194,7 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
           type="button"
           data-testid="deck-next"
           aria-label="Next"
-          onClick={() => goNext(480)}
+          onClick={() => handleSwipe(1)}
           className="absolute right-1 top-1/2 z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-ink/40 text-cream/70 opacity-0 backdrop-blur transition hover:text-cream group-hover:opacity-100 focus-visible:opacity-100"
         >
           <ChevronRight className="size-4" />
@@ -195,6 +202,7 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
 
         <AnimatePresence
           initial={false}
+          mode="sync"
           custom={custom}
           onExitComplete={() => {
             busyRef.current = false;
@@ -206,8 +214,8 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
             custom={custom}
             wiggle={inView && !hintDone}
             reduceMotion={reduceMotion}
-            onDragStart={() => setHintDone(true)}
-            onDragEnd={handleDragEnd}
+            onSwipeStart={() => setHintDone(true)}
+            onSwipe={handleSwipe}
           />
         </AnimatePresence>
       </div>
