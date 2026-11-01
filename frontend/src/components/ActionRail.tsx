@@ -18,7 +18,7 @@ function RailButton({
   children: ReactNode;
 }) {
   return (
-    <button data-testid={testId} onClick={onClick} aria-label={label} title={label} className="flex flex-col items-center gap-1.5">
+    <button data-testid={testId} onClick={onClick} aria-label={label} aria-pressed={active} title={label} className="flex flex-col items-center gap-1.5">
       <span
         className={`grid size-12 place-items-center rounded-full backdrop-blur transition-all duration-200 hover:scale-105 active:scale-95 ${
           active ? "bg-sage text-sage-deep" : "bg-white/10 text-cream"

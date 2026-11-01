@@ -1,61 +1,53 @@
 # Dynamo Feed — PRD
 
 ## Original Problem Statement
-Personal portfolio "Dynamo Feed" styled as a short-video app: centre = feed of cartoon "reels"; left = condensed portfolio; right = "Off the clock" (was The Clock). Frontend only, static, Vercel-hostable. React + Vite + TypeScript + Tailwind + Framer Motion. Content from zod-validated JSON files in src/content.
+Personal portfolio "Dynamo Feed" styled as a short-video app: centre = feed of cartoon "reels"; left = condensed portfolio; right = "Off the clock". Frontend only, static, Vercel-hostable. React + Vite + TypeScript + Tailwind + Framer Motion. Content from zod-validated JSON files in src/content.
 
-## Design Revision (2026-10-31, v2 — current)
-Warm dark rounded theme:
-- bg warm charcoal #211C1F, surfaces #2B2428, text warm cream #F2EAE2, muted #B9ADA6
-- accent sage #93B29C with dark green #1A3122 text on sage buttons; rose accent #D96A6A
-- cast colours (dusty pastels): lavender #C7B3D9, peach #E0A58C, butter #DEC490, rose #D9A5AE, me = dusty blue #A9BED6
-- 16–24px rounded corners, pill buttons, subtle shadows only; Nunito headings/captions, Inter body; sentence case everywhere
+## Design (v2 — current)
+Warm dark rounded theme: bg #211C1F, surfaces #2B2428, raised #352C30, cream #F2EAE2, muted #B9ADA6; sage #93B29C (deep #1A3122), rose #D96A6A; cast pastels: reginald #C7B3D9, blaze #E0A58C, marge #DEC490, tia #D9A5AE, saurav #A9BED6. Nunito display / Inter body. desk breakpoint 1200px.
 
 ## Architecture
-- Vite 6 + React 19 + TS in /app/frontend (`yarn start` → Vite :3000, supervisor-managed). No backend/db. `vite build` → static deploy.
-- Content layer: src/content/{profile,cast,reels,now}.json + types.ts + schemas.ts (zod) + index.ts (safeParse at load, throws on invalid; profileItemBySlug; timeAgo).
+- Vite 6 + React 19 + TS in /app/frontend. No backend. Content: src/content/{profile,now,reels,cast}.json + schemas.ts (zod, fail-loud) + index.ts (profileItemBySlug, timeAgo).
+- Columns are thin renderers; every card is its own component:
+  - src/components/cards/: CardTitle (shared), NowReadingCard, WatchThisCard (wraps ../SwipeDeck), LatestWritingCard, VolunteeringCard, LearningSpanishCard — RightColumn renders the list in order, reads now.json.
+  - src/components/profile/: ProfileHeader, SocialLinks, StatsStrip, CollapsibleSection, ItemCard, FooterCta — LeftColumn renders the list in order, reads profile.json, owns open/highlight state + event listeners.
+- Components take data as props; only column files read JSON. README "How to edit" documents add/remove/reorder.
 
-## Left column (condensed portfolio — rebuilt from profile.json 2026-11-02)
-- Header: large round photo (falls back to /avatar.svg if /me.jpg missing), name, one-liner, location chip.
-- Circular social links (logos only): linkedin/github/email from profile.socials; last circle = resume (opens resumeUrl new tab).
-- Stats strip: grid of small value/label cards (4 in profile.json).
-- Collapsible sections, ALL collapsed by default, ONE open at a time, smooth height+chevron animation, header shows name + count: Experience, Projects, Writing and research, Community, Education and certifications (edu + certs merged). Empty sections hidden. Items: title, subtitle (org/tags), dates, one line; project links rendered as small links.
-- Items with reelSlug show "Watch the reel" chip → dispatches `dynamo:goto-reel` CustomEvent → FeedFrame appends generations until the slug exists, then smooth-scrolls and autoplays.
-- Reverse: reels whose slug appears in profile.json show a chip (ReelPlayer, bottom-22% left, in caption area) → dispatches `dynamo:focus-profile-item` → LeftColumn opens that section, scrolls to item, flashes sage ring 2.6s; Layout opens the portfolio sheet when viewport <1200px (left column hidden).
-- Footer card: "Talk to the human instead" + Email (mailto) + Resume buttons.
+## Cast & CharacterSlot (fixed 2026-11-02)
+- cast.json has headroom per character (fraction of frame height above the drawing): reginald 0.29, blaze 0.33, marge 0.43, tia 0.31, saurav 0. Marge scale 1.2→1 (was covering content).
+- Box height = heightPercent × scale ÷ (1 − headroom) → VISIBLE character = heightPercent × scale (templates pass 40).
+- Waist characters (Tia): NO 200% box — same box as full, anchored flush to the reel's bottom edge (her sheet art is pre-cut at the waist).
+- align prop ("left"|"center"|"right", default center) replaces fixed left:16.
+- Name chip REMOVED from CharacterSlot; speaker name shows in the caption area (NAME ONLY — no role/personality, per user).
 
-## Right column — "Off the clock" (now.json, rebuilt 2026-11-02)
-- Title "Off the clock" (desktop column + mobile top-bar button + bottom sheet); "Updated X ago" with pulsing sage dot from now.updatedAt.
-- Cards: Now reading (cover fallback block when cover empty; progress 0–100), Watch this = swipe deck, Latest writing (hidden when empty), Volunteering (status chip + text), Learning Spanish (Duolingo streak).
-- Watch this = dating-app swipe deck (SwipeDeck.tsx): stack with two peeking cards; drag x with tilt (rotate from drag distance); sage "Save" label fades in dragging right, rose "Skip" dragging left; commit at ±110px or fling velocity 550, else springs back; round skip/save buttons; ArrowLeft/ArrowRight when deck focused; loops endlessly (modular index); "Saved N" counter above.
+## Unified template layout (one layout for every template)
+- Top zone (0–35%): template card/graphic — review card, myth card, news banner, stat number, doc title, chat bubbles (storytime exception: 8%→50%).
+- Middle: character on the ground line just above the caption zone (full) or flush bottom (waist).
+- Caption zone (bottom 22%): speaker name (data-testid=speaker-name) + beat caption (ReelCaption.tsx) + profile chip in the same row (ProfileReelChip.tsx, only when slug matches profile.json) + progress bar at the very bottom.
+- Every template renders ReelBackground (breaking news now does too).
+- Storytime: bubbles = previous beats only (last 3, fading 0.95/0.65/0.4), typing indicator before the current line, current line ONLY in the caption zone (no duplicate text). "Part X of Y" chip + next-part card kept.
+- Breaking news: spoken line is the caption (no right-side bubble); caption zone column holds ReelCaption + lower-third headline; ticker at the very bottom.
+- StatReveal: counter runs on its OWN 1.4s rAF clock when active on the value beat (was beat-progress-coupled and stuck at 0 when paused/neighbour-mounted); shows final value whenever not counting (data-testid=stat-count).
+- Sprites FREEZE when paused: TemplateProps gained active+paused; ReelPlayer passes paused={paused && active}; CharacterSlot stops bob + Reginald flip while paused.
+- NudgeTemplate (template "nudge", slug talk-to-the-human): message + Email/LinkedIn/Resume buttons, speaker name line, CharacterSlot paused-aware.
+
+## Left column
+Header (photo /avatar.svg fallback, name, one-liner, location chip) → SocialLinks (logo circles + sage resume circle) → StatsStrip → 5 collapsible sections (all collapsed, one open, counts; empty hidden): Experience, Projects, Writing and research, Community, Education and certifications → FooterCta "Talk to the human instead". ItemCard: title/subtitle/dates/one line/links + "Watch the reel" chip (reelSlug → dynamo:goto-reel → FeedFrame appends generations until found, scrolls, autoplays). Reel chip → dynamo:focus-profile-item → opens section, scrolls, sage ring flash; Layout opens the portfolio sheet <1200px.
+
+## Right column — "Off the clock"
+Title + "Updated X ago" (pulsing dot, now.updatedAt) → NowReadingCard (cover fallback block, progress 0–100) → WatchThisCard/SwipeDeck (swipe-only: tilt, fly-off at ±110px or fling 550, spring-back, endless loop, arrow keys; NO buttons/counter/labels per user) → LatestWritingCard (hidden when empty) → VolunteeringCard → LearningSpanishCard.
 
 ## Feed engagement
-- Likes: count shown from reels.json; double-tap reel or tap heart → heart fills, count +1, burst of 8 small hearts at tap point (double-tap only); remembered in localStorage `dynamo:liked:<id>` (all localStorage wrapped in try/catch). Double-tap = like, single tap = pause (240ms tap timer).
-- Share: copies {origin}/r/:slug + sonner toast "Link copied"; native share sheet on coarse-pointer devices with navigator.share.
-- The nudge: after 10 reels watched (scroll advances) or 3 minutes in feed, whichever first — NUDGE_REEL (template "nudge", slug talk-to-the-human, host saurav) spliced in at activeIndex+2, once per visit; message + Email/LinkedIn/Resume buttons; feed continues normally.
-- Meta: OG + Twitter tags in index.html (og:image /og.png — user adds the file).
+Likes: double-tap (heart burst at tap point) or heart; +1 shown; localStorage dynamo:liked:<id> try/catch; aria-pressed on the rail button. Share: copies {origin}/r/:slug + "Link copied" sonner toast; native share sheet on coarse-pointer. Nudge: after 10 reel advances or 3 min (whichever first), NUDGE_REEL spliced at activeIndex+2 once per visit. OG/Twitter meta in index.html (og.png pending from user).
 
-## Mobile
-- Feed fills screen; top bar avatar opens portfolio (left full-height sheet), "Off the clock" button opens bottom sheet; sheets close via close button, overlay tap, or drag on header/handle (dragControls, dismiss at 90px/600 velocity; bottom sheet swipes down, left sheet swipes left).
-
-## Personas
-- Recruiter/visitor: scans portfolio, downloads resume, watches reels.
-- Follower: comments on reels, follows Off-the-clock updates.
-
-## Implemented
-- 2026-10-31: v2 warm rounded redesign, now.json + schema, comments overlay, Shorts-style rail + nav arrows, responsive modes.
-- 2026-10-31: Feed engine — snap scroll, windowed mounting (±1), endless generations (series grouping + five-position no-repeat seam), /r/:slug replaceState sync + deep link, keyboard nav, swipe hints.
-- 2026-10-31: Reel player — single rAF elapsed-time clock, audio-duration override (no playback), continuous bottom progress bar, tap pause, loop hint.
-- 2026-10-31: Real cast + 6 templates + CharacterSlot sprite engine (480/680 waist math, 12.5% frame shift) + ReelBackground with host-colour fallback; Marge scale 1.2; caption zone CAPTION_ZONE=22%.
-- 2026-11-02: Left column rebuilt from new profile.json (header/socials/stats/collapsibles/footer, reel↔item chips both directions); Right column → "Off the clock" from new now.json incl. SwipeDeck; likes + double-tap burst + localStorage; share + toast; nudge reel + "nudge" template; OG/Twitter meta; sheet drag-to-close. Verified: tsc --noEmit clean + vite build clean (user tests manually — no screenshots/testing agent per instruction).
-
-## User's reels.json (authoritative, used verbatim)
-7 reels with likes: r01 breaking_news, r02 documentary, r03 stat_reveal, r04 review, r05 myth_vs_fact, r06/r07 storytime series. audioSrc optional/unused.
+## Testing
+- 2026-11-02 (round 1, /app/test_reports/iteration_1.json): ALL 7 user-reported bugs verified FIXED via headless Playwright (sprite pause freeze, chip in caption row + click-to-highlight, Marge visible 40% no overlap, bubbles 8–50% no clipping, name-only speaker, no duplicate text, counter reaches 600 incl. neighbour-mount case) + regressions (breaking news background, double-tap like persistence, swipe deck stripped, both columns, deep-link by /r/:slug — feed shuffles per load so test reels via slug URLs). tsc --noEmit + vite build clean.
 
 ## Backlog
-- P0: real backgrounds (drop webp files into public/backgrounds/), like counts server-side (currently local only).
-- P1: beat audio playback, /r/:slug share preview polish, more templates.
-- P2: Saurav sprite when art lands, real me.jpg/og.png/resume/reading-cover assets, saved-deck persistence.
+- P0: real backgrounds (public/backgrounds/*.webp), real content for now.json (user's own "REPLACE:" strings pending).
+- P1: beat audio playback, me.jpg + og.png assets, resume real link.
+- P2: Saurav sprite when art lands, saved-deck persistence, ProfileReelChip → context instead of window events (nit).
 
 ## Notes
-- Placeholders in public/: avatar.svg, covers/, resume.txt. me.jpg + og.png pending from user.
+- No GitHub remote configured on this repo (local git only) — "pull latest" was a no-op; local repo holds latest commits.
 - No credentials/auth; static frontend only.
