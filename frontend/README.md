@@ -95,6 +95,11 @@ script); ElevenLabs is the default, add another adapter and set
 be checked before any real voice exists. Auto-reels are included automatically —
 the script reads the same generated reels as the app.
 
+Sound is currently **disabled**: set `SOUND_ENABLED` to `true` in
+`src/config.ts` to turn sound back on. While it is `false` no manifest is
+fetched and no sound UI renders; the `?audiotest=1` URL switch still works for
+testing.
+
 ### Auto-reels
 
 Besides the hand-made reels in `reels.json`, the feed also contains reels generated
