@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { FileText, Github, Globe, Linkedin, Mail } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { SocialLink } from "../../content/types";
@@ -14,15 +13,9 @@ function socialIcon(platform: string): LucideIcon {
 }
 
 export function SocialLinks({ socials, resumeUrl }: { socials: SocialLink[]; resumeUrl: string }) {
+  // Fully visible from the start — the column fade owns the entrance.
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="flex justify-center gap-3"
-      data-testid="social-links"
-    >
+    <div className="flex justify-center gap-3" data-testid="social-links">
       {socials.map((social) => {
         const Icon = socialIcon(social.platform);
         return (
@@ -51,6 +44,6 @@ export function SocialLinks({ socials, resumeUrl }: { socials: SocialLink[]; res
       >
         <FileText className="size-[18px]" />
       </a>
-    </motion.div>
+    </div>
   );
 }

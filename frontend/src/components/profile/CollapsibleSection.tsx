@@ -21,12 +21,10 @@ export function CollapsibleSection({
   highlightedId: string | null;
   onWatchReel: (slug: string) => void;
 }) {
+  // Fully visible from the start — no scroll-triggered entrance (the left
+  // column has its own scroll container, where in-view detection misfires).
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+    <section
       className="overflow-hidden rounded-2xl bg-surface shadow-soft"
       data-testid={`profile-section-${sectionKey}`}
     >
@@ -81,6 +79,6 @@ export function CollapsibleSection({
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.section>
+    </section>
   );
 }

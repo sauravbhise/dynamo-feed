@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { profile } from "../content";
 import { ProfileHeader } from "./profile/ProfileHeader";
 import { SocialLinks } from "./profile/SocialLinks";
@@ -105,7 +106,16 @@ export function LeftColumn() {
   const sections = allSections.filter((section) => section.items.length > 0);
 
   return (
-    <div className="flex flex-col gap-6 p-6" data-testid="left-column-content">
+    // One short fade of the whole column on page load — no per-section,
+    // scroll-triggered entrances (in-view detection misfires inside the
+    // column's own scroll container and left sections invisible).
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="flex flex-col gap-6 p-6"
+      data-testid="left-column-content"
+    >
       <ProfileHeader
         name={profile.name}
         oneLiner={profile.oneLiner}
@@ -133,6 +143,6 @@ export function LeftColumn() {
           onWatchReel={goToReel}
         />
       ))}
-    </div>
+    </motion.div>
   );
 }
