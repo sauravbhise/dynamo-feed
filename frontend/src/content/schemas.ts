@@ -48,6 +48,7 @@ export const castMemberSchema = z.object({
   role: z.string().min(1),
   color: z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "must be a hex colour"),
   scale: z.number().positive(),
+  headroom: z.number().min(0).max(1),
   framing: z.enum(["full", "waist"]),
 });
 

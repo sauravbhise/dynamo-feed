@@ -15,28 +15,38 @@ const POSE_ORDER: Pose[] = [
   "thinking",
 ];
 
-/** Percent of the reel height reserved for captions — full characters stand on top of it. */
+/** Percent of the reel height reserved for captions — characters stand on top of it. */
 export const CAPTION_ZONE = 22;
 
 interface CharacterSlotProps {
   characterId: string;
   pose: Pose;
   isSpeaking: boolean;
-  /** Box height before scale, as a percentage of the reel height (45–55). */
+  /** Freezes the idle motion while the reel is paused. */
+  paused?: boolean;
+  /** Visible character height (before scale), as a percentage of the reel height. */
   heightPercent: number;
+  align?: "left" | "center" | "right";
 }
 
-export function CharacterSlot({ characterId, pose, isSpeaking, heightPercent }: CharacterSlotProps) {
+export function CharacterSlot({
+  characterId,
+  pose,
+  isSpeaking,
+  paused = false,
+  heightPercent,
+  align = "center",
+}: CharacterSlotProps) {
   const character = castById[characterId];
   const reduceMotion = useReducedMotion();
   const [flip, setFlip] = useState(false);
 
   // Reginald alternates neutral/talking every 180ms while he speaks.
   useEffect(() => {
-    if (characterId !== "reginald" || !isSpeaking || reduceMotion) return;
+    if (characterId !== "reginald" || !isSpeaking || paused || reduceMotion) return;
     const timer = setInterval(() => setFlip((value) => !value), 180);
     return () => clearInterval(timer);
-  }, [characterId, isSpeaking, reduceMotion]);
+  }, [characterId, isSpeaking, paused, reduceMotion]);
 
   useEffect(() => {
     if (!isSpeaking) setFlip(false);
@@ -44,21 +54,27 @@ export function CharacterSlot({ characterId, pose, isSpeaking, heightPercent }: 
 
   if (!character) return null;
 
-  const isWaist = character.framing === "waist";
-  const alloc = heightPercent * character.scale;
+  // heightPercent is the height of the VISIBLE character; each frame has empty
+  // headroom above the drawing, so the box grows to compensate for it.
+  const headroom = character.headroom;
+  const alloc = (heightPercent * character.scale) / (1 - headroom);
 
+  const alignStyle: CSSProperties =
+    align === "left"
+      ? { left: 16 }
+      : align === "right"
+        ? { right: 16 }
+        : { left: "50%", transform: "translateX(-50%)" };
+
+  // Full characters stand on the ground line just above the caption zone;
+  // waist characters (already cut at the waist in the sheet) sit flush on the
+  // reel's bottom edge. Same box for both — no hanging below the reel.
   const rootStyle: CSSProperties = {
     height: `${alloc}%`,
     aspectRatio: "480 / 680",
-    left: 16,
-    bottom: isWaist ? "0%" : `${CAPTION_ZONE}%`,
+    bottom: character.framing === "waist" ? "0%" : `${CAPTION_ZONE}%`,
+    ...alignStyle,
   };
-
-  // The sheet never changes height — the box does. A waist box is scaled up
-  // and hangs below the reel's bottom edge, so the reel clips it waist-up.
-  const boxStyle: CSSProperties = isWaist
-    ? { top: 0, left: "-50%", width: "200%", height: "200%" }
-    : { inset: 0 };
 
   const shownPose: Pose =
     characterId === "reginald" && isSpeaking && !reduceMotion
@@ -76,12 +92,9 @@ export function CharacterSlot({ characterId, pose, isSpeaking, heightPercent }: 
       className="absolute z-[5]"
       style={rootStyle}
     >
-      <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink/70 px-3 py-1 text-xs font-bold text-cream backdrop-blur" data-testid="character-chip">
-        {character.name} · {character.role}
-      </span>
       <motion.div
-        className="absolute"
-        style={{ ...boxStyle, transformOrigin: "bottom center" }}
+        className="absolute inset-0"
+        style={{ transformOrigin: "bottom center" }}
         initial={reduceMotion ? { opacity: 0 } : { y: "10%", opacity: 0 }}
         animate={reduceMotion ? { opacity: 1 } : { y: "0%", opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 24 }}
@@ -89,7 +102,11 @@ export function CharacterSlot({ characterId, pose, isSpeaking, heightPercent }: 
         <motion.div
           className="absolute inset-0"
           style={{ transformOrigin: "bottom center" }}
-          animate={reduceMotion ? undefined : { y: isSpeaking ? ["0%", "-1%", "0%"] : ["0%", "-2%", "0%"] }}
+          animate={
+            paused || reduceMotion
+              ? { y: "0%" }
+              : { y: isSpeaking ? ["0%", "-1%", "0%"] : ["0%", "-2%", "0%"] }
+          }
           transition={{ duration: isSpeaking ? 0.8 : 2.5, repeat: Infinity, ease: "easeInOut" }}
         >
           <motion.div

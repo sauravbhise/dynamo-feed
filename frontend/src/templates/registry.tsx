@@ -18,6 +18,10 @@ export interface TemplateProps {
   /** Beat data accumulated from every beat up to now. */
   data: Record<string, unknown>;
   reducedMotion: boolean;
+  /** True when the reel is the active one (neighbours render pre-mounted). */
+  active: boolean;
+  /** True when the active reel is paused — sprites and graphics freeze. */
+  paused: boolean;
 }
 
 export const str = (value: unknown): string | undefined =>

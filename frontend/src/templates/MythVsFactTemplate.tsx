@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { motion, useMotionValueEvent } from "framer-motion";
 import { CharacterSlot } from "../components/CharacterSlot";
+import { ReelCaption } from "../components/ReelCaption";
+import { ProfileReelChip } from "../components/ProfileReelChip";
 import { ReelBackground } from "./ReelBackground";
+import { castById } from "../content";
 import type { TemplateProps } from "./registry";
 
-export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, reducedMotion }: TemplateProps) {
+export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, reducedMotion, paused }: TemplateProps) {
   const myth = typeof data.myth === "string" ? data.myth : undefined;
   const fact = typeof data.fact === "string" ? data.fact : undefined;
   const flipOnThisBeat = myth !== undefined && fact !== undefined && typeof beat.data?.myth === "string";
@@ -45,13 +48,12 @@ export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, redu
         </motion.div>
       </div>
 
-      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={46} />
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking paused={paused} heightPercent={40} />
 
-      {/* Caption inside the caption zone */}
-      <div className="absolute inset-x-0 bottom-[6%] z-10 flex justify-center px-6 max-md:pr-20" data-testid="myth-caption">
-        <p className="max-w-[85%] rounded-xl bg-ink/55 px-4 py-2 text-center text-sm font-semibold leading-relaxed text-cream backdrop-blur">
+      <div className="absolute inset-x-4 bottom-5 z-10">
+        <ReelCaption name={castById[beat.characterId]?.name ?? ""} chip={<ProfileReelChip slug={reel.slug} />}>
           {beat.caption}
-        </p>
+        </ReelCaption>
       </div>
     </div>
   );

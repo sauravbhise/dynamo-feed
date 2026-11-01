@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionValue, useReducedMotion } from "framer-motion";
 import type { MouseEvent as ReactMouseEvent } from "react";
-import { Clapperboard, Heart, Pause } from "lucide-react";
+import { Heart, Pause } from "lucide-react";
 import { TEMPLATES } from "../templates/registry";
-import { profileItemBySlug } from "../content";
 import type { Reel } from "../content/types";
 
 const BURST_HEARTS = [
@@ -124,7 +123,6 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
   }, [reel, beatIndex]);
 
   // Engagement: double-tap likes with a heart burst; single tap pauses.
-  const profileItem = useMemo(() => profileItemBySlug(reel.slug), [reel.slug]);
   const [burst, setBurst] = useState<{ id: number; x: number; y: number } | null>(null);
   const tapTimer = useRef<number | null>(null);
 
@@ -171,25 +169,9 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
         progress={beatProgress}
         data={effectiveData}
         reducedMotion={!!reduceMotion}
+        active={active}
+        paused={paused && active}
       />
-
-      {/* Links this reel to the matching portfolio item in the left column */}
-      {profileItem && (
-        <button
-          type="button"
-          data-testid="reel-profile-chip"
-          onClick={(event) => {
-            event.stopPropagation();
-            window.dispatchEvent(
-              new CustomEvent("dynamo:focus-profile-item", { detail: profileItem })
-            );
-          }}
-          className="absolute bottom-[22%] left-3 z-30 flex items-center gap-1.5 rounded-full bg-ink/75 px-3 py-1.5 text-[11px] font-bold text-cream shadow-soft backdrop-blur transition hover:bg-ink hover:text-sage active:scale-95"
-        >
-          <Clapperboard className="size-3.5 text-sage" />
-          {profileItem.title}
-        </button>
-      )}
 
       {/* Heart burst where the visitor double-tapped */}
       {burst && (

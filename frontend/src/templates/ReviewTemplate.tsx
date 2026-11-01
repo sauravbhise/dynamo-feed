@@ -1,9 +1,12 @@
 import { motion, useTransform } from "framer-motion";
 import { Star } from "lucide-react";
 import { CharacterSlot } from "../components/CharacterSlot";
+import { ReelCaption } from "../components/ReelCaption";
+import { ProfileReelChip } from "../components/ProfileReelChip";
+import { castById } from "../content";
 import { num, str, type TemplateProps } from "./registry";
 
-export function ReviewTemplate({ reel, beat, beatIndex, progress, data, reducedMotion }: TemplateProps) {
+export function ReviewTemplate({ reel, beat, beatIndex, progress, data, reducedMotion, paused }: TemplateProps) {
   const stars = num(data.stars);
   const verdict = str(data.verdict);
   const starsOnThisBeat = typeof num(beat.data?.stars) === "number";
@@ -66,7 +69,13 @@ export function ReviewTemplate({ reel, beat, beatIndex, progress, data, reducedM
         )}
       </div>
 
-      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={46} />
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking paused={paused} heightPercent={40} />
+
+      <div className="absolute inset-x-4 bottom-5 z-10">
+        <ReelCaption name={castById[beat.characterId]?.name ?? ""} chip={<ProfileReelChip slug={reel.slug} />}>
+          {beat.caption}
+        </ReelCaption>
+      </div>
     </div>
   );
 }

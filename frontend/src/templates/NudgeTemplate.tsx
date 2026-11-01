@@ -3,10 +3,10 @@ import { FileText, Linkedin, Mail } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { CharacterSlot } from "../components/CharacterSlot";
 import { ReelBackground } from "./ReelBackground";
-import { profile } from "../content";
+import { castById, profile } from "../content";
 import type { TemplateProps } from "./registry";
 
-export function NudgeTemplate({ reel, beat, reducedMotion }: TemplateProps) {
+export function NudgeTemplate({ reel, beat, reducedMotion, paused }: TemplateProps) {
   const linkedinUrl = profile.socials.find((s) => s.platform === "linkedin")?.url;
   const buttons: { label: string; href: string; icon: LucideIcon }[] = [
     { label: "Email", href: `mailto:${profile.email}`, icon: Mail },
@@ -18,9 +18,15 @@ export function NudgeTemplate({ reel, beat, reducedMotion }: TemplateProps) {
     <div className="absolute inset-0">
       <ReelBackground reel={reel} />
 
-      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking={false} heightPercent={44} />
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking={false} paused={paused} heightPercent={40} />
 
-      <div className="absolute inset-x-4 bottom-[5%] z-10 flex flex-col gap-3">
+      <div className="absolute inset-x-4 bottom-[5%] z-10 flex flex-col gap-2.5">
+        <span
+          className="text-xs font-bold text-cream/90 [text-shadow:0_1px_8px_rgba(0,0,0,0.45)]"
+          data-testid="speaker-name"
+        >
+          {castById[beat.characterId]?.name ?? ""}
+        </span>
         <motion.p
           className="rounded-3xl bg-surface/90 p-4 text-center font-display text-[15px] leading-snug text-cream shadow-card backdrop-blur"
           initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.96 }}

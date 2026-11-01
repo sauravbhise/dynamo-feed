@@ -1,70 +1,57 @@
-# Getting Started with Create React App
+# Dynamo Feed
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A personal portfolio you scroll like a short-video app: an endless feed of animated
+cartoon reels in the middle, a condensed portfolio on the left, and "Off the clock"
+on the right. Frontend only — every piece of content lives in JSON files.
 
-## Available Scripts
+## How to edit
 
-In the project directory, you can run:
+### Where the content lives
 
-### `npm start`
+- `src/content/profile.json` — the left column: name, one-liner, photo, location,
+  socials, stats, experience, projects, writing, community, education, certifications.
+- `src/content/now.json` — the right column: `updatedAt`, what you're reading,
+  the watch-this deck, latest writing, volunteering, Duolingo streak.
+- `src/content/reels.json` — the feed itself: every reel, its template, beats,
+  captions and like counts.
+- `src/content/cast.json` — the cartoon cast: colour, scale, headroom and framing
+  (`full` = stands on the caption line, `waist` = sits on the bottom edge).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+All four files are validated at load with zod (`src/content/schemas.ts`) — a wrong
+field fails loudly in the console instead of rendering broken.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Left column components (`src/components/profile/`)
 
-### `npm test`
+`LeftColumn.tsx` reads `profile.json` and renders these in order:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- `ProfileHeader.tsx` — photo (falls back to `/avatar.svg`), name, one-liner, location chip.
+- `SocialLinks.tsx` — circular platform logos, plus the resume circle.
+- `StatsStrip.tsx` — the small value/label cards.
+- `CollapsibleSection.tsx` — a section header (name + count + chevron) that expands
+  smoothly; only one is open at a time. Uses `ItemCard.tsx` for each row.
+- `ItemCard.tsx` — one short row: title, subtitle, dates, one line, optional links,
+  and a "Watch the reel" chip when the item has a `reelSlug`.
+- `FooterCta.tsx` — the "Talk to the human instead" email/resume card.
 
-### `npm run build`
+### Right column components (`src/components/cards/`)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+`RightColumn.tsx` reads `now.json` and renders these in order:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- `NowReadingCard.tsx` — book cover (or a placeholder block), progress, take.
+- `WatchThisCard.tsx` — wraps `SwipeDeck.tsx`, the swipeable stack of recommendations.
+- `LatestWritingCard.tsx` — links to posts (hidden automatically when the array is empty).
+- `VolunteeringCard.tsx` — status + text.
+- `LearningSpanishCard.tsx` — Duolingo streak.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Adding, removing and reordering
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- **Add a card**: create a component under `cards/` (or `profile/`) that takes its
+  data as props, then add one line to the list in `RightColumn.tsx` (or
+  `LeftColumn.tsx`). Put its data in the matching JSON file.
+- **Remove a card**: delete its line from the column file; delete the component file
+  if you're done with it.
+- **Reorder cards**: move the line up or down in the column file — the order in the
+  file is the order on screen.
+- **Left-column sections and items** come straight from the arrays in
+  `profile.json`: add an object to add an item, remove it to remove the item.
+  Empty arrays hide their whole section.

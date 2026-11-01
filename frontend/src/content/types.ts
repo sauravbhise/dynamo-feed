@@ -49,6 +49,8 @@ export interface CastMember {
   role: string;
   color: string;
   scale: number;
+  /** Fraction of the sprite frame's height that is empty space above the character. */
+  headroom: number;
   framing: "full" | "waist";
 }
 
