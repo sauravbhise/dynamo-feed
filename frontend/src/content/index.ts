@@ -22,7 +22,9 @@ import type {
   ReelTemplate,
 } from "./types";
 
-function parse<T>(schema: z.ZodType<T>, data: unknown, file: string): T {
+// ZodType's third parameter (input) is decoupled so `.default()` fields don't
+// make the parsed output's type optional.
+function parse<T>(schema: z.ZodType<T, z.ZodTypeDef, unknown>, data: unknown, file: string): T {
   const result = schema.safeParse(data);
   if (!result.success) {
     console.error(`[content] ${file} failed validation`, result.error.flatten());

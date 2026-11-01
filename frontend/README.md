@@ -26,12 +26,14 @@ field fails loudly in the console instead of rendering broken.
 
 - `ProfileHeader.tsx` — photo (falls back to `/avatar.svg`), name, one-liner, location chip.
 - `SocialLinks.tsx` — circular platform logos, plus the resume circle.
-- `StatsStrip.tsx` — the small value/label cards.
+- `SkillChips.tsx` — a compact, wrapping row of skill chips (hidden when
+  `skills` in `profile.json` is empty).
 - `CollapsibleSection.tsx` — a section header (name + count + chevron) that expands
-  smoothly; only one is open at a time. Uses `ItemCard.tsx` for each row.
+  smoothly; each section opens and closes independently, Experience and Projects
+  start open, and a closed section shows a one-line preview of its first item
+  titles. Uses `ItemCard.tsx` for each row.
 - `ItemCard.tsx` — one short row: title, subtitle, dates, one line, optional links,
   and a "Watch the reel" chip when the item has a `reelSlug`.
-- `FooterCta.tsx` — the "Talk to the human instead" email/resume card.
 
 ### Right column components (`src/components/cards/`)
 

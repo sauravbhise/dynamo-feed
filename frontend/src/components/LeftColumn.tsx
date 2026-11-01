@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { profile } from "../content";
 import { ProfileHeader } from "./profile/ProfileHeader";
 import { SocialLinks } from "./profile/SocialLinks";
-import { StatsStrip } from "./profile/StatsStrip";
+import { SkillChips } from "./profile/SkillChips";
 import { CollapsibleSection } from "./profile/CollapsibleSection";
-import { FooterCta } from "./profile/FooterCta";
 import type { ProfileItemDisplay } from "./profile/ItemCard";
 import type { ProfileSectionKey } from "../content/types";
 
@@ -14,14 +13,17 @@ function goToReel(slug: string) {
 
 /** Condensed portfolio — renders the profile blocks in order; each block is its own component. */
 export function LeftColumn() {
-  const [openKey, setOpenKey] = useState<ProfileSectionKey | null>(null);
+  // Each section opens and closes independently; Experience and Projects start open.
+  const [openKeys, setOpenKeys] = useState<Set<ProfileSectionKey>>(
+    () => new Set<ProfileSectionKey>(["experience", "projects"])
+  );
   const [highlightId, setHighlightId] = useState<string | null>(null);
 
   // A reel's chip focuses (and flashes) the matching portfolio item here.
   useEffect(() => {
     const onFocus = (event: Event) => {
       const detail = (event as CustomEvent<{ section: ProfileSectionKey; itemId: string }>).detail;
-      setOpenKey(detail.section);
+      setOpenKeys((keys) => new Set(keys).add(detail.section));
       setHighlightId(detail.itemId);
       window.setTimeout(() => {
         document
@@ -111,20 +113,26 @@ export function LeftColumn() {
         location={profile.location}
       />
       <SocialLinks socials={profile.socials} resumeUrl={profile.resumeUrl} />
-      <StatsStrip stats={profile.stats} />
+      <SkillChips skills={profile.skills} />
       {sections.map((section) => (
         <CollapsibleSection
           key={section.key}
           sectionKey={section.key}
           label={section.label}
           items={section.items}
-          open={openKey === section.key}
-          onToggle={() => setOpenKey(openKey === section.key ? null : section.key)}
+          open={openKeys.has(section.key)}
+          onToggle={() =>
+            setOpenKeys((keys) => {
+              const next = new Set(keys);
+              if (next.has(section.key)) next.delete(section.key);
+              else next.add(section.key);
+              return next;
+            })
+          }
           highlightedId={highlightId}
           onWatchReel={goToReel}
         />
       ))}
-      <FooterCta email={profile.email} resumeUrl={profile.resumeUrl} />
     </div>
   );
 }

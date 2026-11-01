@@ -47,6 +47,17 @@ export function CollapsibleSection({
           <ChevronDown className="size-4 text-muted" />
         </motion.span>
       </button>
+      {/* Collapsed sections still say something: a one-line, muted preview of
+          the first two item titles. */}
+      {!open && (
+        <p
+          className="truncate px-5 pb-4 -mt-1.5 text-xs leading-snug text-muted"
+          data-testid={`section-preview-${sectionKey}`}
+        >
+          {items.slice(0, 2).map((item) => item.title).join(" · ")}
+          {items.length > 2 ? ` · +${items.length - 2}` : ""}
+        </p>
+      )}
       <AnimatePresence initial={false}>
         {open && (
           <motion.div

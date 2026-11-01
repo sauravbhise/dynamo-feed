@@ -10,11 +10,14 @@
     { "platform": "github", "url": "https://github.com/sauravbhise" },
     { "platform": "email", "url": "mailto:sauravbhise2002@gmail.com" }
   ],
-  "stats": [
-    { "value": "50+", "label": "microservices modernised" },
-    { "value": "200+", "label": "community members" },
-    { "value": "2", "label": "published papers" },
-    { "value": "600+", "label": "day Duolingo streak" }
+  "skills": [
+    "Java",
+    "Spring Boot",
+    "React",
+    "TypeScript",
+    "AWS",
+    "n8n",
+    "AI engineering"
   ],
   "experience": [
     {

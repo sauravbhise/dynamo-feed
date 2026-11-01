@@ -90,7 +90,7 @@ export const profileSchema = z.object({
   socials: z.array(
     z.object({ platform: z.string().min(1), url: z.string().min(1) })
   ),
-  stats: z.array(z.object({ value: z.string(), label: z.string().min(1) })),
+  skills: z.array(z.string()).default([]),
   experience: z.array(
     z.object({
       title: z.string().min(1),

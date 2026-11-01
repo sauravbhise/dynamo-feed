@@ -62,11 +62,6 @@ export interface SocialLink {
   url: string;
 }
 
-export interface StatItem {
-  label: string;
-  value: string;
-}
-
 export interface ExperienceEntry {
   title: string;
   org: string;
@@ -119,7 +114,7 @@ export interface Profile {
   email: string;
   resumeUrl: string;
   socials: SocialLink[];
-  stats: StatItem[];
+  skills: string[];
   experience: ExperienceEntry[];
   projects: ProjectEntry[];
   writing: WritingEntry[];
