@@ -69,9 +69,30 @@
   }
 }
 
+/* One-time deck affordance wiggle: slides left, right, then settles. */
+.deck-wiggle-once {
+  animation: deck-wiggle 1.2s ease-in-out 0.45s 1;
+}
+
+@keyframes deck-wiggle {
+  0% {
+    transform: translateX(0);
+  }
+  33% {
+    transform: translateX(-40px);
+  }
+  66% {
+    transform: translateX(40px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-ping,
-  .animate-ticker {
+  .animate-ticker,
+  .deck-wiggle-once {
     animation: none;
   }
 }
