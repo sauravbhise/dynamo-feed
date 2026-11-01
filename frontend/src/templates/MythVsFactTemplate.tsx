@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, useMotionValueEvent } from "framer-motion";
 import { CharacterSlot, headTopPercent } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
@@ -16,10 +16,15 @@ export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, redu
   const fact = typeof data.fact === "string" ? data.fact : undefined;
   const flipOnThisBeat = myth !== undefined && fact !== undefined && typeof beat.data?.myth === "string";
 
+  // The flip listens to the beat-consistent progress value and always resets
+  // with beatIndex, so a flip never bleeds across beats.
   const [flipped, setFlipped] = useState(false);
   useMotionValueEvent(progress, "change", (value) => {
     if (flipOnThisBeat) setFlipped(value >= 0.5);
   });
+  useEffect(() => {
+    setFlipped(false);
+  }, [beatIndex]);
   // Once the card has flipped it stays flipped for the rest of the reel.
   const isFlipped = flipOnThisBeat ? flipped : fact !== undefined && beatIndex > 0;
 

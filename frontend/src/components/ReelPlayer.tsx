@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useMotionValue, useReducedMotion } from "framer-motion";
+import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Heart, Pause } from "lucide-react";
 import { TEMPLATES } from "../templates/registry";
@@ -29,22 +29,61 @@ interface ReelPlayerProps {
 
 export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoubleTap }: ReelPlayerProps) {
   const reduceMotion = useReducedMotion();
-  const [beatIndex, setBeatIndex] = useState(0);
-  const beatProgress = useMotionValue(0);
   const reelProgress = useMotionValue(0);
   const [audioDurations, setAudioDurations] = useState<Record<number, number>>({});
 
-  const durationsRef = useRef<number[]>([]);
+  // Beat lengths: computed from captions (see beatDurationMs), overridden by
+  // audio duration when present, or by durationMs when it is longer.
+  const durations = useMemo(
+    () => reel.beats.map((beat, i) => audioDurations[i] ?? beatDurationMs(beat, reel.template)),
+    [reel, audioDurations]
+  );
+  const starts = useMemo(() => {
+    let acc = 0;
+    return durations.map((ms) => {
+      const start = acc;
+      acc += ms;
+      return start;
+    });
+  }, [durations]);
+  const total = durations.reduce((sum, ms) => sum + ms, 0);
+
+  const totalRef = useRef(total);
+  totalRef.current = total;
+  const startsRef = useRef(starts);
+  startsRef.current = starts;
+
   const elapsedRef = useRef(0);
   const rafRef = useRef(0);
   const loopedRef = useRef(false);
 
-  // Beat length: computed from the caption (1200 + 55/char, 2.5–7s, storytime
-  // +700ms typing), overridden by audio duration, or by durationMs when longer.
-  const durations = reel.beats.map(
-    (beat, i) => audioDurations[i] ?? beatDurationMs(beat, reel.template)
-  );
-  durationsRef.current = durations;
+  // ONE unit of state for the beat — changes only when the beat changes.
+  const [beatState, setBeatState] = useState({ index: 0, startedAtMs: 0 });
+
+  const beatFromElapsed = (elapsed: number) => {
+    let index = 0;
+    for (let i = 0; i < startsRef.current.length; i++) {
+      if (elapsed >= startsRef.current[i]) index = i;
+      else break;
+    }
+    return { index, startedAtMs: startsRef.current[index] ?? 0 };
+  };
+
+  // The beat index follows the reel progress. Every template listener fires
+  // from this same publication point, so React batches index and progress
+  // derived state into ONE consistent render — no skew frame.
+  useMotionValueEvent(reelProgress, "change", (rp) => {
+    const { index, startedAtMs } = beatFromElapsed(rp * totalRef.current);
+    setBeatState((prev) => (prev.index === index ? prev : { index, startedAtMs }));
+  });
+
+  // Per-beat progress is DERIVED from elapsed time — it can never disagree
+  // with the beat index and resets to 0 automatically on every beat change.
+  const beatProgress = useTransform(reelProgress, (rp) => {
+    const elapsed = rp * totalRef.current;
+    const { index, startedAtMs } = beatFromElapsed(elapsed);
+    return Math.min(Math.max((elapsed - startedAtMs) / (durations[index] ?? 1), 0), 1);
+  });
 
   // Beat length comes from the audio file's duration when it exists — no playback yet.
   useEffect(() => {
@@ -68,16 +107,15 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
     };
   }, [reel]);
 
-  // Reels that leave the view pause and reset.
+  // Reels that leave the view pause and reset — index first, then progress.
   useEffect(() => {
     if (active) return;
     cancelAnimationFrame(rafRef.current);
     elapsedRef.current = 0;
     loopedRef.current = false;
-    setBeatIndex(0);
-    beatProgress.set(0);
+    setBeatState({ index: 0, startedAtMs: 0 });
     reelProgress.set(0);
-  }, [active, reel.id, beatProgress, reelProgress]);
+  }, [active, reel.id, reelProgress]);
 
   // Single elapsed-time clock — pause/resume are exact.
   useEffect(() => {
@@ -87,8 +125,7 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
       elapsedRef.current += now - last;
       last = now;
 
-      const durations = durationsRef.current;
-      const total = durations.reduce((sum, ms) => sum + ms, 0);
+      const total = totalRef.current;
       if (total > 0 && elapsedRef.current >= total) {
         elapsedRef.current = elapsedRef.current % total;
         if (!loopedRef.current) {
@@ -96,37 +133,25 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
           onLoop();
         }
       }
-      const elapsed = elapsedRef.current;
 
-      // One continuous bar across the whole reel; resets to 0 on loop.
-      reelProgress.set(total > 0 ? Math.min(elapsed / total, 1) : 0);
-
-      // Per-beat progress for the template.
-      let acc = 0;
-      let index = 0;
-      for (let i = 0; i < durations.length; i++) {
-        if (elapsed >= acc + durations[i]) {
-          acc += durations[i];
-          index = i + 1;
-        }
-      }
-      beatProgress.set(Math.min(Math.max((elapsed - acc) / (durations[index] ?? 1), 0), 1));
-      setBeatIndex((prev) => (prev === index ? prev : index));
+      // The ONLY publication point: reel progress drives the beat index and
+      // every derived progress value in the same tick.
+      reelProgress.set(total > 0 ? Math.min(elapsedRef.current / total, 1) : 0);
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [active, paused, reel.id, onLoop, beatProgress, reelProgress]);
+  }, [active, paused, reel.id, onLoop, reelProgress]);
 
   // The current beat plus every earlier beat's extras stay in effect.
-  const beat = reel.beats[beatIndex] ?? reel.beats[0];
+  const beat = reel.beats[beatState.index] ?? reel.beats[0];
   const effectiveData = useMemo(() => {
     const acc: Record<string, unknown> = {};
-    for (let i = 0; i <= beatIndex && i < reel.beats.length; i++) {
+    for (let i = 0; i <= beatState.index && i < reel.beats.length; i++) {
       Object.assign(acc, reel.beats[i].data ?? {});
     }
     return acc;
-  }, [reel, beatIndex]);
+  }, [reel, beatState.index]);
 
   // Engagement: double-tap likes with a heart burst; single tap pauses.
   const [burst, setBurst] = useState<{ id: number; x: number; y: number } | null>(null);
@@ -172,7 +197,7 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
         <Template
           reel={reel}
           beat={beat}
-          beatIndex={beatIndex}
+          beatIndex={beatState.index}
           progress={beatProgress}
           data={effectiveData}
           reducedMotion={!!reduceMotion}

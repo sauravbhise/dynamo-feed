@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import { motion, useTransform } from "framer-motion";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { motion, useMotionValueEvent, useTransform } from "framer-motion";
 import { CharacterSlot } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
 import { ProfileReelChip } from "../components/ProfileReelChip";
 import { usePaused } from "../components/PausedContext";
 import { ReelBackground } from "./ReelBackground";
-import { castById } from "../content";
+import { beatDurationMs, castById } from "../content";
 import { num, str, type TemplateProps } from "./registry";
 
 const COUNT_UP_MS = 1400;
@@ -18,31 +18,25 @@ export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, redu
   const before = str(data.before);
   const after = str(data.after);
   const valueOnThisBeat = typeof num(beat.data?.value) === "number";
+  const counting = active && valueOnThisBeat && !reducedMotion;
 
-  // The number counts up while its beat plays, FREEZES mid-count on pause and
-  // resumes from the same point; when not counting it shows the final value
-  // (never stuck at 0 on pre-mounted neighbours).
-  const [display, setDisplay] = useState(value ?? 0);
-  const accRef = useRef<{ beat: number; ms: number }>({ beat: -1, ms: 0 });
-  useEffect(() => {
-    if (!active || !valueOnThisBeat || reducedMotion) {
-      setDisplay(value ?? 0);
-      return;
+  // The count is written straight from the beat-consistent progress value —
+  // no React state, so it can never flash a wrong number at a beat change.
+  // Progress freezes on pause and resets per beat, and so does the count.
+  const countRef = useRef<HTMLSpanElement>(null);
+  const beatMs = beatDurationMs(beat, reel.template);
+  useMotionValueEvent(progress, "change", (p) => {
+    if (!counting || !countRef.current) return;
+    const f = Math.min(Math.max((p * beatMs) / COUNT_UP_MS, 0), 1);
+    countRef.current.textContent = Math.round(f * (value ?? 0)).toLocaleString();
+  });
+  // Reset with the beat: count from 0 while counting, final value otherwise
+  // (pre-mounted neighbours show 600, never a stale or zero count).
+  useLayoutEffect(() => {
+    if (countRef.current) {
+      countRef.current.textContent = counting ? "0" : (value ?? 0).toLocaleString();
     }
-    if (paused) return; // frozen mid-count; the accumulator keeps its value
-    if (accRef.current.beat !== beatIndex) accRef.current = { beat: beatIndex, ms: 0 };
-    let raf = 0;
-    let last = performance.now();
-    const tick = (now: number) => {
-      accRef.current.ms += now - last;
-      last = now;
-      const p = Math.min(accRef.current.ms / COUNT_UP_MS, 1);
-      setDisplay(Math.round(p * (value ?? 0)));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [active, paused, valueOnThisBeat, beatIndex, value, reducedMotion]);
+  }, [beatIndex, counting, value]);
 
   // Before/after split screen wipes across with the beat (freezes on pause).
   const wipe = useTransform(progress, (p) => `inset(0 0 0 ${(Math.min(p, 1) * 100).toFixed(2)}%)`);
@@ -77,7 +71,9 @@ export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, redu
               animate={{ opacity: 1, scale: 1 }}
               transition={reducedMotion ? { duration: 0.3 } : { type: "spring", stiffness: 240, damping: 20 }}
             >
-              <span data-testid="stat-count">{display.toLocaleString()}</span>
+              <span ref={countRef} data-testid="stat-count">
+                {(value ?? 0).toLocaleString()}
+              </span>
               <span className="ml-1 text-2xl text-cream/80">{unit}</span>
             </motion.span>
             {label && (

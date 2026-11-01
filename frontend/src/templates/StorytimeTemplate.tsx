@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, useMotionValueEvent } from "framer-motion";
 import { ChevronUp } from "lucide-react";
 import { CharacterSlot } from "../components/CharacterSlot";
@@ -18,10 +18,16 @@ export function StorytimeTemplate({ reel, beat, beatIndex, progress, reducedMoti
   const hasNextPart = info !== null && info.part < info.total;
   // A typing indicator shows for the first 700ms of each beat (the beat is
   // lengthened by exactly that), then the line drops in as the newest bubble.
+  // The state always resets with beatIndex, and the progress events it listens
+  // to are published in the same tick as the index — so it can never describe
+  // the wrong beat.
   const [typing, setTyping] = useState(true);
   useMotionValueEvent(progress, "change", (value) => {
     setTyping(value < TYPING_MS / beatDurationMs(beat, "storytime"));
   });
+  useEffect(() => {
+    setTyping(true);
+  }, [beatIndex]);
 
   // The bubbles ARE the caption here: the current line plus the one before it,
   // older ones fading out. Never more than two.
