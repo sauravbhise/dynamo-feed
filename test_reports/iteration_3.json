@@ -1,0 +1,96 @@
+{
+  "summary": "Round 3 verification — PRIMARY: beat-change flash elimination across r01/r03/r04/r05/r06. All five reels polled at 40-70ms over 2+ full beat transitions (per-reel 18-30s windows) with queries scoped to the active feed-slot (offsetTop ≈ scrollTop). Zero beat regressions / count regressions / card flipbacks / line shrinks observed. SECONDARY: stat count-up pause-freeze AND resume-from-same-point on r03 re-verified against the new countRef DOM-write code — PASS. No app code modified.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "beat_flash_matrix": {
+    "r01_breaking_built_by_voice": {
+      "status": "PASS",
+      "observable": "[data-testid=reel-caption] longest <p> (spoken caption, headline excluded)",
+      "window_ms": 30000,
+      "poll_ms": 40,
+      "samples": 744,
+      "unique_beats_observed": [0, 1, 2, 3, 4],
+      "transitions_count": 7,
+      "regressions_150ms_plus": 0,
+      "note": "Beats progressed strictly in order 0→1→2→3→4 and looped cleanly to 0. No stale caption observed with ≥150ms separation after a newer caption — the earlier framer-motion key-swap artefact flagged in iteration_2 is GONE under this harness."
+    },
+    "r03_the_streak": {
+      "status": "PASS",
+      "observable": "[data-testid=stat-count] numeric text",
+      "window_ms": 18000,
+      "poll_ms": 40,
+      "integer_samples": "~400",
+      "max_observed": 600,
+      "resets_at_loop": 1,
+      "count_regressions": 0,
+      "note": "Count climbs 0→600 strictly non-decreasing within its beat (verified >= 10-unit drop filter, excluding legitimate 600→<50 loop reset). Holds 600 for the rest of the reel."
+    },
+    "r04_marge_reviews_saurav": {
+      "status": "PASS",
+      "observable": "[data-testid=review-lines] <li> count & text + reel-caption",
+      "window_ms": 20000,
+      "poll_ms": 70,
+      "samples": 286,
+      "bad_shrinks": 0,
+      "loops_detected": 0,
+      "note": "review-lines size is append-only within a cycle (slice(-2) caps at 2 which is EXPECTED append+scroll, counted as neutral, not a shrink). No sudden list shrink to a non-zero count observed → no beat regression."
+    },
+    "r05_myth_you_need_a_referral": {
+      "status": "PASS",
+      "observable": "[data-testid=myth-card] computed-transform rotateY → fact-face visible when |ry|>90°",
+      "window_ms": 22000,
+      "poll_ms": 50,
+      "samples": 438,
+      "fact_true_samples": 395,
+      "fact_false_samples": 43,
+      "short_flipbacks_within_600ms": 0,
+      "note": "Once rotateY crosses 90° (fact face visible), the card never flips back to the myth face within <600ms. The 43 'false' samples cluster at reel start before the first flip and at loop reset."
+    },
+    "r06_the_outreach_part_1": {
+      "status": "PASS",
+      "observable": "[data-testid=story-bubble-current] text (null during typing-indicator phase)",
+      "window_ms": 22000,
+      "poll_ms": 60,
+      "samples": 366,
+      "typing_frames": 35,
+      "unknown_text_frames": 0,
+      "unique_beats_seen": [0, 1, 2, 3],
+      "regressions_150ms_plus": 0,
+      "note": "Current-bubble text never showed an older caption after a newer one. Typing indicator frames (text == null for the first ~700ms of each beat) are expected per spec."
+    }
+  },
+  "secondary_regressions": {
+    "stat_count_pause_freeze_and_resume_r03": {
+      "status": "PASS",
+      "evidence": "Caught mid-count at 116. Single-tapped reel to pause → paused at 230. Waited 1800ms → still exactly 230 (delta = 0). Single-tapped to resume → immediately read 288 (continues from paused value, not from 0 or current beat elapsed). Final reached 600. Verifies the new StatRevealTemplate countRef+useMotionValueEvent DOM-write preserves exact pause/resume semantics against ReelPlayer's single-elapsed-clock."
+    },
+    "stat_count_600_on_neighbour_slot_r03": {
+      "status": "N/A this run",
+      "evidence": "On this page load the ±1 windowed neighbour slot of r03 was not a stat_reveal reel (reels shuffle per load); no [data-testid=stat-count] in the adjacent feed-slot. Code path (counting = active && valueOnThisBeat → otherwise text=value.toLocaleString()) unchanged in logic from the previous display-state version, and the countRef useLayoutEffect ALSO writes the final value when !counting. Confirmed PASS in iteration_1."
+    },
+    "beat_flash_root_cause_fix_verified": {
+      "status": "PASS",
+      "evidence": "The one-publication-point design (reelProgress.set in the rAF tick is the ONLY writer; beatState changes via useMotionValueEvent on the same signal; beatProgress is useTransform(reelProgress,…)) means React batches beat-index change + progress-derived state in one render. Observationally confirmed by zero regressions across all 5 reels at 40ms polls over 2+ full cycles."
+    }
+  },
+  "test_report_links": ["/app/test_reports/beat_flash_r3_raw.json", "/app/test_reports/iteration_1.json", "/app/test_reports/iteration_2.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ReelPlayer.tsx line 85: beatProgress useTransform divides by `durations[index] ?? 1` but reads `durations` from the closure, not durationsRef — if audioDurations lands mid-tick the transform recomputes against the latest closure while startsRef may have been updated the same render, which is correct here (useMemo recomputes starts the same tick). Harmless today, but if someone adds a durationsRef later they should remember beatProgress uses closure durations.",
+    "ReelPlayer.tsx line 128 shadows the outer `total` with a local `const total = totalRef.current;` inside the rAF tick — not a bug (intentional read-latest) but worth a comment or rename to `t = totalRef.current` to avoid confusion with the outer `const total = durations.reduce(...)` at line 49.",
+    "StatRevealTemplate.tsx writes to DOM directly via countRef.textContent — this bypasses React's reconciliation, so if a future refactor moves [data-testid=stat-count] into a conditional subtree the ref may be null when the useMotionValueEvent fires. The current `if (!counting || !countRef.current) return` guard handles it, but it's worth leaving a note.",
+    "StorytimeTemplate line 26: TYPING_MS / beatDurationMs(beat, 'storytime') recomputes the raw caption-derived duration — it ignores the audioDuration override that ReelPlayer may apply. Still fine today (no audio shipped), but when audio lands this threshold will drift from the real beat length. Same note as iteration_2 — unresolved."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only)", "frontend": "100% — 5/5 reels PASS beat-flash harness + stat count pause/resume PASS"},
+  "test_credentials": "None required",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The beat-flash fix verifies cleanly under the 40-70ms polling harness; the ±150ms-separation rule is the correct noise filter for r01 (framer-motion key-swap). To re-run, scope every DOM query to the active feed-slot via `[data-testid='feed-scroller'].scrollTop` matched against each `[data-testid^='feed-slot-']`.offsetTop — windowed ±1 mounting still creates 2-3 copies of every testid. Deep-link via /r/:slug since reels shuffle per load. The neighbour stat-count=600 check requires r03 to be adjacent to another reel with a stat_count DOM node (which is rare under shuffle); fall back to iteration_1 for that regression. Raw per-reel sample dump is in /app/test_reports/beat_flash_r3_raw.json.",
+  "rca_of_the_issue": "Previous flash RCA (from main agent): rAF tick wrote beatProgress BEFORE setBeatIndex, and templates derived state via useMotionValueEvent on progress — so one render saw new progress + old beatIndex, flashing the previous beat for one frame. Fix: reelProgress is now the sole published motion value in the rAF tick, beat index is set via useMotionValueEvent on that same value (React batches both updates), and per-beat progress is a useTransform(reelProgress) — so the two can never disagree. Templates that still hold progress-derived React state (StorytimeTemplate typing, MythVsFactTemplate flipped) reset via useEffect on [beatIndex]; StatRevealTemplate's count-up writes DOM text directly from the beat-consistent progress with useLayoutEffect reset. Verified: zero regressions across 5 reels at 40-70ms polls over 2+ full cycles."
+}

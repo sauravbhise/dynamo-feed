@@ -1,0 +1,148 @@
+{
+  "r03": {
+    "samples": 447,
+    "max": 600,
+    "resets": 1,
+    "regressions": [],
+    "head": [
+      [
+        0.19999998807907104,
+        600
+      ],
+      [
+        40.5,
+        600
+      ],
+      [
+        80.69999998807907,
+        600
+      ],
+      [
+        120.80000001192093,
+        600
+      ],
+      [
+        161.09999999403954,
+        600
+      ],
+      [
+        201.40000000596046,
+        600
+      ],
+      [
+        241.59999999403954,
+        600
+      ],
+      [
+        281.80000001192093,
+        600
+      ]
+    ],
+    "tail": [
+      [
+        17679,
+        600
+      ],
+      [
+        17719.19999998808,
+        600
+      ],
+      [
+        17759.40000000596,
+        600
+      ],
+      [
+        17799.59999999404,
+        600
+      ],
+      [
+        17839.80000001192,
+        600
+      ],
+      [
+        17880,
+        600
+      ],
+      [
+        17920.19999998808,
+        600
+      ],
+      [
+        17960.40000000596,
+        600
+      ]
+    ]
+  },
+  "r05": {
+    "samples": 438,
+    "fact_true": 395,
+    "fact_false": 43,
+    "short_flipbacks": []
+  },
+  "r04": {
+    "samples": 284,
+    "loops": 0,
+    "bad_shrinks": [],
+    "unique_captions": [
+      "MargeBuilds things nobody asked for. Then everybody ends up using them.",
+      "MargeLeaving a review for Saurav.",
+      "MargeMade a whole website about himself starring cartoon animals. Including me. ",
+      "MargeThree and a half stars. Half a star off for the unpaid part.",
+      "MargeVery polite. Answers emails. Suspiciously organised."
+    ]
+  },
+  "r06": {
+    "samples": 366,
+    "typing_frames": 35,
+    "unknown": 0,
+    "unique_beats": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "regressions": []
+  },
+  "r01": {
+    "samples": 732,
+    "transitions_count": 7,
+    "transitions": [
+      [
+        0.30000001192092896,
+        0
+      ],
+      [
+        4608.200000017881,
+        1
+      ],
+      [
+        10090.100000023842,
+        2
+      ],
+      [
+        14733.600000023842,
+        3
+      ],
+      [
+        19364.70000001788,
+        4
+      ],
+      [
+        24037.100000023842,
+        0
+      ],
+      [
+        29915.5,
+        1
+      ]
+    ],
+    "unique_beats": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "regressions_150ms_plus": []
+  }
+}
