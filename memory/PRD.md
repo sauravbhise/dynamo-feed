@@ -79,6 +79,8 @@ Likes: double-tap (heart burst at tap point) or heart; +1 shown; localStorage dy
 
 - 2026-11-02 (round 13, user-tested request, no agent run): LEFT COLUMN refined — StatsStrip + FooterCta DELETED (files, usages, `stats` field in schema/types/JSON; StatItem type removed); NEW SkillChips (profile.skills — added to schema as z.array(z.string()).default([]) + JSON data; compact wrapping chips text-xs on bg-surface, row hidden when empty). CollapsibleSection: INDEPENDENT open/close (LeftColumn Set of open keys; Experience + Projects start open, rest collapsed); collapsed sections show a muted one-line preview (first 2 titles joined " · ", then "+N", truncate). ProfileHeader already photo/name/one-liner/location only. Order: header → socials → chips → Experience → Projects → Writing → Community → Education. Fixed a zod trap en route: parse<T>(z.ZodType<T>) forces Input=Output so .default() fields typed optional — parse now z.ZodType<T, ZodTypeDef, unknown>. README left-column docs updated. tsc + vite build clean. No testing agent/screenshots per user instruction.
 
+- 2026-11-02 (round 14, user request): resume circle in SocialLinks now matches the other social circles (bg-surface, cream icon, sage hover) with a FileText document icon — opens the resume Google Drive link for VIEWING (download comes later). tsc + vite build clean.
+
 ## Backlog
 - P0: real backgrounds (public/backgrounds/*.webp), real content for now.json (user's own "REPLACE:" strings pending).
 - P1: real voices (voiceIds + ELEVENLABS_API_KEY → scripts/generate-voices.mjs), me.jpg + og.png assets, resume real link.

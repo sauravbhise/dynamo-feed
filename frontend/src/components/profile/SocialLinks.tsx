@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Download, Github, Globe, Linkedin, Mail } from "lucide-react";
+import { FileText, Github, Globe, Linkedin, Mail } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { SocialLink } from "../../content/types";
 
@@ -44,12 +44,12 @@ export function SocialLinks({ socials, resumeUrl }: { socials: SocialLink[]; res
         href={resumeUrl}
         target="_blank"
         rel="noreferrer"
-        aria-label="Resume"
-        title="Resume"
+        aria-label="View resume"
+        title="View resume"
         data-testid="social-resume"
-        className="grid size-11 place-items-center rounded-full bg-sage text-sage-deep shadow-soft transition hover:-translate-y-0.5 active:scale-95"
+        className="grid size-11 place-items-center rounded-full bg-surface text-cream/80 shadow-soft transition hover:-translate-y-0.5 hover:text-sage"
       >
-        <Download className="size-[18px]" />
+        <FileText className="size-[18px]" />
       </a>
     </motion.div>
   );
