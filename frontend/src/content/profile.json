@@ -1,67 +1,118 @@
 {
-  "name": "Dynamo",
-  "oneLiner": "I turn my life into cartoon reels.",
-  "photo": "/avatar.svg",
-  "resumeUrl": "/resume.txt",
-  "stories": [
-    { "id": "story-build", "title": "Build log", "items": [{ "caption": "Designing the feed shell" }, { "caption": "Naming the cast" }] },
-    { "id": "story-ink", "title": "Ink", "items": [{ "caption": "Sketching poses" }] },
-    { "id": "story-ship", "title": "Ship", "items": [{ "caption": "Deploy day, maybe" }] },
-    { "id": "story-fuel", "title": "Fuel", "items": [{ "caption": "Third coffee of the day" }] }
+  "name": "Saurav Bhise",
+  "oneLiner": "Full-stack engineer who builds things, then figures out how to get them used.",
+  "photo": "/me.jpg",
+  "location": "Pune, India",
+  "email": "sauravbhise2002@gmail.com",
+  "resumeUrl": "https://drive.google.com/REPLACE_WITH_PUBLIC_LINK",
+  "socials": [
+    { "platform": "linkedin", "url": "https://www.linkedin.com/in/sauravbhise" },
+    { "platform": "github", "url": "https://github.com/sauravbhise" },
+    { "platform": "email", "url": "mailto:sauravbhise2002@gmail.com" }
   ],
   "stats": [
-    { "label": "Reels", "value": "24" },
-    { "label": "Laughs", "value": "1.2k" },
-    { "label": "Cast", "value": "4" },
-    { "label": "Coffee", "value": "∞" }
+    { "value": "50+", "label": "microservices modernised" },
+    { "value": "200+", "label": "community members" },
+    { "value": "2", "label": "published papers" },
+    { "value": "600+", "label": "day Duolingo streak" }
   ],
-  "now": {
-    "reading": "Understanding Comics — Scott McCloud",
-    "watching": "Every Spider-Verse breakdown I can find"
-  },
-  "highlights": ["Ex-agency dev", "Motion nerd", "Writes jokes in commits", "Ships on Fridays"],
   "experience": [
     {
-      "role": "Senior Frontend Engineer",
-      "company": "Placeholder Studio",
-      "period": "2022 — Now",
-      "note": "Design systems, motion, and too many prototypes."
+      "title": "Analyst, Software Engineering",
+      "org": "Northern Trust",
+      "dates": "Aug 2024 – Present",
+      "text": "Moved 50+ Spring Boot services to Java 21 and rebuilt a legacy AngularJS app in React."
     },
     {
-      "role": "Frontend Engineer",
-      "company": "Pixel & Co.",
-      "period": "2019 — 2022",
-      "note": "Shipped the checkout nobody hated."
+      "title": "Growth and outreach",
+      "org": "Family manufacturing business",
+      "dates": "2026",
+      "text": "Built and ran an automated B2B outreach pipeline to find new buyers.",
+      "reelSlug": "the-outreach-part-1"
+    },
+    {
+      "title": "Software Engineer Intern",
+      "org": "Northern Trust",
+      "dates": "Jun – Sep 2023",
+      "text": "Built a report generator that cut a 40-hour job down to minutes."
+    },
+    {
+      "title": "Software Engineer Intern",
+      "org": "Manastik",
+      "dates": "May – Aug 2022",
+      "text": "Landed by cold email. Built serverless back-ends and shipped an ML model on AWS.",
+      "reelSlug": "myth-you-need-a-referral"
     }
   ],
   "projects": [
     {
       "name": "Dynamo Feed",
-      "description": "This site. A portfolio pretending to be a short-video app.",
-      "tag": "React"
+      "text": "This site: a portfolio you scroll like a short-video app, built by voice.",
+      "tags": ["React", "TypeScript", "Framer Motion"],
+      "links": [{ "label": "Code", "url": "https://github.com/sauravbhise/dynamo-feed" }],
+      "reelSlug": "breaking-built-by-voice"
     },
     {
-      "name": "Inkwell",
-      "description": "A tiny tool that turns commits into comic panels.",
-      "tag": "OSS"
+      "name": "B2B outreach pipeline",
+      "text": "Automated buyer research and outreach for a manufacturing business.",
+      "tags": ["n8n", "Clay", "HubSpot"],
+      "links": [],
+      "reelSlug": "the-outreach-part-1"
     },
     {
-      "name": "Frame Zero",
-      "description": "A keyframe editor for CSS nerds.",
-      "tag": "Side quest"
+      "name": "Buyer-finding engine",
+      "text": "An AI project to find the right buyers for a manufacturer, built to learn AI engineering.",
+      "tags": ["AI", "LLMs"],
+      "links": []
+    },
+    {
+      "name": "Research paper summariser",
+      "text": "Turns research papers into summaries and study notes.",
+      "tags": ["NLP", "Web app"],
+      "links": [{ "label": "Live", "url": "https://research-paper-summariser.vercel.app" }]
+    }
+  ],
+  "writing": [
+    {
+      "title": "IoTaaS: An Internet of Things as a Service Framework for Virtual Experimentation",
+      "venue": "AIR 2025, Springer LNNS vol. 1629",
+      "role": "First author",
+      "year": "2025",
+      "url": ""
+    },
+    {
+      "title": "Enhancing the Management of Supply Chains Using Blockchain Technology",
+      "venue": "ICCCNT 2023, IEEE",
+      "role": "Co-author",
+      "year": "2023",
+      "url": ""
+    }
+  ],
+  "community": [
+    {
+      "title": "GitHub Campus Expert",
+      "org": "MIT-WPU",
+      "dates": "2021 – 2025",
+      "text": "Founded the campus GitHub community: 200+ members and hackathons of around 100.",
+      "reelSlug": "the-campus-builder"
+    },
+    {
+      "title": "Azure mentor",
+      "org": "IT Pays Forward",
+      "dates": "12 weeks",
+      "text": "Mentored six students through the AZ-900 curriculum."
     }
   ],
   "education": [
-    { "title": "B.Sc. Computer Science", "org": "Placeholder University", "period": "2015 — 2019" }
+    {
+      "title": "B.Tech, Computer Science and Engineering",
+      "org": "MIT-WPU",
+      "dates": "2020 – 2024",
+      "text": "CGPA 9.67 / 10"
+    }
   ],
   "certifications": [
-    { "title": "Motion Design for the Web", "issuer": "School of Motion-ish", "year": "2021" },
-    { "title": "AWS Cloud Practitioner", "issuer": "Amazon", "year": "2020" }
-  ],
-  "links": [
-    { "label": "GitHub", "url": "https://github.com" },
-    { "label": "X / Twitter", "url": "https://x.com" },
-    { "label": "LinkedIn", "url": "https://linkedin.com" },
-    { "label": "Email", "url": "mailto:hello@dynamo.feed" }
+    { "name": "Azure AI Fundamentals (AI-901)", "issuer": "Microsoft" },
+    { "name": "Azure Fundamentals (AZ-900)", "issuer": "Microsoft" }
   ]
 }

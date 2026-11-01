@@ -6,6 +6,7 @@ import { DocumentaryTemplate } from "./DocumentaryTemplate";
 import { StorytimeTemplate } from "./StorytimeTemplate";
 import { MythVsFactTemplate } from "./MythVsFactTemplate";
 import { StatRevealTemplate } from "./StatRevealTemplate";
+import { NudgeTemplate } from "./NudgeTemplate";
 import type { Beat, Reel, ReelTemplate } from "../content/types";
 
 export interface TemplateProps {
@@ -31,4 +32,5 @@ export const TEMPLATES: Record<ReelTemplate, ComponentType<TemplateProps>> = {
   storytime: StorytimeTemplate,
   myth_vs_fact: MythVsFactTemplate,
   stat_reveal: StatRevealTemplate,
+  nudge: NudgeTemplate,
 };

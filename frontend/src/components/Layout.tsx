@@ -20,6 +20,15 @@ export function Layout() {
     return () => query.removeEventListener("change", update);
   }, []);
 
+  // A reel's chip opens the portfolio sheet wherever the left column isn't visible.
+  useEffect(() => {
+    const onFocusItem = () => {
+      if (!window.matchMedia("(min-width: 1200px)").matches) setSheet("profile");
+    };
+    window.addEventListener("dynamo:focus-profile-item", onFocusItem);
+    return () => window.removeEventListener("dynamo:focus-profile-item", onFocusItem);
+  }, []);
+
   const closeSheet = () => setSheet(null);
 
   return (
@@ -34,7 +43,15 @@ export function Layout() {
           aria-label="Open portfolio"
           className="rounded-full p-0.5 shadow-soft transition hover:scale-105"
         >
-          <img src={profile.photo} alt="" className="size-10 rounded-full object-cover" />
+          <img
+            src={profile.photo}
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = "/avatar.svg";
+            }}
+            alt=""
+            className="size-10 rounded-full object-cover"
+          />
         </button>
         <button
           data-testid="topbar-clock-button"
@@ -42,7 +59,7 @@ export function Layout() {
           className="flex items-center gap-2 rounded-full bg-surface px-4 py-2.5 text-sm font-bold text-cream shadow-soft transition hover:bg-raised"
         >
           <Clock className="size-4 text-sage" />
-          The Clock
+          Off the clock
         </button>
       </header>
 
@@ -69,7 +86,7 @@ export function Layout() {
       <Sheet open={sheet === "profile"} onClose={closeSheet} side="left" title="Portfolio" testId="sheet-profile">
         <LeftColumn />
       </Sheet>
-      <Sheet open={sheet === "clock"} onClose={closeSheet} side="bottom" title="The Clock" testId="sheet-clock">
+      <Sheet open={sheet === "clock"} onClose={closeSheet} side="bottom" title="Off the clock" testId="sheet-clock">
         <RightColumn showTitle={false} />
       </Sheet>
     </div>

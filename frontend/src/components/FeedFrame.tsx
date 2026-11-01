@@ -8,6 +8,42 @@ import { nextGeneration } from "../feed/order";
 import type { Reel, ReelComment } from "../content/types";
 
 const HINT_KEY = "dynamo:swipe-hint-seen";
+const LIKED_PREFIX = "dynamo:liked:";
+const NUDGE_AFTER_REELS = 10;
+const NUDGE_AFTER_MS = 3 * 60 * 1000;
+
+// The nudge reel — inserted once per visit by the engagement rule, never in reels.json.
+const NUDGE_REEL: Reel = {
+  id: "nudge-talk-to-human",
+  slug: "talk-to-the-human",
+  template: "nudge",
+  hostId: "saurav",
+  likes: 0,
+  beats: [
+    {
+      characterId: "saurav",
+      pose: "thinking",
+      caption: "You've been scrolling a resume for 3 minutes. Want to talk to the human instead?",
+      durationMs: 30000,
+    },
+  ],
+  comments: [],
+};
+
+function readLikedIds(): Record<string, boolean> {
+  try {
+    const stored: Record<string, boolean> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(LIKED_PREFIX)) {
+        stored[key.slice(LIKED_PREFIX.length)] = localStorage.getItem(key) === "1";
+      }
+    }
+    return stored;
+  } catch {
+    return {};
+  }
+}
 
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -40,7 +76,7 @@ export function FeedFrame() {
   const activeIndexRef = useRef(activeIndex);
 
   const [paused, setPaused] = useState(false);
-  const [likedIds, setLikedIds] = useState<Record<string, boolean>>({});
+  const [likedIds, setLikedIds] = useState<Record<string, boolean>>(readLikedIds);
   const [extraComments, setExtraComments] = useState<Record<string, ReelComment[]>>({});
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [showIntroHint, setShowIntroHint] = useState(
@@ -48,6 +84,27 @@ export function FeedFrame() {
   );
   const introHintRef = useRef(showIntroHint);
   const [loopHint, setLoopHint] = useState(false);
+
+  // The nudge: 10 reels watched or 3 minutes in the feed, whichever comes first.
+  const nudgeInsertedRef = useRef(false);
+  const watchedRef = useRef(0);
+  const startedAtRef = useRef(Date.now());
+
+  const insertNudge = useCallback(() => {
+    if (nudgeInsertedRef.current) return;
+    nudgeInsertedRef.current = true;
+    const next = [...orderRef.current];
+    next.splice(Math.min(activeIndexRef.current + 2, next.length), 0, NUDGE_REEL);
+    orderRef.current = next;
+    setOrder(next);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (Date.now() - startedAtRef.current >= NUDGE_AFTER_MS) insertNudge();
+    }, 2000);
+    return () => window.clearInterval(timer);
+  }, [insertNudge]);
 
   const activeReel = order[Math.min(activeIndex, order.length - 1)];
 
@@ -85,6 +142,8 @@ export function FeedFrame() {
     if (index !== activeIndexRef.current) {
       activeIndexRef.current = index;
       setActiveIndex(index);
+      watchedRef.current += 1;
+      if (watchedRef.current >= NUDGE_AFTER_REELS) insertNudge();
     }
     if (introHintRef.current) {
       introHintRef.current = false;
@@ -99,7 +158,7 @@ export function FeedFrame() {
       orderRef.current = next;
       setOrder(next);
     }
-  }, []);
+  }, [insertNudge]);
 
   // Keyboard: arrows / j,k to navigate, space to pause.
   useEffect(() => {
@@ -121,6 +180,26 @@ export function FeedFrame() {
     return () => window.removeEventListener("keydown", onKey);
   }, [goTo]);
 
+  // "Watch the reel" chips in the left column jump the feed to that reel.
+  useEffect(() => {
+    const goToSlug = (event: Event) => {
+      const slug = (event as CustomEvent<string>).detail;
+      let index = orderRef.current.findIndex((reel) => reel.slug === slug);
+      let guard = 0;
+      while (index < 0 && guard < 12) {
+        guard += 1;
+        const tail = orderRef.current.slice(-5).map((reel) => reel.id);
+        const next = [...orderRef.current, ...nextGeneration(tail)];
+        orderRef.current = next;
+        setOrder(next);
+        index = next.findIndex((reel) => reel.slug === slug);
+      }
+      if (index >= 0) goTo(index);
+    };
+    window.addEventListener("dynamo:goto-reel", goToSlug);
+    return () => window.removeEventListener("dynamo:goto-reel", goToSlug);
+  }, [goTo]);
+
   // A new reel autoplays; the loop nudge resets on reel change.
   useEffect(() => {
     setPaused(false);
@@ -129,13 +208,38 @@ export function FeedFrame() {
 
   const handleLoop = useCallback(() => setLoopHint(true), []);
 
+  const toggleLike = useCallback((id: string) => {
+    setLikedIds((prev) => {
+      const next = !prev[id];
+      try {
+        localStorage.setItem(`${LIKED_PREFIX}${id}`, next ? "1" : "0");
+      } catch {
+        /* storage unavailable */
+      }
+      return { ...prev, [id]: next };
+    });
+  }, []);
+
+  const likeReel = useCallback((id: string) => {
+    setLikedIds((prev) => {
+      if (prev[id]) return prev;
+      try {
+        localStorage.setItem(`${LIKED_PREFIX}${id}`, "1");
+      } catch {
+        /* storage unavailable */
+      }
+      return { ...prev, [id]: true };
+    });
+  }, []);
+
   const rail = (
     <ActionRail
       likes={activeReel.likes}
       comments={activeReel.comments.length + (extraComments[activeReel.id]?.length ?? 0)}
       liked={!!likedIds[activeReel.id]}
-      onLike={() => setLikedIds((prev) => ({ ...prev, [activeReel.id]: !prev[activeReel.id] }))}
+      onLike={() => toggleLike(activeReel.id)}
       onComments={() => setCommentsOpen(true)}
+      slug={activeReel.slug}
     />
   );
 
@@ -160,6 +264,7 @@ export function FeedFrame() {
                   paused={i === activeIndex && paused}
                   onTogglePause={() => setPaused((value) => !value)}
                   onLoop={handleLoop}
+                  onDoubleTap={() => likeReel(reel.id)}
                 />
               )}
             </div>

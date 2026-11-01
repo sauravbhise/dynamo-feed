@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import type { ReactNode } from "react";
 
 function RailButton({
@@ -37,19 +37,27 @@ interface ActionRailProps {
   liked: boolean;
   onLike: () => void;
   onComments: () => void;
+  slug: string;
   className?: string;
 }
 
-export function ActionRail({ likes, comments, liked, onLike, onComments, className = "" }: ActionRailProps) {
-  const [copied, setCopied] = useState(false);
-
+export function ActionRail({ likes, comments, liked, onLike, onComments, slug, className = "" }: ActionRailProps) {
   const share = async () => {
+    const url = `${window.location.origin}/r/${slug}`;
+    // Phones that support it get the native share sheet.
+    if (window.matchMedia("(pointer: coarse)").matches && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: document.title, url });
+      } catch {
+        /* share sheet dismissed */
+      }
+      return;
+    }
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
     } catch {
-      /* clipboard unavailable — layout-only build */
+      toast.error("Couldn't copy the link");
     }
   };
 
@@ -61,7 +69,7 @@ export function ActionRail({ likes, comments, liked, onLike, onComments, classNa
       <RailButton label="Comments" testId="action-comment" onClick={onComments} count={comments}>
         <MessageCircle className="size-5" />
       </RailButton>
-      <RailButton label="Share" testId="action-share" onClick={share} count={copied ? "Copied" : undefined}>
+      <RailButton label="Share" testId="action-share" onClick={share}>
         <Share2 className="size-5" />
       </RailButton>
     </div>

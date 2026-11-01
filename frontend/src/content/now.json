@@ -1,46 +1,23 @@
 {
-  "updated": "2026-10-29T09:00:00Z",
+  "updatedAt": "2026-11-01",
   "reading": {
-    "cover": "/covers/reading.svg",
-    "title": "The Design of Everyday Things",
-    "author": "Don Norman",
-    "progress": 0.62,
-    "take": "Chapter seven keeps rewiring how I look at doors."
+    "title": "REPLACE: book title",
+    "author": "REPLACE: author",
+    "cover": "",
+    "progress": 40,
+    "take": "REPLACE: one-line take so far"
   },
-  "watching": [
-    {
-      "title": "Arcane",
-      "kind": "Series",
-      "note": "Rewatching for the painterly frames."
-    },
-    {
-      "title": "Perfect Days",
-      "kind": "Film",
-      "note": "A whole film about looking at trees."
-    }
+  "watch": [
+    { "title": "REPLACE: show 1", "kind": "show", "year": 2024, "why": "REPLACE: one line on why" },
+    { "title": "REPLACE: film 1", "kind": "movie", "year": 2023, "why": "REPLACE: one line on why" },
+    { "title": "REPLACE: show 2", "kind": "show", "year": 2022, "why": "REPLACE: one line on why" },
+    { "title": "REPLACE: film 2", "kind": "movie", "year": 2021, "why": "REPLACE: one line on why" },
+    { "title": "REPLACE: show 3", "kind": "show", "year": 2020, "why": "REPLACE: one line on why" }
   ],
-  "writing": [
-    {
-      "platform": "substack",
-      "title": "Why my portfolio pretends to be a video app",
-      "url": "https://substack.com"
-    },
-    {
-      "platform": "dev",
-      "title": "A love letter to CSS grid",
-      "url": "https://dev.to"
-    }
-  ],
-  "life": [
-    {
-      "id": "volunteering",
-      "label": "Volunteering",
-      "detail": "Code club at the local library, Saturday mornings."
-    },
-    {
-      "id": "spanish",
-      "label": "Learning Spanish",
-      "streak": 128
-    }
-  ]
+  "writing": [],
+  "volunteering": {
+    "status": "looking",
+    "text": "Looking for a volunteering role where engineering can help. Ideas welcome."
+  },
+  "spanish": { "streak": 600 }
 }

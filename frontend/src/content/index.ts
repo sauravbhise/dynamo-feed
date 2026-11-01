@@ -11,7 +11,15 @@ import {
   templateDataSchemas,
   templateSchema,
 } from "./schemas";
-import type { CastMember, Now, Profile, Reel, ReelTemplate } from "./types";
+import type {
+  CastMember,
+  Now,
+  Profile,
+  ProfileItemRef,
+  ProfileSectionKey,
+  Reel,
+  ReelTemplate,
+} from "./types";
 
 function parse<T>(schema: z.ZodType<T>, data: unknown, file: string): T {
   const result = schema.safeParse(data);
@@ -42,8 +50,6 @@ reels.forEach((reel) => {
   });
 });
 
-export const SELF_COLOR = "#A9BED6";
-
 export const castById: Record<string, CastMember> = Object.fromEntries(
   cast.map((member) => [member.id, member])
 );
@@ -59,6 +65,27 @@ export function seriesInfo(reel: Reel): { part: number; total: number } | null {
   return { part: reel.part ?? parts.findIndex((r) => r.id === reel.id) + 1, total: parts.length };
 }
 
+// Which portfolio item does this reel's slug belong to? Ids match the
+// data-item-id attributes rendered in LeftColumn.
+export function profileItemBySlug(slug: string): ProfileItemRef | null {
+  for (let i = 0; i < profile.experience.length; i++) {
+    if (profile.experience[i].reelSlug === slug) {
+      return { section: "experience", itemId: `experience-${i}`, title: profile.experience[i].title };
+    }
+  }
+  for (let i = 0; i < profile.projects.length; i++) {
+    if (profile.projects[i].reelSlug === slug) {
+      return { section: "projects", itemId: `projects-${i}`, title: profile.projects[i].name };
+    }
+  }
+  for (let i = 0; i < profile.community.length; i++) {
+    if (profile.community[i].reelSlug === slug) {
+      return { section: "community", itemId: `community-${i}`, title: profile.community[i].title };
+    }
+  }
+  return null;
+}
+
 export function timeAgo(iso: string): string {
   const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
   if (minutes < 1) return "just now";
@@ -68,3 +95,5 @@ export function timeAgo(iso: string): string {
   if (hours < 48) return "yesterday";
   return `${Math.floor(hours / 24)} days ago`;
 }
+
+export type { ProfileSectionKey };

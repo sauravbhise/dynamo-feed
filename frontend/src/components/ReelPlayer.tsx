@@ -1,8 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionValue, useReducedMotion } from "framer-motion";
-import { Pause } from "lucide-react";
+import type { MouseEvent as ReactMouseEvent } from "react";
+import { Clapperboard, Heart, Pause } from "lucide-react";
 import { TEMPLATES } from "../templates/registry";
+import { profileItemBySlug } from "../content";
 import type { Reel } from "../content/types";
+
+const BURST_HEARTS = [
+  { angle: 0, distance: 52, size: 18 },
+  { angle: Math.PI / 4, distance: 44, size: 14 },
+  { angle: Math.PI / 2, distance: 56, size: 20 },
+  { angle: (3 * Math.PI) / 4, distance: 44, size: 14 },
+  { angle: Math.PI, distance: 52, size: 18 },
+  { angle: (5 * Math.PI) / 4, distance: 46, size: 13 },
+  { angle: (3 * Math.PI) / 2, distance: 58, size: 21 },
+  { angle: (7 * Math.PI) / 4, distance: 46, size: 13 },
+];
 
 interface ReelPlayerProps {
   reel: Reel;
@@ -10,9 +23,10 @@ interface ReelPlayerProps {
   paused: boolean;
   onTogglePause: () => void;
   onLoop: () => void;
+  onDoubleTap?: () => void;
 }
 
-export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: ReelPlayerProps) {
+export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoubleTap }: ReelPlayerProps) {
   const reduceMotion = useReducedMotion();
   const [beatIndex, setBeatIndex] = useState(0);
   const beatProgress = useMotionValue(0);
@@ -109,13 +123,46 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: Reel
     return acc;
   }, [reel, beatIndex]);
 
+  // Engagement: double-tap likes with a heart burst; single tap pauses.
+  const profileItem = useMemo(() => profileItemBySlug(reel.slug), [reel.slug]);
+  const [burst, setBurst] = useState<{ id: number; x: number; y: number } | null>(null);
+  const tapTimer = useRef<number | null>(null);
+
+  const handleClick = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (tapTimer.current !== null) {
+      window.clearTimeout(tapTimer.current);
+      tapTimer.current = null;
+      const rect = event.currentTarget.getBoundingClientRect();
+      setBurst({ id: Date.now(), x: event.clientX - rect.left, y: event.clientY - rect.top });
+      onDoubleTap?.();
+      return;
+    }
+    tapTimer.current = window.setTimeout(() => {
+      tapTimer.current = null;
+      onTogglePause();
+    }, 240);
+  };
+
+  useEffect(
+    () => () => {
+      if (tapTimer.current !== null) window.clearTimeout(tapTimer.current);
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!burst) return;
+    const timer = window.setTimeout(() => setBurst(null), 900);
+    return () => window.clearTimeout(timer);
+  }, [burst]);
+
   const Template = TEMPLATES[reel.template];
 
   return (
     <div
       data-testid="reel-player"
       className="relative h-full w-full cursor-pointer select-none overflow-hidden"
-      onClick={onTogglePause}
+      onClick={handleClick}
     >
       <Template
         reel={reel}
@@ -125,6 +172,57 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop }: Reel
         data={effectiveData}
         reducedMotion={!!reduceMotion}
       />
+
+      {/* Links this reel to the matching portfolio item in the left column */}
+      {profileItem && (
+        <button
+          type="button"
+          data-testid="reel-profile-chip"
+          onClick={(event) => {
+            event.stopPropagation();
+            window.dispatchEvent(
+              new CustomEvent("dynamo:focus-profile-item", { detail: profileItem })
+            );
+          }}
+          className="absolute bottom-[22%] left-3 z-30 flex items-center gap-1.5 rounded-full bg-ink/75 px-3 py-1.5 text-[11px] font-bold text-cream shadow-soft backdrop-blur transition hover:bg-ink hover:text-sage active:scale-95"
+        >
+          <Clapperboard className="size-3.5 text-sage" />
+          {profileItem.title}
+        </button>
+      )}
+
+      {/* Heart burst where the visitor double-tapped */}
+      {burst && (
+        <div
+          key={burst.id}
+          className="pointer-events-none absolute z-40"
+          style={{ left: burst.x, top: burst.y }}
+          data-testid="like-burst"
+        >
+          {BURST_HEARTS.map((heart, i) => (
+            <motion.span
+              key={i}
+              className="absolute block text-[#D96A6A]"
+              style={{
+                width: heart.size,
+                height: heart.size,
+                marginLeft: -heart.size / 2,
+                marginTop: -heart.size / 2,
+              }}
+              initial={{ x: 0, y: 0, scale: 0.4, opacity: 1 }}
+              animate={{
+                x: Math.cos(heart.angle) * heart.distance,
+                y: Math.sin(heart.angle) * heart.distance,
+                scale: 1.2,
+                opacity: 0,
+              }}
+              transition={{ duration: 0.75, ease: "easeOut" }}
+            >
+              <Heart style={{ width: "100%", height: "100%" }} fill="currentColor" />
+            </motion.span>
+          ))}
+        </div>
+      )}
 
       {/* One continuous thin bar along the bottom edge of the reel */}
       <div className="absolute inset-x-0 bottom-0 z-30 h-1 bg-white/20" data-testid="reel-progress">

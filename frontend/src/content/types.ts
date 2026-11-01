@@ -4,7 +4,8 @@ export type ReelTemplate =
   | "documentary"
   | "storytime"
   | "myth_vs_fact"
-  | "stat_reveal";
+  | "stat_reveal"
+  | "nudge";
 
 export type Pose =
   | "neutral"
@@ -51,15 +52,11 @@ export interface CastMember {
   framing: "full" | "waist";
 }
 
-export interface StoryItem {
-  caption: string;
-  image?: string;
-}
+// ---------- Portfolio (profile.json) ----------
 
-export interface Story {
-  id: string;
-  title: string;
-  items: StoryItem[];
+export interface SocialLink {
+  platform: string;
+  url: string;
 }
 
 export interface StatItem {
@@ -67,65 +64,83 @@ export interface StatItem {
   value: string;
 }
 
-export interface ExperienceItem {
-  role: string;
-  company: string;
-  period: string;
-  note: string;
-}
-
-export interface ProjectItem {
-  name: string;
-  description: string;
-  tag?: string;
-}
-
-export interface EducationItem {
+export interface ExperienceEntry {
   title: string;
   org: string;
-  period: string;
+  dates: string;
+  text: string;
+  reelSlug?: string;
 }
 
-export interface CertificationItem {
+export interface ProjectEntry {
+  name: string;
+  text: string;
+  tags: string[];
+  links: { label: string; url: string }[];
+  reelSlug?: string;
+}
+
+export interface WritingEntry {
   title: string;
-  issuer: string;
+  venue: string;
+  role: string;
   year: string;
+  url: string;
 }
 
-export interface LinkItem {
-  label: string;
-  url: string;
+export interface CommunityEntry {
+  title: string;
+  org: string;
+  dates: string;
+  text: string;
+  reelSlug?: string;
+}
+
+export interface EducationEntry {
+  title: string;
+  org: string;
+  dates: string;
+  text: string;
+}
+
+export interface CertificationEntry {
+  name: string;
+  issuer: string;
 }
 
 export interface Profile {
   name: string;
   oneLiner: string;
   photo: string;
+  location: string;
+  email: string;
   resumeUrl: string;
-  stories: Story[];
+  socials: SocialLink[];
   stats: StatItem[];
-  now: { reading: string; watching: string };
-  highlights: string[];
-  experience: ExperienceItem[];
-  projects: ProjectItem[];
-  education: EducationItem[];
-  certifications: CertificationItem[];
-  links: LinkItem[];
+  experience: ExperienceEntry[];
+  projects: ProjectEntry[];
+  writing: WritingEntry[];
+  community: CommunityEntry[];
+  education: EducationEntry[];
+  certifications: CertificationEntry[];
 }
 
+// ---------- "Off the clock" (now.json) ----------
+
 export interface Reading {
-  cover: string;
   title: string;
   author: string;
+  cover: string;
+  /** 0–100 percent through the book. */
   progress: number;
   take: string;
 }
 
-export interface WatchingItem {
+export interface WatchItem {
   title: string;
-  kind?: string;
-  note: string;
-  image?: string;
+  kind: string;
+  year: number;
+  why: string;
 }
 
 export interface WritingLink {
@@ -134,44 +149,26 @@ export interface WritingLink {
   url: string;
 }
 
-export interface LifeItem {
-  id: string;
-  label: string;
-  detail?: string;
-  streak?: number;
-}
-
 export interface Now {
-  updated: string;
+  updatedAt: string;
   reading: Reading;
-  watching: WatchingItem[];
+  watch: WatchItem[];
   writing: WritingLink[];
-  life: LifeItem[];
+  volunteering: { status: string; text: string };
+  spanish: { streak: number };
 }
 
-export interface ReviewData {
-  stars?: number;
-  verdict?: string;
-}
+// ---------- Reel ↔ portfolio item link ----------
 
-export interface BreakingNewsData {
-  headline?: string;
-  ticker?: string;
-}
+export type ProfileSectionKey =
+  | "experience"
+  | "projects"
+  | "writing"
+  | "community"
+  | "education";
 
-export interface DocumentaryData {
-  title?: string;
-}
-
-export interface MythVsFactData {
-  myth?: string;
-  fact?: string;
-}
-
-export interface StatRevealData {
-  value?: number;
-  unit?: string;
-  label?: string;
-  before?: string;
-  after?: string;
+export interface ProfileItemRef {
+  section: ProfileSectionKey;
+  itemId: string;
+  title: string;
 }

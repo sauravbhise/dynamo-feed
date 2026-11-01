@@ -7,6 +7,7 @@ export const templateSchema = z.enum([
   "storytime",
   "myth_vs_fact",
   "stat_reveal",
+  "nudge",
 ]);
 
 export const poseSchema = z.enum([
@@ -72,7 +73,7 @@ export const templateDataSchemas: Partial<Record<z.infer<typeof templateSchema>,
     })
     .partial()
     .strict(),
-  // storytime keeps no template extras (yet)
+  // storytime and nudge keep no template extras
   storytime: z.object({}).passthrough(),
 };
 
@@ -80,61 +81,77 @@ export const profileSchema = z.object({
   name: z.string().min(1),
   oneLiner: z.string().min(1),
   photo: z.string(),
-  resumeUrl: z.string(),
-  stories: z.array(
-    z.object({
-      id: z.string().min(1),
-      title: z.string().min(1),
-      items: z.array(
-        z.object({
-          caption: z.string().min(1),
-          image: z.string().optional(),
-        })
-      ),
-    })
+  location: z.string(),
+  email: z.string().min(1),
+  resumeUrl: z.string().min(1),
+  socials: z.array(
+    z.object({ platform: z.string().min(1), url: z.string().min(1) })
   ),
-  stats: z.array(z.object({ label: z.string().min(1), value: z.string() })),
-  now: z.object({ reading: z.string(), watching: z.string() }),
-  highlights: z.array(z.string()),
+  stats: z.array(z.object({ value: z.string(), label: z.string().min(1) })),
   experience: z.array(
     z.object({
-      role: z.string().min(1),
-      company: z.string().min(1),
-      period: z.string(),
-      note: z.string(),
+      title: z.string().min(1),
+      org: z.string(),
+      dates: z.string(),
+      text: z.string(),
+      reelSlug: z.string().optional(),
     })
   ),
   projects: z.array(
     z.object({
       name: z.string().min(1),
-      description: z.string(),
-      tag: z.string().optional(),
+      text: z.string(),
+      tags: z.array(z.string()),
+      links: z.array(z.object({ label: z.string(), url: z.string() })),
+      reelSlug: z.string().optional(),
+    })
+  ),
+  writing: z.array(
+    z.object({
+      title: z.string().min(1),
+      venue: z.string(),
+      role: z.string(),
+      year: z.string(),
+      url: z.string(),
+    })
+  ),
+  community: z.array(
+    z.object({
+      title: z.string().min(1),
+      org: z.string(),
+      dates: z.string(),
+      text: z.string(),
+      reelSlug: z.string().optional(),
     })
   ),
   education: z.array(
-    z.object({ title: z.string().min(1), org: z.string(), period: z.string() })
+    z.object({
+      title: z.string().min(1),
+      org: z.string(),
+      dates: z.string(),
+      text: z.string(),
+    })
   ),
   certifications: z.array(
-    z.object({ title: z.string().min(1), issuer: z.string(), year: z.string() })
+    z.object({ name: z.string().min(1), issuer: z.string() })
   ),
-  links: z.array(z.object({ label: z.string().min(1), url: z.string() })),
 });
 
 export const nowSchema = z.object({
-  updated: z.string().min(1),
+  updatedAt: z.string().min(1),
   reading: z.object({
-    cover: z.string(),
     title: z.string().min(1),
     author: z.string().min(1),
-    progress: z.number().min(0).max(1),
+    cover: z.string(),
+    progress: z.number().min(0).max(100),
     take: z.string(),
   }),
-  watching: z.array(
+  watch: z.array(
     z.object({
       title: z.string().min(1),
-      kind: z.string().optional(),
-      note: z.string(),
-      image: z.string().optional(),
+      kind: z.string(),
+      year: z.number().int(),
+      why: z.string(),
     })
   ),
   writing: z.array(
@@ -144,12 +161,11 @@ export const nowSchema = z.object({
       url: z.string().min(1),
     })
   ),
-  life: z.array(
-    z.object({
-      id: z.string().min(1),
-      label: z.string().min(1),
-      detail: z.string().optional(),
-      streak: z.number().int().nonnegative().optional(),
-    })
-  ),
+  volunteering: z.object({
+    status: z.string(),
+    text: z.string(),
+  }),
+  spanish: z.object({
+    streak: z.number().int().nonnegative(),
+  }),
 });
