@@ -83,13 +83,19 @@ function FeedFrameInner() {
 
   // Opening /r/:slug starts the feed at that reel.
   const initialIndexRef = useRef(-1);
+  // An unknown /r/:slug clears the URL to "/" — the scroll-sync effect keeps
+  // it there until the visitor actually moves to a different reel.
+  const slugResetRef = useRef(false);
   if (initialIndexRef.current < 0) {
     const match = window.location.pathname.match(/\/r\/([^/]+)/);
     const found = match ? order.findIndex((reel) => reel.slug === match[1]) : -1;
     initialIndexRef.current = found >= 0 ? found : 0;
     // An /r/:slug that matches no reel: start clean at the first reel and
     // clear the URL — nothing broken on screen.
-    if (found < 0 && match) window.history.replaceState(null, "", "/");
+    if (found < 0 && match) {
+      window.history.replaceState(null, "", "/");
+      slugResetRef.current = true;
+    }
   }
   const [activeIndex, setActiveIndex] = useState(initialIndexRef.current);
   const activeIndexRef = useRef(activeIndex);
@@ -194,8 +200,11 @@ function FeedFrameInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The URL follows the feed without adding history entries.
+  // The URL follows the feed without adding history entries — after an
+  // unknown-slug reset, "/" holds until a real navigation happens.
   useEffect(() => {
+    if (slugResetRef.current && activeIndex === initialIndexRef.current) return;
+    slugResetRef.current = false;
     const slug = order[activeIndex]?.slug;
     if (slug && window.location.pathname !== `/r/${slug}`) {
       window.history.replaceState(null, "", `/r/${slug}`);
