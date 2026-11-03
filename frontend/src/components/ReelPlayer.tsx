@@ -8,6 +8,7 @@ import { autoReelsFresh } from "../feed/autoReels";
 import { audioSrcFor, connectAnalyser, readLoudness } from "../audio/engine";
 import { useSound } from "../audio/SoundContext";
 import { VoiceProvider } from "../audio/VoiceContext";
+import { LiveCommentsProvider } from "./LiveCommentsContext";
 import { PausedProvider } from "./PausedContext";
 import type { Reel } from "../content/types";
 
@@ -29,9 +30,21 @@ interface ReelPlayerProps {
   onTogglePause: () => void;
   onLoop: () => void;
   onDoubleTap?: () => void;
+  /** Comments sheet open or the swipe hint showing — the lane waits. */
+  commentsSuppressed?: boolean;
+  onOpenComments?: () => void;
 }
 
-export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoubleTap }: ReelPlayerProps) {
+export function ReelPlayer({
+  reel,
+  active,
+  paused,
+  onTogglePause,
+  onLoop,
+  onDoubleTap,
+  commentsSuppressed,
+  onOpenComments,
+}: ReelPlayerProps) {
   const reduceMotion = useReducedMotion();
   const reelProgress = useMotionValue(0);
   const [audioDurations, setAudioDurations] = useState<Record<number, number>>({});
@@ -238,6 +251,22 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
     return acc;
   }, [reel, beatState.index]);
 
+  // Live cast comments: one lane fed from the same progress value that drives
+  // the beats — nothing during beat 1, then one at a time.
+  const beat1End = starts.length > 1 ? starts[1] / total : 1;
+  const liveComments = useMemo(
+    () => ({
+      comments: reel.comments,
+      template: reel.template,
+      active,
+      suppressed: !!commentsSuppressed,
+      progress: reelProgress,
+      beat1End,
+      onOpenComments: () => onOpenComments?.(),
+    }),
+    [reel, active, commentsSuppressed, reelProgress, beat1End, onOpenComments]
+  );
+
   // Engagement: double-tap likes with a heart burst; single tap pauses.
   const [burst, setBurst] = useState<{ id: number; x: number; y: number } | null>(null);
   const tapTimer = useRef<number | null>(null);
@@ -285,15 +314,17 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
             hasVoice: active && soundOn && !!audioSrcs[beatState.index],
           }}
         >
-          <Template
-            reel={reel}
-            beat={beat}
-            beatIndex={beatState.index}
-            progress={beatProgress}
-            data={effectiveData}
-            reducedMotion={!!reduceMotion}
-            active={active}
-          />
+          <LiveCommentsProvider value={liveComments}>
+            <Template
+              reel={reel}
+              beat={beat}
+              beatIndex={beatState.index}
+              progress={beatProgress}
+              data={effectiveData}
+              reducedMotion={!!reduceMotion}
+              active={active}
+            />
+          </LiveCommentsProvider>
         </VoiceProvider>
       </PausedProvider>
 

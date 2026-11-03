@@ -4,13 +4,23 @@ import { ReelCaption } from "../components/ReelCaption";
 import { ProfileReelChip } from "../components/ProfileReelChip";
 import { usePaused } from "../components/PausedContext";
 import { ReelBackground } from "./ReelBackground";
-import { castById } from "../content";
+import { castById, castColor } from "../content";
 import { str, type TemplateProps } from "./registry";
 
 export function BreakingNewsTemplate({ reel, beat, beatIndex, data, reducedMotion, active }: TemplateProps) {
   const paused = usePaused();
   const headline = str(data.headline) ?? reel.beats[0].caption;
   const ticker = str(data.ticker);
+
+  // Cast comments ride the ticker after the reel's own text — the duration
+  // scales with the length so the scrolling SPEED stays the same as always.
+  const plainTicker = [
+    ticker ?? "",
+    ...reel.comments.map(
+      (c) => `${(castById[c.authorId]?.name ?? c.authorId).toUpperCase()} WRITES: ${c.text}`
+    ),
+  ].join("  •  ");
+  const tickerDuration = Math.max(18, plainTicker.length * 0.14);
 
   return (
     <div className="absolute inset-0">
@@ -49,17 +59,32 @@ export function BreakingNewsTemplate({ reel, beat, beatIndex, data, reducedMotio
         </motion.div>
       </div>
 
-      {/* Ticker scrolls along the bottom on loop; freezes when paused */}
+      {/* Ticker scrolls along the bottom on loop; freezes when paused. Cast
+          comments append after the reel's own text at the same speed. */}
       {ticker && (
         <div className="absolute inset-x-0 bottom-1 z-10 flex overflow-hidden bg-ink/90 py-1.5" data-testid="news-ticker">
           <div
             className={`flex w-max animate-ticker motion-reduce:animate-none ${
               paused ? "[animation-play-state:paused]" : ""
             }`}
+            style={{ animationDuration: `${tickerDuration}s` }}
           >
             {[0, 1].map((copy) => (
               <span key={copy} aria-hidden={copy === 1} className="whitespace-nowrap pr-8 text-xs font-semibold text-cream/90">
                 {ticker}
+                {reel.comments.map((comment, i) => {
+                  const name = (castById[comment.authorId]?.name ?? comment.authorId).toUpperCase();
+                  return (
+                    <span key={comment.authorId + i}>
+                      {"  •  "}
+                      <span className="font-extrabold" style={{ color: castColor(comment.authorId) }}>
+                        {name}
+                      </span>
+                      {" WRITES: "}
+                      {comment.text}
+                    </span>
+                  );
+                })}
               </span>
             ))}
           </div>

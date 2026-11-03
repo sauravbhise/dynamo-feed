@@ -63,7 +63,7 @@ export function Layout() {
         </button>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_360px] desk:grid-cols-[320px_minmax(0,1fr)_360px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_360px] desk:grid-cols-[380px_minmax(0,1fr)_360px]">
         <aside
           data-testid="left-column"
           className="no-scrollbar hidden min-h-0 overflow-y-auto border-r border-white/5 bg-ink desk:block"

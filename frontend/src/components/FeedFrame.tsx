@@ -287,6 +287,13 @@ function FeedFrameInner() {
     setLoopHint(false);
   }, [activeIndex]);
 
+  // The hint also hides itself 4s after appearing (the live comments return).
+  useEffect(() => {
+    if (!loopHint) return;
+    const timer = window.setTimeout(() => setLoopHint(false), 4000);
+    return () => window.clearTimeout(timer);
+  }, [loopHint]);
+
   const handleLoop = useCallback(() => setLoopHint(true), []);
 
   const toggleLike = useCallback((id: string) => {
@@ -356,6 +363,8 @@ function FeedFrameInner() {
                   onTogglePause={() => setPaused((value) => !value)}
                   onLoop={handleLoop}
                   onDoubleTap={() => likeReel(reel.id)}
+                  commentsSuppressed={loopHint || commentsOpen}
+                  onOpenComments={() => setCommentsOpen(true)}
                 />
               )}
             </div>

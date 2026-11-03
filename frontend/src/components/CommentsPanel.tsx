@@ -1,22 +1,14 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
-import { castById, castColor } from "../content";
+import { CastAvatar, commentAuthorName } from "./CastAvatar";
 import type { ReelComment } from "../content/types";
 
 function CommentRow({ comment }: { comment: ReelComment }) {
-  const isVisitor = comment.authorId === "visitor";
-  const member = castById[comment.authorId];
-  const name = isVisitor ? "You" : member?.name ?? comment.authorId;
-  const color = castColor(comment.authorId);
+  const name = commentAuthorName(comment.authorId);
 
   return (
     <li className="flex gap-3" data-testid="comment-row">
-      <span
-        className="grid size-9 shrink-0 place-items-center rounded-full text-xs font-bold text-ink"
-        style={{ backgroundColor: color }}
-      >
-        {name.slice(0, 1)}
-      </span>
+      <CastAvatar authorId={comment.authorId} name={name} className="size-9 text-xs" />
       <div className="min-w-0">
         <p className="text-xs font-bold text-cream/90">{name}</p>
         <p className="mt-0.5 text-sm leading-snug text-cream/80">{comment.text}</p>
