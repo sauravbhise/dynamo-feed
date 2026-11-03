@@ -98,6 +98,7 @@ export const profileSchema = z.object({
       dates: z.string(),
       text: z.string(),
       reelSlug: z.string().optional(),
+      pageSlug: z.string().optional(),
     })
   ),
   projects: z.array(
@@ -107,6 +108,7 @@ export const profileSchema = z.object({
       tags: z.array(z.string()),
       links: z.array(z.object({ label: z.string(), url: z.string() })),
       reelSlug: z.string().optional(),
+      pageSlug: z.string().optional(),
     })
   ),
   writing: z.array(
@@ -116,6 +118,7 @@ export const profileSchema = z.object({
       role: z.string(),
       year: z.string(),
       url: z.string(),
+      pageSlug: z.string().optional(),
     })
   ),
   community: z.array(
@@ -125,6 +128,7 @@ export const profileSchema = z.object({
       dates: z.string(),
       text: z.string(),
       reelSlug: z.string().optional(),
+      pageSlug: z.string().optional(),
     })
   ),
   education: z.array(
@@ -133,11 +137,51 @@ export const profileSchema = z.object({
       org: z.string(),
       dates: z.string(),
       text: z.string(),
+      pageSlug: z.string().optional(),
     })
   ),
   certifications: z.array(
-    z.object({ name: z.string().min(1), issuer: z.string() })
+    z.object({ name: z.string().min(1), issuer: z.string(), pageSlug: z.string().optional() })
   ),
+});
+
+// ---------- Pages (pages.json) ----------
+export const pageStatSchema = z.object({
+  value: z.string(),
+  label: z.string().min(1),
+});
+
+export const pageBlockSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("heading"), text: z.string().min(1) }),
+  z.object({ type: z.literal("text"), text: z.string().min(1) }),
+  z.object({
+    type: z.literal("image"),
+    src: z.string().min(1),
+    alt: z.string().min(1),
+    caption: z.string().optional(),
+  }),
+  z.object({ type: z.literal("stats"), items: z.array(pageStatSchema).min(2).max(4) }),
+  z.object({
+    type: z.literal("chips"),
+    label: z.string().optional(),
+    items: z.array(z.string().min(1)).min(1),
+  }),
+  z.object({
+    type: z.literal("links"),
+    items: z.array(z.object({ label: z.string().min(1), url: z.string().min(1) })).min(1),
+  }),
+  z.object({ type: z.literal("quote"), text: z.string().min(1), by: z.string().optional() }),
+  z.object({ type: z.literal("divider") }),
+]);
+
+export const pageSchema = z.object({
+  slug: z.string().regex(/^[a-z0-9-]+$/, "must be a url-safe slug"),
+  kicker: z.string().optional(),
+  title: z.string().min(1),
+  subtitle: z.string().optional(),
+  dates: z.string().optional(),
+  reelSlug: z.string().optional(),
+  blocks: z.array(pageBlockSchema),
 });
 
 export const nowSchema = z.object({

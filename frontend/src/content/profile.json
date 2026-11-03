@@ -53,7 +53,8 @@
       "text": "This site: a portfolio you scroll like a short-video app, built by voice.",
       "tags": ["React", "TypeScript", "Framer Motion"],
       "links": [{ "label": "Code", "url": "https://github.com/sauravbhise/dynamo-feed" }],
-      "reelSlug": "breaking-built-by-voice"
+      "reelSlug": "breaking-built-by-voice",
+      "pageSlug": "example"
     },
     {
       "name": "B2B outreach pipeline",

@@ -57,6 +57,7 @@ export function LeftColumn() {
         dates: entry.dates,
         text: entry.text,
         reelSlug: entry.reelSlug,
+        pageSlug: entry.pageSlug,
       })),
     },
     {
@@ -69,6 +70,7 @@ export function LeftColumn() {
         text: entry.text,
         links: entry.links,
         reelSlug: entry.reelSlug,
+        pageSlug: entry.pageSlug,
       })),
     },
     {
@@ -79,6 +81,7 @@ export function LeftColumn() {
         title: entry.title,
         subtitle: [entry.venue, entry.role].filter(Boolean).join(" · "),
         dates: entry.year,
+        pageSlug: entry.pageSlug,
       })),
     },
     {
@@ -91,6 +94,7 @@ export function LeftColumn() {
         dates: entry.dates,
         text: entry.text,
         reelSlug: entry.reelSlug,
+        pageSlug: entry.pageSlug,
       })),
     },
     {
@@ -103,11 +107,13 @@ export function LeftColumn() {
           subtitle: entry.org,
           dates: entry.dates,
           text: entry.text,
+          pageSlug: entry.pageSlug,
         })),
         ...profile.certifications.map((entry, i) => ({
           id: `education-cert-${i}`,
           title: entry.name,
           subtitle: entry.issuer,
+          pageSlug: entry.pageSlug,
         })),
       ],
     },

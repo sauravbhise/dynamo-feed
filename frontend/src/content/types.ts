@@ -68,6 +68,7 @@ export interface ExperienceEntry {
   dates: string;
   text: string;
   reelSlug?: string;
+  pageSlug?: string;
 }
 
 export interface ProjectEntry {
@@ -76,6 +77,7 @@ export interface ProjectEntry {
   tags: string[];
   links: { label: string; url: string }[];
   reelSlug?: string;
+  pageSlug?: string;
 }
 
 export interface WritingEntry {
@@ -84,6 +86,7 @@ export interface WritingEntry {
   role: string;
   year: string;
   url: string;
+  pageSlug?: string;
 }
 
 export interface CommunityEntry {
@@ -92,6 +95,7 @@ export interface CommunityEntry {
   dates: string;
   text: string;
   reelSlug?: string;
+  pageSlug?: string;
 }
 
 export interface EducationEntry {
@@ -99,11 +103,13 @@ export interface EducationEntry {
   org: string;
   dates: string;
   text: string;
+  pageSlug?: string;
 }
 
 export interface CertificationEntry {
   name: string;
   issuer: string;
+  pageSlug?: string;
 }
 
 export interface Profile {
@@ -169,4 +175,29 @@ export interface ProfileItemRef {
   section: ProfileSectionKey;
   itemId: string;
   title: string;
+}
+
+// ---------- Pages (pages.json) ----------
+
+export type PageBlock =
+  | { type: "heading"; text: string }
+  | { type: "text"; text: string }
+  | { type: "image"; src: string; alt: string; caption?: string }
+  | { type: "stats"; items: { value: string; label: string }[] }
+  | { type: "chips"; label?: string; items: string[] }
+  | { type: "links"; items: { label: string; url: string }[] }
+  | { type: "quote"; text: string; by?: string }
+  | { type: "divider" };
+
+export interface Page {
+  /** Unique, url-safe — the page lives at /p/<slug>. */
+  slug: string;
+  /** Small label above the title, e.g. "Project". */
+  kicker?: string;
+  title: string;
+  subtitle?: string;
+  dates?: string;
+  /** Jumps the feed to this reel from the page. */
+  reelSlug?: string;
+  blocks: PageBlock[];
 }

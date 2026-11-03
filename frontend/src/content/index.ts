@@ -1,11 +1,13 @@
 import { z } from "zod";
 import profileJson from "./profile.json";
+import pagesJson from "./pages.json";
 import castJson from "./cast.json";
 import reelsJson from "./reels.json";
 import nowJson from "./now.json";
 import {
   castMemberSchema,
   nowSchema,
+  pageSchema,
   profileSchema,
   reelSchema,
   templateDataSchemas,
@@ -15,6 +17,7 @@ import type {
   Beat,
   CastMember,
   Now,
+  Page,
   Profile,
   ProfileItemRef,
   ProfileSectionKey,
@@ -124,6 +127,49 @@ function parseReels(data: unknown): Reel[] {
 }
 
 export const reels: Reel[] = parseReels(reelsJson);
+
+// ---------- pages.json — invalid pages (or blocks) are skipped ----------
+function parsePages(data: unknown): Page[] {
+  if (!Array.isArray(data)) {
+    console.warn("[content] pages.json is invalid — no pages loaded (not an array).");
+    return [];
+  }
+  const out: Page[] = [];
+  const seen = new Set<string>();
+  data.forEach((entry, index) => {
+    const result = pageSchema.safeParse(entry);
+    if (!result.success) {
+      console.warn(
+        `[content] pages.json: page ${index} (${
+          (entry as { slug?: string } | undefined)?.slug ?? "unknown"
+        }) is invalid — skipping it. Fields:`,
+        result.error.flatten().fieldErrors
+      );
+      return;
+    }
+    const page = result.data as Page;
+    if (seen.has(page.slug)) {
+      console.warn(`[content] pages.json: duplicate slug "${page.slug}" — skipping the later page.`);
+      return;
+    }
+    seen.add(page.slug);
+    out.push(page);
+  });
+  return out;
+}
+
+export const pages: Page[] = parsePages(pagesJson);
+
+export const pageBySlug = (slug: string): Page | undefined => pages.find((page) => page.slug === slug);
+
+// A pageSlug in profile.json pointing at no page hides its "Read more"
+// button — warned about once per slug.
+const warnedPageSlugs = new Set<string>();
+export function warnUnknownPageSlug(slug: string): void {
+  if (warnedPageSlugs.has(slug)) return;
+  warnedPageSlugs.add(slug);
+  console.warn(`[content] pageSlug "${slug}" matches no page in pages.json — "Read more" hidden.`);
+}
 
 // ---------- now.json — null hides the right column and its auto reels ----------
 export const now: Now | null = safeParse(nowSchema, nowJson, "now.json");

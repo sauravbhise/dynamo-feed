@@ -3,6 +3,7 @@ import { MotionConfig } from "framer-motion";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Layout } from "./components/Layout";
+import { PageLayer } from "./components/PageLayer";
 
 const SPRITE_SHEETS = ["/cast/reginald.webp", "/cast/blaze.webp", "/cast/marge.webp", "/cast/tia.webp"];
 
@@ -19,6 +20,7 @@ export default function App() {
     <ErrorBoundary>
       <MotionConfig reducedMotion="user">
         <Layout />
+        <PageLayer />
         <Toaster
           position="bottom-center"
           toastOptions={{

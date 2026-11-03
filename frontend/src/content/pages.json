@@ -1,0 +1,47 @@
+[
+  {
+    "slug": "example",
+    "kicker": "Project",
+    "title": "REPLACE: Project title",
+    "subtitle": "REPLACE: One-line summary of the project.",
+    "dates": "REPLACE: 2026",
+    "blocks": [
+      { "type": "heading", "text": "REPLACE: Section heading" },
+      {
+        "type": "text",
+        "text": "REPLACE: First paragraph about the project — what it is, who it was for and what you did.\n\nSecond paragraph with **bold** text and a [label](https://example.com) link."
+      },
+      {
+        "type": "image",
+        "src": "/pages/example/cover.webp",
+        "alt": "REPLACE: what the image shows",
+        "caption": "REPLACE: image caption"
+      },
+      {
+        "type": "stats",
+        "items": [
+          { "value": "REPLACE", "label": "REPLACE: metric one" },
+          { "value": "REPLACE", "label": "REPLACE: metric two" },
+          { "value": "REPLACE", "label": "REPLACE: metric three" }
+        ]
+      },
+      {
+        "type": "chips",
+        "label": "Built with",
+        "items": ["REPLACE: tech one", "REPLACE: tech two", "REPLACE: tech three"]
+      },
+      {
+        "type": "quote",
+        "text": "REPLACE: a quote about the work.",
+        "by": "REPLACE: who said it"
+      },
+      { "type": "divider" },
+      {
+        "type": "links",
+        "items": [
+          { "label": "REPLACE: live demo", "url": "https://example.com" }
+        ]
+      }
+    ]
+  }
+]

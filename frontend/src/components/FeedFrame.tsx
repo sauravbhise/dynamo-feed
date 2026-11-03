@@ -287,6 +287,13 @@ function FeedFrameInner() {
     setLoopHint(false);
   }, [activeIndex]);
 
+  // A full-screen page layer pauses the feed underneath; closing resumes it.
+  useEffect(() => {
+    const onVisibility = (event: Event) => setPaused((event as CustomEvent<boolean>).detail);
+    window.addEventListener("dynamo:page-visibility", onVisibility);
+    return () => window.removeEventListener("dynamo:page-visibility", onVisibility);
+  }, []);
+
   // The hint also hides itself 4s after appearing (the live comments return).
   useEffect(() => {
     if (!loopHint) return;

@@ -1,4 +1,5 @@
-import { ArrowUpRight, Clapperboard } from "lucide-react";
+import { ArrowUpRight, BookOpen, Clapperboard } from "lucide-react";
+import { pageBySlug, warnUnknownPageSlug } from "../../content";
 
 /** One short row inside a collapsible section — title, subtitle, dates, one line. */
 export interface ProfileItemDisplay {
@@ -8,6 +9,7 @@ export interface ProfileItemDisplay {
   dates?: string;
   text?: string;
   reelSlug?: string;
+  pageSlug?: string;
   links?: { label: string; url: string }[];
 }
 
@@ -20,6 +22,9 @@ export function ItemCard({
   highlighted: boolean;
   onWatchReel: (slug: string) => void;
 }) {
+  // "Read more" only when the pageSlug matches a loaded page.
+  const page = item.pageSlug ? pageBySlug(item.pageSlug) : undefined;
+  if (item.pageSlug && !page) warnUnknownPageSlug(item.pageSlug);
   return (
     <div
       id={`profile-item-${item.id}`}
@@ -53,16 +58,35 @@ export function ItemCard({
           ))}
         </div>
       )}
-      {item.reelSlug && (
-        <button
-          type="button"
-          data-testid={`watch-reel-${item.reelSlug}`}
-          onClick={() => onWatchReel(item.reelSlug!)}
-          className="mt-2.5 flex items-center gap-1.5 rounded-full bg-ink/60 px-3 py-1.5 text-[11px] font-bold text-cream transition hover:bg-ink hover:text-sage active:scale-95"
-        >
-          <Clapperboard className="size-3.5" />
-          Watch the reel
-        </button>
+      {(item.reelSlug || page) && (
+        <div className="mt-2.5 flex flex-wrap gap-2">
+          {item.reelSlug && (
+            <button
+              type="button"
+              data-testid={`watch-reel-${item.reelSlug}`}
+              onClick={() => onWatchReel(item.reelSlug!)}
+              className="flex items-center gap-1.5 rounded-full bg-ink/60 px-3 py-1.5 text-[11px] font-bold text-cream transition hover:bg-ink hover:text-sage active:scale-95"
+            >
+              <Clapperboard className="size-3.5" />
+              Watch the reel
+            </button>
+          )}
+          {page && item.pageSlug && (
+            <button
+              type="button"
+              data-testid={`read-more-${item.pageSlug}`}
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent<string>("dynamo:open-page", { detail: item.pageSlug })
+                )
+              }
+              className="flex items-center gap-1.5 rounded-full bg-ink/60 px-3 py-1.5 text-[11px] font-bold text-cream transition hover:bg-ink hover:text-sage active:scale-95"
+            >
+              <BookOpen className="size-3.5" />
+              Read more
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

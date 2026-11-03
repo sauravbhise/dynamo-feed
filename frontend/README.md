@@ -97,6 +97,49 @@ script); ElevenLabs is the default, add another adapter and set
 be checked before any real voice exists. Auto-reels are included automatically —
 the script reads the same generated reels as the app.
 
+### Adding a page
+
+A page is one object in `src/content/pages.json` — no code changes needed. It
+lives at `/p/<slug>`:
+
+```json
+{
+  "slug": "my-project",
+  "kicker": "Project",
+  "title": "My project",
+  "subtitle": "One-line summary.",
+  "dates": "2025 – 2026",
+  "reelSlug": "my-project-reel",
+  "blocks": []
+}
+```
+
+- `slug` is url-safe and unique; `kicker`, `subtitle`, `dates` and `reelSlug`
+  are optional (`reelSlug` adds a "Watch the reel" jump to the feed).
+- `blocks` is a list of typed blocks, rendered top to bottom:
+
+```json
+{ "type": "heading", "text": "Section heading" }
+{ "type": "text", "text": "A paragraph.\n\nAnother one — **bold** and a [label](https://example.com) link work." }
+{ "type": "image", "src": "/pages/my-project/cover.webp", "alt": "What it shows", "caption": "Optional caption" }
+{ "type": "stats", "items": [{ "value": "50k", "label": "users" }, { "value": "12", "label": "services" }] }
+{ "type": "chips", "label": "Built with", "items": ["React", "AWS"] }
+{ "type": "links", "items": [{ "label": "Live demo", "url": "https://example.com" }] }
+{ "type": "quote", "text": "A quote about the work.", "by": "Who said it" }
+{ "type": "divider" }
+```
+
+- Text paragraphs are separated by a blank line; only `**bold**` and
+  `[label](url)` are supported inline.
+- Images live in `public/pages/<slug>/` — a broken image hides its whole
+  block. Stats render as a row of 2–4 number cards.
+- **Link a page from the left column**: add `"pageSlug": "my-project"` to any
+  experience/project/writing/community/education item in `profile.json` — a
+  "Read more" button appears next to "Watch the reel". Pages nothing links to
+  are still reachable at `/p/<slug>`.
+- An unknown slug at `/p/…` shows a short "This page doesn't exist" message —
+  never a blank screen.
+
 Sound is currently **disabled**: set `SOUND_ENABLED` to `true` in
 `src/config.ts` to turn sound back on. While it is `false` no manifest is
 fetched and no sound UI renders; the `?audiotest=1` URL switch still works for
