@@ -1,5 +1,5 @@
-import { useSyncExternalStore } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, useMotionValueEvent } from "framer-motion";
 import { CharacterSlot, headTopPercent } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
 import { ProfileReelChip } from "../components/ProfileReelChip";
@@ -16,15 +16,20 @@ export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, redu
   const fact = typeof data.fact === "string" ? data.fact : undefined;
   const flipOnThisBeat = myth !== undefined && fact !== undefined && typeof beat.data?.myth === "string";
 
-  // The flip listens to the beat-consistent progress through a store
-  // subscription — render-phase-safe (a setState from a progress event during
-  // another component's render is what tripped React warnings) — and it
-  // resets for free: per-beat progress returns to 0 at every beat change.
-  const flipped = useSyncExternalStore(
-    (onChange) => progress.on("change", onChange),
-    () => (flipOnThisBeat ? progress.get() >= 0.5 : false),
-    () => false
-  );
+  // The flip listens to the beat-consistent progress value and always resets
+  // with beatIndex, so a flip never bleeds across beats.
+  const [flipped, setFlipped] = useState(false);
+  useMotionValueEvent(progress, "change", (value) => {
+    if (!flipOnThisBeat) return;
+    const next = value >= 0.5;
+    // Deferred out of any upstream render phase: framer's useTransform
+    // re-syncs its value DURING ReelPlayer's render, and a setState mid-render
+    // trips React's "Cannot update a component while rendering" warning.
+    queueMicrotask(() => setFlipped((prev) => (prev === next ? prev : next)));
+  });
+  useEffect(() => {
+    setFlipped(false);
+  }, [beatIndex]);
   // Once the card has flipped it stays flipped for the rest of the reel.
   const isFlipped = flipOnThisBeat ? flipped : fact !== undefined && beatIndex > 0;
 

@@ -1,5 +1,5 @@
-import { useSyncExternalStore } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, useMotionValueEvent } from "framer-motion";
 import { ChevronUp } from "lucide-react";
 import { CharacterSlot } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
@@ -18,15 +18,20 @@ export function StorytimeTemplate({ reel, beat, beatIndex, progress, reducedMoti
   const hasNextPart = info !== null && info.part < info.total;
   // A typing indicator shows for the first 700ms of each beat (the beat is
   // lengthened by exactly that), then the line drops in as the newest bubble.
-  // Derived from the beat-consistent progress through a store subscription —
-  // render-phase-safe (a setState from a progress event during another
-  // component's render is what tripped React warnings) — and it resets for
-  // free: per-beat progress returns to 0 at every beat change.
-  const typing = useSyncExternalStore(
-    (onChange) => progress.on("change", onChange),
-    () => progress.get() < TYPING_MS / beatDurationMs(beat, "storytime"),
-    () => true
-  );
+  // The state always resets with beatIndex, and the progress events it listens
+  // to are published in the same tick as the index — so it can never describe
+  // the wrong beat.
+  const [typing, setTyping] = useState(true);
+  useMotionValueEvent(progress, "change", (value) => {
+    const next = value < TYPING_MS / beatDurationMs(beat, "storytime");
+    // Deferred out of any upstream render phase: framer's useTransform
+    // re-syncs its value DURING ReelPlayer's render, and a setState mid-render
+    // trips React's "Cannot update a component while rendering" warning.
+    queueMicrotask(() => setTyping((prev) => (prev === next ? prev : next)));
+  });
+  useEffect(() => {
+    setTyping(true);
+  }, [beatIndex]);
 
   // The bubbles ARE the caption here: the current line plus the one before it,
   // older ones fading out. Never more than two.
