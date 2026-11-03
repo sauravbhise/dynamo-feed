@@ -50,7 +50,8 @@ export function StorytimeTemplate({ reel, beat, beatIndex, progress, reducedMoti
 
       {/* Bubbles run from 8% to 50% — always ending above Tia's head */}
       <div
-        className="absolute inset-x-3 top-[8%] bottom-[50%] z-10 flex flex-col justify-start gap-2.5"
+        aria-live="polite"
+        className="absolute inset-x-3 top-[8%] bottom-[50%] z-10 flex flex-col justify-start gap-2.5 rail-clear-right"
         data-testid="story-bubbles"
       >
         {visible.slice(0, -1).map((b) => (

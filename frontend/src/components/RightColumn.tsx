@@ -7,6 +7,8 @@ import { LearningSpanishCard } from "./cards/LearningSpanishCard";
 
 /** Off the clock — renders the card list in order; each card is its own component. */
 export function RightColumn({ showTitle = true }: { showTitle?: boolean }) {
+  // now.json invalid → hide the right column entirely (its auto reels hide too).
+  if (!now) return null;
   return (
     <div className="flex h-full min-h-0 flex-col" data-testid="clock-column">
       <div className={showTitle ? "shrink-0 px-6 pb-4 pt-6" : "shrink-0 px-6 pb-2"}>
@@ -33,7 +35,7 @@ export function RightColumn({ showTitle = true }: { showTitle?: boolean }) {
       >
         <NowReadingCard reading={now.reading} />
         <WatchThisCard items={now.watch} />
-        {now.writing.length > 0 && <LatestWritingCard posts={now.writing} />}
+        <LatestWritingCard posts={now.writing} />
         <VolunteeringCard volunteering={now.volunteering} />
         <LearningSpanishCard streak={now.spanish.streak} />
       </div>

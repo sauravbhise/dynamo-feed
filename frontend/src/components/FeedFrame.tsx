@@ -87,6 +87,9 @@ function FeedFrameInner() {
     const match = window.location.pathname.match(/\/r\/([^/]+)/);
     const found = match ? order.findIndex((reel) => reel.slug === match[1]) : -1;
     initialIndexRef.current = found >= 0 ? found : 0;
+    // An /r/:slug that matches no reel: start clean at the first reel and
+    // clear the URL — nothing broken on screen.
+    if (found < 0 && match) window.history.replaceState(null, "", "/");
   }
   const [activeIndex, setActiveIndex] = useState(initialIndexRef.current);
   const activeIndexRef = useRef(activeIndex);
@@ -318,7 +321,9 @@ function FeedFrameInner() {
     <div className="flex h-full w-full items-center justify-center gap-5 md:gap-6" data-testid="feed-stage-inner">
       <div
         data-testid="feed-frame"
-        className="relative aspect-[9/16] h-full max-h-full max-w-full overflow-hidden rounded-3xl bg-[#191416] shadow-card max-md:aspect-auto max-md:w-full max-md:rounded-none"
+        role="region"
+        aria-label="Reels feed"
+        className="reel-frame relative aspect-[9/16] h-full max-h-full max-w-full overflow-hidden rounded-3xl bg-[#191416] shadow-card max-md:aspect-auto max-md:w-full max-md:rounded-none"
       >
         <div
           ref={scrollRef}
@@ -327,7 +332,13 @@ function FeedFrameInner() {
           className="no-scrollbar h-full snap-y snap-mandatory overflow-y-auto overscroll-contain"
         >
           {order.map((reel, i) => (
-            <div key={`${reel.id}-${i}`} className="h-full w-full snap-start" data-testid={`feed-slot-${i}`}>
+            <div
+              key={`${reel.id}-${i}`}
+              role="region"
+              aria-label={reel.beats[0]?.caption ?? reel.slug}
+              className="h-full w-full snap-start"
+              data-testid={`feed-slot-${i}`}
+            >
               {Math.abs(i - activeIndex) <= 1 && (
                 <ReelPlayer
                   reel={reel}

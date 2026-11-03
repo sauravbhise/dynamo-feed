@@ -38,6 +38,25 @@
   }
 }
 
+/* Every interactive element shows a visible sage ring on keyboard focus. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid #93b29c;
+  outline-offset: 2px;
+}
+
+/* Below 768px the action rail overlays the reel — reserve its column on the
+   right edge: centered characters shift left, cards and bubbles keep the
+   same margin away from the rail. */
+@media (max-width: 767px) {
+  .reel-frame {
+    --rail-inset: 64px;
+  }
+
+  .rail-clear-right {
+    margin-right: var(--rail-inset, 0px);
+  }
+}
+
 @keyframes ticker {
   from {
     transform: translateX(0);

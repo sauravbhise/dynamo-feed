@@ -1,4 +1,4 @@
-import { now } from "../content";
+import { contentUsable, now } from "../content";
 import { reelSchema } from "../content/schemas";
 import autoScriptsJson from "../content/autoScripts.json";
 import type { Beat, Pose, Reel, ReelTemplate } from "../content/types";
@@ -48,14 +48,6 @@ const JOKE_LIKES = [
   9999, 10000,
 ];
 
-// Placeholder drafts never become reels: empty fields or anything containing
-// "REPLACE" is skipped.
-const usable = (value: unknown): boolean =>
-  value !== undefined &&
-  value !== null &&
-  !(typeof value === "string" && value.trim() === "") &&
-  !(typeof value === "string" && /replace/i.test(value));
-
 interface ScriptBeat {
   characterId: string;
   pose: Pose;
@@ -89,7 +81,7 @@ type KindKey = keyof AutoScripts;
 
 // Generated reels carry a small "New" chip while now.json was updated this week.
 export const autoReelsFresh: boolean =
-  Date.now() - new Date(now.updatedAt).getTime() < 7 * 24 * 60 * 60 * 1000;
+  !!now && Date.now() - new Date(now.updatedAt).getTime() < 7 * 24 * 60 * 60 * 1000;
 
 function pickComments(
   pool: { authorId: string; text: string }[],
@@ -107,13 +99,20 @@ function pickComments(
   return comments;
 }
 
-function makeReel(kind: KindKey, slug: string, values: Record<string, string | number>): Reel {
+// Returns null (with a console warning) instead of throwing — one bad script
+// or one invalid generated reel never takes down the feed.
+function makeReel(kind: KindKey, slug: string, values: Record<string, string | number>): Reel | null {
   const kindScripts: KindScripts = autoScripts[kind];
+  if (!kindScripts?.scripts?.length) {
+    console.warn(`[content] autoScripts.json: no scripts for "${kind}" — skipping ${slug}.`);
+    return null;
+  }
   const hash = hashString(slug);
 
   // The Spanish streak gets extra hype when it is a multiple of 100.
   const milestone =
     kind === "spanish" &&
+    now !== null &&
     now.spanish.streak % 100 === 0 &&
     autoScripts.spanish.milestoneScript;
   const pool = milestone ? [autoScripts.spanish.milestoneScript as ScriptVariant] : kindScripts.scripts;
@@ -142,23 +141,32 @@ function makeReel(kind: KindKey, slug: string, values: Record<string, string | n
   // Generated reels pass the exact same validation as reels.json.
   const result = reelSchema.safeParse(generated);
   if (!result.success) {
-    console.error(`[autoReels] ${slug} failed validation`, result.error.flatten());
-    throw new Error(`Invalid auto reel: ${slug}`);
+    console.warn(
+      `[content] autoScripts.json: generated reel ${slug} failed validation — skipping it. Fields:`,
+      result.error.flatten().fieldErrors
+    );
+    return null;
   }
   return result.data as Reel;
 }
 
 function buildAutoReels(): Reel[] {
+  // now.json is invalid (or missing) — no auto reels at all.
+  if (!now) return [];
+
   const generated: Reel[] = [];
+  const push = (reel: Reel | null) => {
+    if (reel) generated.push(reel);
+  };
 
   const reading = now.reading;
   if (
-    usable(reading.title) &&
-    usable(reading.author) &&
-    usable(reading.take) &&
+    contentUsable(reading.title) &&
+    contentUsable(reading.author) &&
+    contentUsable(reading.take) &&
     typeof reading.progress === "number"
   ) {
-    generated.push(
+    push(
       makeReel("reading", `auto-reading-${slugify(reading.title)}`, {
         title: reading.title,
         author: reading.author,
@@ -169,8 +177,8 @@ function buildAutoReels(): Reel[] {
   }
 
   now.watch.forEach((item) => {
-    if (usable(item.title) && usable(item.kind) && usable(item.why) && typeof item.year === "number") {
-      generated.push(
+    if (contentUsable(item.title) && contentUsable(item.kind) && contentUsable(item.why) && typeof item.year === "number") {
+      push(
         makeReel("watch", `auto-watch-${slugify(item.title)}`, {
           title: item.title,
           kind: item.kind,
@@ -182,15 +190,15 @@ function buildAutoReels(): Reel[] {
   });
 
   if (now.spanish.streak > 0) {
-    generated.push(
+    push(
       makeReel("spanish", `auto-spanish-${now.spanish.streak}`, {
         streak: now.spanish.streak,
       })
     );
   }
 
-  if (usable(now.volunteering.status) && usable(now.volunteering.text)) {
-    generated.push(
+  if (contentUsable(now.volunteering.status) && contentUsable(now.volunteering.text)) {
+    push(
       makeReel("volunteering", "auto-volunteering", {
         status: now.volunteering.status,
         text: now.volunteering.text,
@@ -199,8 +207,8 @@ function buildAutoReels(): Reel[] {
   }
 
   now.writing.forEach((post) => {
-    if (usable(post.title) && usable(post.url)) {
-      generated.push(
+    if (contentUsable(post.title) && contentUsable(post.url)) {
+      push(
         makeReel("writing", `auto-writing-${slugify(post.title)}`, {
           title: post.title,
           platform: post.platform,

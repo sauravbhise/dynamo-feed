@@ -8,6 +8,12 @@ const SOCIAL_ICONS: Record<string, LucideIcon> = {
   email: Mail,
 };
 
+const SOCIAL_NAMES: Record<string, string> = {
+  github: "GitHub",
+  linkedin: "LinkedIn",
+  email: "Email",
+};
+
 function socialIcon(platform: string): LucideIcon {
   return SOCIAL_ICONS[platform.toLowerCase()] ?? Globe;
 }
@@ -18,14 +24,15 @@ export function SocialLinks({ socials, resumeUrl }: { socials: SocialLink[]; res
     <div className="flex justify-center gap-3" data-testid="social-links">
       {socials.map((social) => {
         const Icon = socialIcon(social.platform);
+        const label = SOCIAL_NAMES[social.platform.toLowerCase()] ?? social.platform;
         return (
           <a
             key={social.platform}
             href={social.url}
             target={social.url.startsWith("mailto:") ? undefined : "_blank"}
             rel="noreferrer"
-            aria-label={social.platform}
-            title={social.platform}
+            aria-label={label}
+            title={label}
             data-testid={`social-${social.platform}`}
             className="grid size-11 place-items-center rounded-full bg-surface text-cream/80 shadow-soft transition hover:-translate-y-0.5 hover:text-sage"
           >
@@ -37,8 +44,8 @@ export function SocialLinks({ socials, resumeUrl }: { socials: SocialLink[]; res
         href={resumeUrl}
         target="_blank"
         rel="noreferrer"
-        aria-label="View resume"
-        title="View resume"
+        aria-label="Resume"
+        title="Resume"
         data-testid="social-resume"
         className="grid size-11 place-items-center rounded-full bg-surface text-cream/80 shadow-soft transition hover:-translate-y-0.5 hover:text-sage"
       >

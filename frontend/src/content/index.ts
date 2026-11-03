@@ -22,36 +22,111 @@ import type {
   ReelTemplate,
 } from "./types";
 
+// ---------- Validation that never blanks the site ----------
+// Each file is validated separately; a failure logs a clear warning naming
+// the file and the offending fields, and that file degrades gracefully.
+
 // ZodType's third parameter (input) is decoupled so `.default()` fields don't
 // make the parsed output's type optional.
-function parse<T>(schema: z.ZodType<T, z.ZodTypeDef, unknown>, data: unknown, file: string): T {
+function safeParse<T>(
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+  data: unknown,
+  file: string
+): T | null {
   const result = schema.safeParse(data);
   if (!result.success) {
-    console.error(`[content] ${file} failed validation`, result.error.flatten());
-    throw new Error(`Invalid content file: ${file}`);
+    console.warn(
+      `[content] ${file} is invalid — continuing without it. Fields:`,
+      result.error.flatten().fieldErrors
+    );
+    return null;
   }
   return result.data;
 }
 
-export const profile: Profile = parse(profileSchema, profileJson, "profile.json");
-export const cast: CastMember[] = parse(z.array(castMemberSchema), castJson, "cast.json");
-export const reels: Reel[] = parse(z.array(reelSchema), reelsJson, "reels.json");
-export const now: Now = parse(nowSchema, nowJson, "now.json");
+// Draft fields (empty, or containing "REPLACE") never render anywhere —
+// the same rule the auto-reel generator uses.
+export function contentUsable(value: unknown): boolean {
+  return (
+    value !== undefined &&
+    value !== null &&
+    !(typeof value === "string" && value.trim() === "") &&
+    !(typeof value === "string" && /replace/i.test(value))
+  );
+}
 
-// Validate each beat's template extras so a wrong field fails at load time.
-reels.forEach((reel) => {
-  const schema = templateDataSchemas[reel.template as ReelTemplate];
-  if (!schema) return;
-  reel.beats.forEach((beat, i) => {
-    if (beat.data === undefined) return;
-    const result = schema.safeParse(beat.data);
+// ---------- profile.json — a minimal header with the name only ----------
+function fallbackProfile(): Profile {
+  const rawName = (profileJson as { name?: unknown } | undefined)?.name;
+  const name = contentUsable(rawName) ? String(rawName) : "Saurav Bhise";
+  return {
+    name,
+    oneLiner: "",
+    photo: "/avatar.svg",
+    location: "",
+    email: "",
+    resumeUrl: "",
+    socials: [],
+    skills: [],
+    experience: [],
+    projects: [],
+    writing: [],
+    community: [],
+    education: [],
+    certifications: [],
+  };
+}
+
+const parsedProfile = safeParse(profileSchema, profileJson, "profile.json");
+export const profileValid = parsedProfile !== null;
+export const profile: Profile = parsedProfile ?? fallbackProfile();
+
+// ---------- cast.json — an empty cast (characters just don't render) ----------
+export const cast: CastMember[] =
+  safeParse(z.array(castMemberSchema), castJson, "cast.json") ?? [];
+
+// ---------- reels.json — skip the invalid reels, keep the rest ----------
+function parseReels(data: unknown): Reel[] {
+  if (!Array.isArray(data)) {
+    console.warn("[content] reels.json is invalid — no reels loaded (not an array).");
+    return [];
+  }
+  const out: Reel[] = [];
+  data.forEach((entry, index) => {
+    const result = reelSchema.safeParse(entry);
     if (!result.success) {
-      throw new Error(
-        `[content] ${reel.id} beat ${i}: invalid ${reel.template} data — ${result.error.message}`
+      console.warn(
+        `[content] reels.json: reel ${index} (${
+          (entry as { id?: string } | undefined)?.id ?? "unknown"
+        }) is invalid — skipping it. Fields:`,
+        result.error.flatten().fieldErrors
       );
+      return;
     }
+    const reel = result.data as Reel;
+    // A reel whose template extras are wrong would render broken — skip it too.
+    const dataSchema = templateDataSchemas[reel.template as ReelTemplate];
+    let dataOk = true;
+    if (dataSchema) {
+      for (let i = 0; i < reel.beats.length && dataOk; i++) {
+        if (reel.beats[i].data === undefined) continue;
+        if (!dataSchema.safeParse(reel.beats[i].data).success) {
+          console.warn(
+            `[content] reels.json: reel ${reel.id} beat ${i} has invalid ${reel.template} data — skipping the reel.`
+          );
+          dataOk = false;
+        }
+      }
+    }
+    if (dataOk) out.push(reel);
   });
-});
+  return out;
+}
+
+export const reels: Reel[] = parseReels(reelsJson);
+
+// ---------- now.json — null hides the right column and its auto reels ----------
+export const now: Now | null = safeParse(nowSchema, nowJson, "now.json");
 
 export const castById: Record<string, CastMember> = Object.fromEntries(
   cast.map((member) => [member.id, member])

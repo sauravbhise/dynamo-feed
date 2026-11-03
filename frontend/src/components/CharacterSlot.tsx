@@ -95,7 +95,9 @@ export function CharacterSlot({
       ? { left: 16 }
       : align === "right"
         ? { right: 16 }
-        : { left: "50%", transform: "translateX(-50%)" };
+        // Centered characters shift left on mobile so the reserved action-rail
+        // column on the right never covers their visible area.
+        : { left: "50%", transform: "translateX(calc(-50% - var(--rail-inset, 0px) / 2))" };
 
   // Full characters stand on the ground line just above the caption zone;
   // waist characters (already cut at the waist in the sheet) sit flush on the

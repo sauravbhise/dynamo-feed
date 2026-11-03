@@ -1,6 +1,11 @@
 import { Users } from "lucide-react";
+import { contentUsable } from "../../content";
 
 export function VolunteeringCard({ volunteering }: { volunteering: { status: string; text: string } }) {
+  // Placeholder drafts never render; nothing left → no card.
+  const showStatus = contentUsable(volunteering.status);
+  const showText = contentUsable(volunteering.text);
+  if (!showStatus && !showText) return null;
   return (
     <section className="rounded-2xl bg-surface p-5 shadow-soft" data-testid="now-volunteering">
       <div className="flex items-start gap-4">
@@ -10,13 +15,13 @@ export function VolunteeringCard({ volunteering }: { volunteering: { status: str
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <p className="font-display text-sm text-cream">Volunteering</p>
-            {volunteering.status && (
+            {showStatus && (
               <span className="rounded-full bg-sage/15 px-2 py-0.5 text-[10px] font-bold text-sage">
                 {volunteering.status}
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs leading-relaxed text-muted">{volunteering.text}</p>
+          {showText && <p className="mt-1 text-xs leading-relaxed text-muted">{volunteering.text}</p>}
         </div>
       </div>
     </section>

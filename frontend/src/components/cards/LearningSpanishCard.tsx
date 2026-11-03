@@ -1,6 +1,8 @@
 import { Flame } from "lucide-react";
 
 export function LearningSpanishCard({ streak }: { streak: number }) {
+  // No streak yet → no card (never a "0 day streak").
+  if (!streak) return null;
   return (
     <section className="flex items-center gap-4 rounded-2xl bg-surface p-5 shadow-soft" data-testid="now-spanish">
       <span className="grid size-11 shrink-0 place-items-center rounded-full bg-cast-blaze/15 text-cast-blaze">

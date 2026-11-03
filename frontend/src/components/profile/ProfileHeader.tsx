@@ -40,16 +40,18 @@ export function ProfileHeader({
         <h1 className="font-display text-3xl leading-tight text-cream" data-testid="profile-name">
           {name}
         </h1>
-        <p className="mt-1.5 text-sm leading-relaxed text-muted">{oneLiner}</p>
+        {oneLiner && <p className="mt-1.5 text-sm leading-relaxed text-muted">{oneLiner}</p>}
       </motion.div>
-      <motion.span
-        variants={headerItem}
-        className="flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs font-semibold text-muted"
-        data-testid="profile-location"
-      >
-        <MapPin className="size-3.5 text-sage" />
-        {location}
-      </motion.span>
+      {location && (
+        <motion.span
+          variants={headerItem}
+          className="flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs font-semibold text-muted"
+          data-testid="profile-location"
+        >
+          <MapPin className="size-3.5 text-sage" />
+          {location}
+        </motion.span>
+      )}
     </motion.header>
   );
 }

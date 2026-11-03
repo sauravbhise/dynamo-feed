@@ -36,7 +36,7 @@ export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, redu
       <ReelBackground reel={reel} />
 
       <div
-        className="absolute inset-x-3 top-[3%] z-10 flex justify-center overflow-hidden"
+        className="absolute inset-x-3 top-[3%] z-10 flex justify-center overflow-hidden rail-clear-right"
         style={{ perspective: "1100px", maxHeight: `${Math.max(headTop - 5, 18)}%` }}
       >
         <motion.div

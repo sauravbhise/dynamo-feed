@@ -72,7 +72,6 @@ export function CommentsPanel({ comments, onAdd }: CommentsPanelProps) {
             <Send className="size-4" />
           </button>
         </form>
-        <p className="mt-2 text-[11px] text-muted">Placeholder comments — the cast joins in a later update.</p>
       </div>
     </div>
   );

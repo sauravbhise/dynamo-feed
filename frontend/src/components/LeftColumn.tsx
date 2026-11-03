@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { profile } from "../content";
+import { profile, profileValid } from "../content";
 import { ProfileHeader } from "./profile/ProfileHeader";
 import { SocialLinks } from "./profile/SocialLinks";
 import { SkillChips } from "./profile/SkillChips";
@@ -19,6 +19,15 @@ export function LeftColumn() {
     () => new Set<ProfileSectionKey>(["experience", "projects"])
   );
   const [highlightId, setHighlightId] = useState<string | null>(null);
+
+  // profile.json is invalid — a minimal header with the name only.
+  if (!profileValid) {
+    return (
+      <div className="flex flex-col gap-6 p-6" data-testid="left-column-content">
+        <ProfileHeader name={profile.name} oneLiner="" photo="/avatar.svg" location="" />
+      </div>
+    );
+  }
 
   // A reel's chip focuses (and flashes) the matching portfolio item here.
   useEffect(() => {
