@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { motion, useMotionValueEvent } from "framer-motion";
+import { useSyncExternalStore } from "react";
+import { motion } from "framer-motion";
 import { CharacterSlot, headTopPercent } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
 import { ProfileReelChip } from "../components/ProfileReelChip";
@@ -16,15 +16,15 @@ export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, redu
   const fact = typeof data.fact === "string" ? data.fact : undefined;
   const flipOnThisBeat = myth !== undefined && fact !== undefined && typeof beat.data?.myth === "string";
 
-  // The flip listens to the beat-consistent progress value and always resets
-  // with beatIndex, so a flip never bleeds across beats.
-  const [flipped, setFlipped] = useState(false);
-  useMotionValueEvent(progress, "change", (value) => {
-    if (flipOnThisBeat) setFlipped(value >= 0.5);
-  });
-  useEffect(() => {
-    setFlipped(false);
-  }, [beatIndex]);
+  // The flip listens to the beat-consistent progress through a store
+  // subscription — render-phase-safe (a setState from a progress event during
+  // another component's render is what tripped React warnings) — and it
+  // resets for free: per-beat progress returns to 0 at every beat change.
+  const flipped = useSyncExternalStore(
+    (onChange) => progress.on("change", onChange),
+    () => (flipOnThisBeat ? progress.get() >= 0.5 : false),
+    () => false
+  );
   // Once the card has flipped it stays flipped for the rest of the reel.
   const isFlipped = flipOnThisBeat ? flipped : fact !== undefined && beatIndex > 0;
 

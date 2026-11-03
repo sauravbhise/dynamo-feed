@@ -1,0 +1,32 @@
+{
+  "summary": "Ran all 9 acceptance checks for the new LIVE cast comments feature at 390x844 and 1440x900. Live-comment derivation, timing, replay-on-loop, pause-freeze, suppression (sheet/hint), per-template rules (review/documentary/myth/stat vs breaking/storytime/nudge), tap-opens-sheet without pause, and ticker formatting (WRITES: + proportional animationDuration) all behave as specified. Only failure is check (9) 'no console errors/warnings': React 'setState while rendering' warnings are emitted by StorytimeTemplate and MythVsFactTemplate on reel mount.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "StorytimeTemplate", "issue": "React warning: 'Cannot update a component (StorytimeTemplate) while rendering a different component (ReelPlayer)'. Fires on load of /r/the-outreach-part-1 (and the-outreach-part-2). Violates acceptance (9) no-console-warnings. Likely a setState call during render inside StorytimeTemplate.", "selector": "StorytimeTemplate.tsx", "priority": "MEDIUM"},
+      {"component": "MythVsFactTemplate", "issue": "Same React 'setState in render' warning fires when /r/myth-you-need-a-referral mounts (MythVsFactTemplate -> ReelPlayer). Violates acceptance (9).", "selector": "MythVsFactTemplate.tsx", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Fix setState-during-render in StorytimeTemplate (wrap in useEffect / defer the update) to silence the React warning.",
+    "Fix the same pattern in MythVsFactTemplate.",
+    "Both warnings prevent acceptance check (9) from passing cleanly even though the live-comments feature itself is correct."
+  ],
+  "critical_code_review_comments": [
+    "LiveComments.tsx derivation is clean and timer-free as spec'd; subscribing to a detached motion value when live is null is a nice touch to keep hook order stable.",
+    "The 4s hint auto-hide useEffect in FeedFrame correctly resets on each loopHint toggle; verified hint disappears ~4s after appearing and comments return.",
+    "Observed one ~40ms overlap between the swipe-hint fading out and the next-loop comment fading in (AnimatePresence transitions). Not a functional defect but worth checking if strict mutual exclusion is desired.",
+    "BreakingNewsTemplate ticker inline animationDuration computed to 47.88s for current text (plain chars * 0.14, floor 18s) and freezes on pause via animation-play-state — matches spec.",
+    "No handling of _id serialization issues (frontend-only app, N/A)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "~95% (8 of 9 acceptance checks pass; check 9 fails due to pre-existing React warnings in Storytime & Myth templates)"},
+  "seed_data_creation": "none",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Live-comment windows observed on marge-reviews-saurav (3 comments, reel ~21s): Blaze 3.0-6.1s, Marge 10.4-13.7s, Saurav 18.0-21.3s, then swipe-hint, then Blaze replay ~25.6s. Breaking ticker animationDuration = 47.88s. Pause via single click on reel background (NOT on card) freezes both floating card and ticker. Tap on live-comment opens comments-overlay without pause-indicator and without altering like count. Storytime and nudge show no live-comment. Only outstanding issue: React 'setState in render' warnings from StorytimeTemplate and MythVsFactTemplate — pre-existing templates, not from LiveComments code.",
+  "rca of the issue": "StorytimeTemplate / MythVsFactTemplate call a parent/sibling setter synchronously while they themselves are rendering (likely via useMotionValueEvent handler or inline effect-less state update). React logs: 'Cannot update a component (X) while rendering a different component (ReelPlayer)'. Fix: wrap the offending state update in a useEffect, use flushSync out of render, or publish via a motionValue instead of setState."
+}
