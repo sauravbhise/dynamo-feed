@@ -200,16 +200,31 @@ function FeedFrameInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The URL follows the feed without adding history entries — after an
-  // unknown-slug reset, "/" holds until a real navigation happens.
+  // A full-screen page layer pauses the feed AND owns the address bar while
+  // open (a /p/ deep link must not be overwritten by the feed's URL sync).
+  // True at first mount when the site loads directly on /p/:slug.
+  const [pageOpen, setPageOpen] = useState(() => /^\/p\//.test(window.location.pathname));
   useEffect(() => {
+    const onVisibility = (event: Event) => {
+      const open = (event as CustomEvent<boolean>).detail;
+      setPageOpen(open);
+      setPaused(open);
+    };
+    window.addEventListener("dynamo:page-visibility", onVisibility);
+    return () => window.removeEventListener("dynamo:page-visibility", onVisibility);
+  }, []);
+
+  // The URL follows the feed without adding history entries — but a page
+  // layer owns the address bar; the sync resumes only after it closes.
+  useEffect(() => {
+    if (pageOpen) return;
     if (slugResetRef.current && activeIndex === initialIndexRef.current) return;
     slugResetRef.current = false;
     const slug = order[activeIndex]?.slug;
     if (slug && window.location.pathname !== `/r/${slug}`) {
       window.history.replaceState(null, "", `/r/${slug}`);
     }
-  }, [activeIndex, order]);
+  }, [activeIndex, order, pageOpen]);
 
   const goTo = useCallback(
     (index: number) => {
@@ -286,13 +301,6 @@ function FeedFrameInner() {
     setPaused(false);
     setLoopHint(false);
   }, [activeIndex]);
-
-  // A full-screen page layer pauses the feed underneath; closing resumes it.
-  useEffect(() => {
-    const onVisibility = (event: Event) => setPaused((event as CustomEvent<boolean>).detail);
-    window.addEventListener("dynamo:page-visibility", onVisibility);
-    return () => window.removeEventListener("dynamo:page-visibility", onVisibility);
-  }, []);
 
   // The hint also hides itself 4s after appearing (the live comments return).
   useEffect(() => {

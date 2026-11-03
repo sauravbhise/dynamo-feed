@@ -158,9 +158,12 @@ export function PageLayer() {
   const announce = (open: boolean) =>
     window.dispatchEvent(new CustomEvent<boolean>("dynamo:page-visibility", { detail: open }));
 
-  // A page landed on directly from a shared link sets the title too.
+  // A page landed on directly from a shared link: title + pause, the same
+  // open path as Read more. The path is captured at mount — the feed's URL
+  // sync must not be able to poison this effect.
+  const initialPathRef = useRef(window.location.pathname);
   useEffect(() => {
-    const match = window.location.pathname.match(/^\/p\/([^/]+)/);
+    const match = initialPathRef.current.match(/^\/p\/([^/]+)/);
     if (!match) return;
     const page = pageBySlug(decodeURIComponent(match[1]));
     if (!page) return;

@@ -5,6 +5,7 @@
     "title": "REPLACE: Project title",
     "subtitle": "REPLACE: One-line summary of the project.",
     "dates": "REPLACE: 2026",
+    "reelSlug": "the-streak",
     "blocks": [
       { "type": "heading", "text": "REPLACE: Section heading" },
       {
