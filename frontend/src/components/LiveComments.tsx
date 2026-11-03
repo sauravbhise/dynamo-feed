@@ -48,7 +48,9 @@ export function LiveComments() {
     let next: number | null = null;
     if (current !== null) {
       const start = s + ((0.83 - s) * current) / Math.max(n - 1, 1);
-      if (p < start + WINDOW) next = current;
+      // Window: 15% of the reel, but never shorter than ~3.2 s of on-screen time.
+      const windowFraction = Math.max(WINDOW, 3200 / Math.max(live.reelTotalMs, 1));
+      if (p < start + windowFraction) next = current;
     }
     setVisibleIndex((prev) => (prev === next ? prev : next));
   });
@@ -86,7 +88,7 @@ export function LiveComments() {
           <CastAvatar authorId={comment.authorId} name={name} className="size-5 text-[10px]" />
           <span className="min-w-0">
             <span className="block text-xs font-bold text-cream/90">{name}</span>
-            <span className="mt-0.5 line-clamp-2 block text-xs leading-snug text-cream/80">
+            <span className="mt-0.5 line-clamp-3 text-xs leading-snug text-cream/80">
               {comment.text}
             </span>
           </span>

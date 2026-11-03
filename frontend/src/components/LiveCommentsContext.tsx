@@ -12,6 +12,8 @@ export interface LiveCommentsState {
   progress: MotionValue<number>;
   /** End of beat 1 as a fraction of the reel (1 when there is a single beat). */
   beat1End: number;
+  /** The reel's total duration in ms — for the minimum on-screen time. */
+  reelTotalMs: number;
   onOpenComments: () => void;
 }
 

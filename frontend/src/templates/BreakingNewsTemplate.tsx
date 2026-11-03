@@ -12,14 +12,34 @@ export function BreakingNewsTemplate({ reel, beat, beatIndex, data, reducedMotio
   const headline = str(data.headline) ?? reel.beats[0].caption;
   const ticker = str(data.ticker);
 
-  // Cast comments ride the ticker after the reel's own text — the duration
-  // scales with the length so the scrolling SPEED stays the same as always.
-  const plainTicker = [
-    ticker ?? "",
-    ...reel.comments.map(
-      (c) => `${(castById[c.authorId]?.name ?? c.authorId).toUpperCase()} WRITES: ${c.text}`
-    ),
-  ].join("  •  ");
+  // Cast comments INTERLEAVE with the reel's own ticker items (item, comment,
+  // item, comment…, then whatever is left over) so a comment reaches the
+  // screen early instead of trailing at the end. The duration scales with the
+  // total length so the scrolling SPEED stays the same as always.
+  const tickerItems = (ticker ?? "").split("•").map((part) => part.trim()).filter(Boolean);
+  const commentParts = reel.comments.map((comment) => {
+    const name = (castById[comment.authorId]?.name ?? comment.authorId).toUpperCase();
+    return { name, comment };
+  });
+  type Segment = { type: "text"; text: string } | { type: "comment"; index: number };
+  const segments: Segment[] = [];
+  const pushSegment = (segment: Segment) => {
+    if (segments.length) segments.push({ type: "text", text: " • " });
+    segments.push(segment);
+  };
+  let commentIndex = 0;
+  tickerItems.forEach((item) => {
+    pushSegment({ type: "text", text: item });
+    if (commentIndex < commentParts.length) pushSegment({ type: "comment", index: commentIndex++ });
+  });
+  while (commentIndex < commentParts.length) pushSegment({ type: "comment", index: commentIndex++ });
+  const plainTicker = segments
+    .map((segment) =>
+      segment.type === "text"
+        ? segment.text
+        : `${commentParts[segment.index].name} WRITES: ${commentParts[segment.index].comment.text}`
+    )
+    .join("");
   const tickerDuration = Math.max(18, plainTicker.length * 0.14);
 
   return (
@@ -71,20 +91,22 @@ export function BreakingNewsTemplate({ reel, beat, beatIndex, data, reducedMotio
           >
             {[0, 1].map((copy) => (
               <span key={copy} aria-hidden={copy === 1} className="whitespace-nowrap pr-8 text-xs font-semibold text-cream/90">
-                {ticker}
-                {reel.comments.map((comment, i) => {
-                  const name = (castById[comment.authorId]?.name ?? comment.authorId).toUpperCase();
-                  return (
-                    <span key={comment.authorId + i}>
-                      {"  •  "}
-                      <span className="font-extrabold" style={{ color: castColor(comment.authorId) }}>
-                        {name}
+                {segments.map((segment, i) =>
+                  segment.type === "text" ? (
+                    <span key={i}>{segment.text}</span>
+                  ) : (
+                    <span key={i}>
+                      <span
+                        className="font-extrabold"
+                        style={{ color: castColor(reel.comments[segment.index].authorId) }}
+                      >
+                        {commentParts[segment.index].name}
                       </span>
                       {" WRITES: "}
-                      {comment.text}
+                      {commentParts[segment.index].comment.text}
                     </span>
-                  );
-                })}
+                  )
+                )}
               </span>
             ))}
           </div>

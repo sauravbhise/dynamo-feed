@@ -269,9 +269,10 @@ export function ReelPlayer({
       suppressed: !!commentsSuppressed,
       progress: reelProgress,
       beat1End,
+      reelTotalMs: total,
       onOpenComments: () => onOpenComments?.(),
     }),
-    [reel, active, commentsSuppressed, reelProgress, beat1End, onOpenComments]
+    [reel, active, commentsSuppressed, reelProgress, beat1End, total, onOpenComments]
   );
 
   // Engagement: double-tap likes with a heart burst; single tap pauses.
