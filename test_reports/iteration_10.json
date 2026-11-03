@@ -1,0 +1,28 @@
+{
+  "summary": "Verified the useSyncExternalStore refactor for StorytimeTemplate.typing and MythVsFactTemplate.flipped at 1440x900. Behavior is correct in both templates (typing indicator re-appears at every storytime beat start then transitions to bubble; myth card flips at ~mid of flip beat and resets per beat, with later beats showing fact side). Regression on /r/marge-reviews-saurav (live comments) and /r/breaking-built-by-voice (ticker) is clean with zero console warnings/errors. HOWEVER the primary acceptance criterion FAILS: the React 'Cannot update a component while rendering a different component' warnings are STILL emitted on BOTH /r/the-outreach-part-1 (StorytimeTemplate -> ReelPlayer) and /r/myth-you-need-a-referral (MythVsFactTemplate -> ReelPlayer). The useSyncExternalStore refactor did NOT eliminate them.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "StorytimeTemplate", "issue": "React warning still logged on load: 'Cannot update a component (StorytimeTemplate) while rendering a different component (ReelPlayer)'. The useSyncExternalStore refactor did not silence it.", "selector": "console on /r/the-outreach-part-1", "priority": "HIGH"},
+      {"component": "MythVsFactTemplate", "issue": "React warning still logged on load: 'Cannot update a component (MythVsFactTemplate) while rendering a different component (ReelPlayer)'. Behavior correct but warning persists.", "selector": "console on /r/myth-you-need-a-referral", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Root-cause the warning: it is almost certainly ReelPlayer calling progress.set(...) (or equivalent) during its own render phase, which synchronously emits a 'change' event and invokes useSyncExternalStore's onChange, scheduling a setState on StorytimeTemplate/MythVsFactTemplate while ReelPlayer is still rendering. The fix must move the progress update out of ReelPlayer's render phase (e.g. into useEffect, requestAnimationFrame, or a microtask), not change the subscribers. Subscriber-side refactors cannot avoid this warning while the emitter fires during a parent render.",
+    "Alternatively, defer the useSyncExternalStore getSnapshot-driven updates by using queueMicrotask inside the progress emitter, or make progress.set schedule listeners via queueMicrotask/rAF."
+  ],
+  "critical_code_review_comments": [
+    "The warning text explicitly names StorytimeTemplate and MythVsFactTemplate as the components being updated during ReelPlayer's render. useSyncExternalStore's subscribe/getSnapshot pattern is render-safe for the SUBSCRIBER, but if the external store emits 'change' synchronously during the PARENT's render, React still logs this exact warning because the onChange call schedules a state update on the subscriber mid-render. Fix must be on the emitter side (ReelPlayer / progress store), not the template.",
+    "StorytimeTemplate.tsx line 25-29 and MythVsFactTemplate.tsx line 23-27 both pass getServerSnapshot values (true / false) that differ from the client's initial snapshot on reels where typing/flipped should start true/false respectively. Low priority but can cause hydration mismatch warnings in SSR."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "behavior 100%, warning-fix 0%"},
+  "seed_data_creation": "none",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Behaviors verified: (a) /r/the-outreach-part-1 typing indicator reappears at every beat start (observed count flip 1->2 at beat transitions as the new beat's typing bubble appears alongside previous bubble, then back to 1 bubble + 0 typing). (b) /r/myth-you-need-a-referral myth-card transform cycles rotateY(180deg) -> rotateY(0 / none) at new beat -> rotateY(180deg) around mid-beat. (c) Regression reels have zero warnings. Only remaining defect: React render-phase warning in console for both templates — needs an emitter-side fix in ReelPlayer or the progress object.",
+  "rca of the issue": "ReelPlayer emits progress 'change' events during its own render phase. useSyncExternalStore in child templates subscribes with onChange; when the emitter fires synchronously during ReelPlayer render, React detects a scheduled update on StorytimeTemplate/MythVsFactTemplate while ReelPlayer is still rendering and logs the warning. Mitigation: in ReelPlayer, move progress.set / notify calls out of render (into useEffect, rAF, or microtask), or wrap listener dispatch in queueMicrotask inside the progress store."
+}

@@ -111,10 +111,17 @@ export function ReelPlayer({
 
   // Per-beat progress is DERIVED from elapsed time — it can never disagree
   // with the beat index and resets to 0 automatically on every beat change.
+  // The transformer reads durations through a REF so its identity never
+  // changes: framer recomputes a changed transformer during the render that
+  // changed it and emits 'change' mid-render, which React reports as
+  // "Cannot update a component (template) while rendering (ReelPlayer)".
+  const durationsRef = useRef(durations);
+  durationsRef.current = durations;
+
   const beatProgress = useTransform(reelProgress, (rp) => {
     const elapsed = rp * totalRef.current;
     const { index, startedAtMs } = beatFromElapsed(elapsed);
-    return Math.min(Math.max((elapsed - startedAtMs) / (durations[index] ?? 1), 0), 1);
+    return Math.min(Math.max((elapsed - startedAtMs) / (durationsRef.current[index] ?? 1), 0), 1);
   });
 
   // ---- Voice playback + loudness ------------------------------------------
