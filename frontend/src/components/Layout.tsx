@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { LeftColumn } from "./LeftColumn";
 import { FeedFrame } from "./FeedFrame";
+import { HighlightSessionPill } from "./HighlightSessionPill";
 import { RightColumn } from "./RightColumn";
 import { Sheet } from "./Sheet";
 import { profile } from "../content";
@@ -41,7 +42,7 @@ export function Layout() {
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-ink font-body text-cream">
       <header
-        className="flex shrink-0 items-center justify-between border-b border-white/5 bg-ink px-4 py-3 desk:hidden"
+        className="relative flex shrink-0 items-center justify-between border-b border-white/5 bg-ink px-4 py-3 desk:hidden"
         data-testid="top-bar"
       >
         <button
@@ -60,6 +61,8 @@ export function Layout() {
             className="size-10 rounded-full object-cover"
           />
         </button>
+        {/* Highlight session pill — out of the reel, centred in the bar. */}
+        <HighlightSessionPill variant="topbar" />
         <button
           data-testid="topbar-clock-button"
           onClick={() => setSheet("clock")}

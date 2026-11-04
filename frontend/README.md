@@ -58,6 +58,21 @@ field fails loudly in the console instead of rendering broken.
   `profile.json`: add an object to add an item, remove it to remove the item.
   Empty arrays hide their whole section.
 
+## Launch (Vercel)
+
+- Set `VITE_SITE_URL` (e.g. `https://your-domain.com`) in Vercel's project
+  environment variables — it fills the canonical link, the Open Graph /
+  Twitter URLs and the build-time `sitemap.xml` + `robots.txt` sitemap line
+  (`scripts/generate-sitemap.mjs` runs on every build from `pages.json`).
+- Add `public/og.png` (1200 × 630), `public/favicon.svg` and
+  `public/apple-touch-icon.png`.
+- The page `<title>` and meta description come from index.html (the
+  description follows `profile.oneLiner` at startup); page layers restore
+  that title on close.
+- Vercel Web Analytics (`@vercel/analytics`) loads only in production
+  builds; the visitor metrics show up in the Vercel dashboard.
+- `frontend/vercel.json` keeps both SPA rewrites (`/r/:slug`, `/p/:slug`).
+
 ### Voices
 
 Reels can speak their captions. Audio files live in `public/audio/`, listed in

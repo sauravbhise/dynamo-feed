@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, Volume2, X } from "lucide-react";
 import { ActionRail } from "./ActionRail";
 import { CoachMark } from "./CoachMark";
 import { CommentsPanel } from "./CommentsPanel";
+import { HighlightSessionPill, sessionStore } from "./HighlightSessionPill";
 import { ReelPlayer } from "./ReelPlayer";
 import { nextGeneration } from "../feed/order";
 import { reels } from "../content";
@@ -292,9 +293,24 @@ function FeedFrameInner() {
       if (scrollRef.current) scrollRef.current.scrollTop = 0;
       window.history.replaceState(null, "", `/r/${sessionReels[0].slug}`);
     };
+    const onEnd = () => endSession();
     window.addEventListener("dynamo:start-highlight", onStart);
-    return () => window.removeEventListener("dynamo:start-highlight", onStart);
-  }, [markHighlightSeen]);
+    window.addEventListener("dynamo:end-highlight", onEnd);
+    return () => {
+      window.removeEventListener("dynamo:start-highlight", onStart);
+      window.removeEventListener("dynamo:end-highlight", onEnd);
+    };
+  }, [markHighlightSeen, endSession]);
+
+  // The session pill (top bar on phones, rail column on desktop) mirrors the
+  // live state — label + position — from outside the reel frame.
+  useEffect(() => {
+    sessionStore.set(
+      session
+        ? { id: session.id, label: session.label, position: activeIndex + 1, total: order.length }
+        : null
+    );
+  }, [session, activeIndex, order.length]);
 
   // The scroll position restores once the main feed is back in the DOM.
   useLayoutEffect(() => {
@@ -555,41 +571,6 @@ function FeedFrameInner() {
             lane and the loop hint while it shows. */}
         <CoachMark blocked={pageOpen || commentsOpen} onVisibleChange={setCoachVisible} />
 
-        {/* Highlight session pill — label, position, exit (below the sound
-            pill whenever that shows). */}
-        <AnimatePresence>
-          {session && (
-            <motion.div
-              key="highlight-pill"
-              data-testid="highlight-pill"
-              className={`absolute left-1/2 z-30 -translate-x-1/2 ${
-                !soundOn && reelHasAudio && !pillHidden ? "top-12" : "top-3"
-              }`}
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-            >
-              <div className="flex items-center gap-2.5 rounded-full bg-ink/70 py-2 pl-4 pr-2 text-xs font-bold text-cream backdrop-blur">
-                <span className="max-w-[38vw] truncate">{session.label}</span>
-                <span className="text-cream/60">
-                  {activeIndex + 1}/{order.length}
-                </span>
-                <button
-                  data-testid="highlight-close"
-                  aria-label="Exit highlights"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    endSession();
-                  }}
-                  className="grid size-6 place-items-center rounded-full bg-white/10 text-cream transition hover:bg-white/20"
-                >
-                  <X className="size-3.5" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {isDesktop ? null : (
           <div
             className="absolute bottom-24 right-3 z-20"
@@ -640,7 +621,14 @@ function FeedFrameInner() {
         </AnimatePresence>
       </div>
 
-      {isDesktop ? <div className="shrink-0">{rail}</div> : null}
+      {isDesktop ? (
+        // The session pill aligns with the frame's top edge; the rail stays
+        // vertically centred.
+        <div className="flex shrink-0 flex-col items-center self-stretch" data-testid="feed-rail-column">
+          <HighlightSessionPill variant="rail" />
+          <div className="my-auto">{rail}</div>
+        </div>
+      ) : null}
 
       {isDesktop ? (
         <div className="flex flex-col gap-3" data-testid="feed-nav">

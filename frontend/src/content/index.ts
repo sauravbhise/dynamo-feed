@@ -217,17 +217,17 @@ export function beatDurationMs(beat: Beat, template: ReelTemplate): number {
 export function profileItemBySlug(slug: string): ProfileItemRef | null {
   for (let i = 0; i < profile.experience.length; i++) {
     if (profile.experience[i].reelSlug === slug) {
-      return { section: "experience", itemId: `experience-${i}`, title: profile.experience[i].title };
+      return { section: "experience", itemId: `experience-${i}`, title: profile.experience[i].title, pageSlug: profile.experience[i].pageSlug };
     }
   }
   for (let i = 0; i < profile.projects.length; i++) {
     if (profile.projects[i].reelSlug === slug) {
-      return { section: "projects", itemId: `projects-${i}`, title: profile.projects[i].name };
+      return { section: "projects", itemId: `projects-${i}`, title: profile.projects[i].name, pageSlug: profile.projects[i].pageSlug };
     }
   }
   for (let i = 0; i < profile.community.length; i++) {
     if (profile.community[i].reelSlug === slug) {
-      return { section: "community", itemId: `community-${i}`, title: profile.community[i].title };
+      return { section: "community", itemId: `community-${i}`, title: profile.community[i].title, pageSlug: profile.community[i].pageSlug };
     }
   }
   return null;

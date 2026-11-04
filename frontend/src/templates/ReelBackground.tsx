@@ -79,7 +79,10 @@ export function ReelBackground({ reel, style }: ReelBackgroundProps) {
           />
         )}
       </motion.div>
-      <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
+      {/* Caption shade ABOVE the character (z between the slot's z-[5] and
+          the caption's z-10) — waist-up characters standing on the bottom
+          edge still get the darkening behind the caption. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[7] h-44 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
     </div>
   );
 }

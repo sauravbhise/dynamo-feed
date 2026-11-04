@@ -85,18 +85,18 @@ function HighlightCircle({ highlight, seen }: { highlight: Highlight; seen: bool
                   {host ? host.name.slice(0, 1) : "?"}
                 </span>
               ) : (
-                <span
-                  className="absolute left-1/2 top-[-25%] h-[220%] -translate-x-1/2"
-                  style={{ aspectRatio: "480 / 680" }}
-                >
-                  <img
-                    src={`/cast/${hostId}.webp`}
-                    alt=""
-                    draggable={false}
-                    className="absolute bottom-0 left-0 h-full w-[800%] max-w-none"
-                    style={{ transform: "translateX(0)" }}
-                  />
-                </span>
+                // Crop to the HEAD of the neutral frame: a ~220×220 region
+                // (frame x 130–350, from headroom×680 − 10 down), scaled to
+                // fill the circle. Sheet is 3840×680, frame 0 on the left.
+                <img
+                  src={`/cast/${hostId}.webp`}
+                  alt=""
+                  draggable={false}
+                  className="absolute left-0 top-0 h-[309.09%] w-auto max-w-none"
+                  style={{
+                    transform: `translate(-3.3854%, ${-(host.headroom - 10 / 680) * 100}%)`,
+                  }}
+                />
               )}
             </span>
           ) : null}

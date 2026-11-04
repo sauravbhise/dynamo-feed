@@ -190,6 +190,7 @@ export interface ProfileItemRef {
   section: ProfileSectionKey;
   itemId: string;
   title: string;
+  pageSlug?: string;
 }
 
 // ---------- Pages (pages.json) ----------
