@@ -10,6 +10,7 @@ import { InterviewTemplate } from "./InterviewTemplate";
 import { TierListTemplate } from "./TierListTemplate";
 import { StitchTemplate } from "./StitchTemplate";
 import { PovTemplate } from "./PovTemplate";
+import { DayInLifeTemplate } from "./DayInLifeTemplate";
 import { NudgeTemplate } from "./NudgeTemplate";
 import type { Beat, Reel, ReelTemplate } from "../content/types";
 
@@ -44,5 +45,6 @@ export const TEMPLATES: Record<ReelTemplate, ComponentType<TemplateProps>> = {
   tier_list: TierListTemplate,
   stitch: StitchTemplate,
   pov: PovTemplate,
+  day_in_life: DayInLifeTemplate,
   nudge: NudgeTemplate,
 };

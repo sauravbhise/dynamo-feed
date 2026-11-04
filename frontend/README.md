@@ -126,6 +126,16 @@ dropping into a board above their head.
 - Full examples of both: `r08` (`blaze-interviews-saurav`, interview) and
   `r09` (`marge-ranks-the-stack`, tier list) in `reels.json`.
 
+**`day_in_life`** — a vlog-style day: a clock kicker top-left and a quick cut
+per beat.
+
+- Beat 1 data: `title` (string, the small sage kicker).
+- EVERY beat: `time` (string, shown big in font-display) and optional
+  `label` (13px line under it). On beat changes the old time slides up and
+  out while the new one slides into place (~250ms), and the character cuts
+  in with an 8% slide from the right (~180ms).
+- Example: `r12` (`a-day-in-the-life`) in `reels.json`.
+
 **Per-reel background** — any reel can set an optional `background`: a path
 under `public/` (e.g. `/backgrounds/blaze-interviews-saurav.webp`) or a full
 URL. It beats the template default (`/backgrounds/<template>.webp`), which
@@ -151,6 +161,23 @@ hard cut to the reply, with the clip kept as a tappable thumbnail.
 
 Full examples: `r10` (`marge-stitches-the-news`, stitch) and `r11`
 (`pov-you-hired-saurav`, POV) in `reels.json`.
+
+### Story highlights
+
+Instagram-style circles under the bio (in `profile.json` → `highlights`):
+`id`, `label`, `reelSlugs` (the reels the highlight plays, in order) and an
+optional `cover` image path. Reel slugs that match no reel are skipped with a
+warning; a highlight left without valid reels is hidden; no `highlights` key
+means no row. Without a `cover`, the circle shows the first reel's host
+(framed on the head; Saurav keeps his placeholder initial).
+
+Tapping a highlight starts a session in the feed: only that highlight's reels
+play, starting at the first one, with a pill up top showing the label,
+position ("2/4") and an X. The session ends — returning the main feed to
+exactly where it was — when the last reel finishes its first loop, when the
+visitor swipes/wheels/presses next past it, on X, or on Escape. The nudge
+never interrupts a session; the highlight's ring dims once it has been played
+(localStorage key `df-highlights-seen`; clear it to reset).
 
 ### Coach mark
 

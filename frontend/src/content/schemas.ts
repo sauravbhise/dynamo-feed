@@ -11,6 +11,7 @@ export const templateSchema = z.enum([
   "tier_list",
   "stitch",
   "pov",
+  "day_in_life",
   "nudge",
 ]);
 
@@ -108,6 +109,16 @@ export const profileSchema = z.object({
     z.object({ platform: z.string().min(1), url: z.string().min(1) })
   ),
   skills: z.array(z.string()).default([]),
+  highlights: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        label: z.string().min(1),
+        reelSlugs: z.array(z.string().min(1)).min(1),
+        cover: z.string().optional(),
+      })
+    )
+    .default([]),
   experience: z.array(
     z.object({
       title: z.string().min(1),

@@ -6,6 +6,7 @@ import { CoachMark } from "./CoachMark";
 import { CommentsPanel } from "./CommentsPanel";
 import { ReelPlayer } from "./ReelPlayer";
 import { nextGeneration } from "../feed/order";
+import { reels } from "../content";
 import { audioUrl, preloadAudio } from "../audio/engine";
 import { SoundContext, SoundProvider, useSound } from "../audio/SoundContext";
 import type { Reel, ReelComment } from "../content/types";
@@ -114,7 +115,8 @@ function FeedFrameInner() {
   const startedAtRef = useRef(Date.now());
 
   const insertNudge = useCallback((trigger: "reels" | "time") => {
-    if (nudgeInsertedRef.current) return;
+    // The nudge never interrupts a highlight session.
+    if (nudgeInsertedRef.current || sessionRef.current) return;
     nudgeInsertedRef.current = true;
     const next = [...orderRef.current];
     // The reel-count trigger puts the nudge in place as the VERY NEXT reel.
@@ -228,16 +230,131 @@ function FeedFrameInner() {
     }
   }, [activeIndex, order, pageOpen]);
 
+  // ── Highlight sessions ───────────────────────────────────────────────
+  // A highlight plays ONLY its own reels; ending the session restores the
+  // main feed exactly where it was.
+  const [session, setSession] = useState<{ id: string; label: string } | null>(null);
+  const sessionRef = useRef(false);
+  const savedOrderRef = useRef<Reel[] | null>(null);
+  const savedIndexRef = useRef(0);
+  const restoreScrollRef = useRef<number | null>(null);
+
+  const markHighlightSeen = useCallback((id: string) => {
+    try {
+      const seen: string[] = JSON.parse(localStorage.getItem("df-highlights-seen") ?? "[]");
+      if (Array.isArray(seen) && !seen.includes(id)) {
+        seen.push(id);
+        localStorage.setItem("df-highlights-seen", JSON.stringify(seen));
+      }
+    } catch {
+      /* storage unavailable — the ring just never dims */
+    }
+    window.dispatchEvent(new CustomEvent<string[]>("dynamo:highlights-seen"));
+  }, []);
+
+  const endSession = useCallback(() => {
+    const saved = savedOrderRef.current;
+    if (!sessionRef.current || !saved) return;
+    sessionRef.current = false;
+    setSession(null);
+    const index = Math.min(savedIndexRef.current, saved.length - 1);
+    orderRef.current = saved;
+    setOrder(saved);
+    activeIndexRef.current = index;
+    setActiveIndex(index);
+    setPaused(false);
+    restoreScrollRef.current = index;
+    window.history.replaceState(null, "", `/r/${saved[index].slug}`);
+  }, []);
+
+  // Tapping a highlight replaces the feed with its reels (a one-time
+  // validated list — unknown slugs were dropped at load).
+  useEffect(() => {
+    const onStart = (event: Event) => {
+      if (sessionRef.current) return;
+      const { id, label, reelSlugs } = (
+        event as CustomEvent<{ id: string; label: string; reelSlugs: string[] }>
+      ).detail;
+      const sessionReels = reelSlugs
+        .map((slug) => reels.find((reel) => reel.slug === slug))
+        .filter((reel): reel is Reel => !!reel);
+      if (sessionReels.length === 0) return;
+      savedOrderRef.current = orderRef.current;
+      savedIndexRef.current = activeIndexRef.current;
+      sessionRef.current = true;
+      setSession({ id, label });
+      orderRef.current = sessionReels;
+      setOrder(sessionReels);
+      activeIndexRef.current = 0;
+      setActiveIndex(0);
+      setPaused(false);
+      markHighlightSeen(id);
+      if (scrollRef.current) scrollRef.current.scrollTop = 0;
+      window.history.replaceState(null, "", `/r/${sessionReels[0].slug}`);
+    };
+    window.addEventListener("dynamo:start-highlight", onStart);
+    return () => window.removeEventListener("dynamo:start-highlight", onStart);
+  }, [markHighlightSeen]);
+
+  // The scroll position restores once the main feed is back in the DOM.
+  useLayoutEffect(() => {
+    if (session || restoreScrollRef.current === null) return;
+    const el = scrollRef.current;
+    if (el) el.scrollTop = restoreScrollRef.current * el.clientHeight;
+    restoreScrollRef.current = null;
+  }, [session]);
+
+  // In a session: Escape ends it; a wheel-down or an upward swipe past the
+  // LAST reel ends it too (the snap feed can't scroll beyond its content).
+  useEffect(() => {
+    if (!session) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") endSession();
+    };
+    const onWheel = (event: WheelEvent) => {
+      if (event.deltaY > 0 && activeIndexRef.current >= orderRef.current.length - 1) endSession();
+    };
+    let touchStartY: number | null = null;
+    const onTouchStart = (event: TouchEvent) => {
+      touchStartY = event.touches[0]?.clientY ?? null;
+    };
+    const onTouchEnd = (event: TouchEvent) => {
+      if (touchStartY === null) return;
+      const delta = touchStartY - (event.changedTouches[0]?.clientY ?? touchStartY);
+      if (delta > 40 && activeIndexRef.current >= orderRef.current.length - 1) endSession();
+      touchStartY = null;
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [session, endSession]);
+
   const goTo = useCallback(
     (index: number) => {
       const el = scrollRef.current;
       if (!el) return;
+      // Advancing past the last session reel ends the session.
+      if (
+        sessionRef.current &&
+        index > activeIndexRef.current &&
+        index >= orderRef.current.length
+      ) {
+        endSession();
+        return;
+      }
       el.scrollTo({
         top: Math.max(0, index) * el.clientHeight,
         behavior: reduceMotion ? "auto" : "smooth",
       });
     },
-    [reduceMotion]
+    [reduceMotion, endSession]
   );
 
   const handleScroll = useCallback(() => {
@@ -249,8 +366,9 @@ function FeedFrameInner() {
       setActiveIndex(index);
     }
     setLoopHint(false);
-    // Endless feed: near the end, append a reshuffled generation.
-    if (index >= orderRef.current.length - 2) {
+    // Endless feed: near the end, append a reshuffled generation — never
+    // during a highlight session (the session order stays exactly as listed).
+    if (!sessionRef.current && index >= orderRef.current.length - 2) {
       const tail = orderRef.current.slice(-5).map((reel) => reel.id);
       const next = [...orderRef.current, ...nextGeneration(tail)];
       orderRef.current = next;
@@ -311,7 +429,14 @@ function FeedFrameInner() {
     return () => window.clearTimeout(timer);
   }, [loopHint]);
 
-  const handleLoop = useCallback(() => setLoopHint(true), []);
+  const handleLoop = useCallback(() => {
+    // The LAST session reel finishing its first loop ends the session.
+    if (sessionRef.current && activeIndexRef.current >= orderRef.current.length - 1) {
+      endSession();
+      return;
+    }
+    setLoopHint(true);
+  }, [endSession]);
 
   const toggleLike = useCallback((id: string) => {
     setLikedIds((prev) => {
@@ -429,6 +554,41 @@ function FeedFrameInner() {
         {/* First-launch coach mark — once per browser, hides the live-comment
             lane and the loop hint while it shows. */}
         <CoachMark blocked={pageOpen || commentsOpen} onVisibleChange={setCoachVisible} />
+
+        {/* Highlight session pill — label, position, exit (below the sound
+            pill whenever that shows). */}
+        <AnimatePresence>
+          {session && (
+            <motion.div
+              key="highlight-pill"
+              data-testid="highlight-pill"
+              className={`absolute left-1/2 z-30 -translate-x-1/2 ${
+                !soundOn && reelHasAudio && !pillHidden ? "top-12" : "top-3"
+              }`}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+            >
+              <div className="flex items-center gap-2.5 rounded-full bg-ink/70 py-2 pl-4 pr-2 text-xs font-bold text-cream backdrop-blur">
+                <span className="max-w-[38vw] truncate">{session.label}</span>
+                <span className="text-cream/60">
+                  {activeIndex + 1}/{order.length}
+                </span>
+                <button
+                  data-testid="highlight-close"
+                  aria-label="Exit highlights"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    endSession();
+                  }}
+                  className="grid size-6 place-items-center rounded-full bg-white/10 text-cream transition hover:bg-white/20"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {isDesktop ? null : (
           <div

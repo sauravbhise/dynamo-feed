@@ -340,5 +340,18 @@
       { "authorId": "marge", "text": "Suspiciously organised. As I said." },
       { "authorId": "blaze", "text": "WHERE DO I SIGN UP TO HIRE HIM" },
       { "authorId": "saurav", "text": "I do like docs." }
+    ] },
+  { "id": "r12", "slug": "a-day-in-the-life", "template": "day_in_life", "hostId": "reginald", "likes": 2400,
+    "beats": [
+      { "characterId": "reginald", "pose": "neutral", "caption": "The creature wakes. Before food, before light, he speaks Spanish to an owl.", "durationMs": 3500, "data": { "title": "A day in the life", "time": "6:45 AM", "label": "Duolingo, before anything else" } },
+      { "characterId": "reginald", "pose": "talking", "caption": "He gathers with his herd and reports what he has built. Briefly. Mostly.", "durationMs": 3500, "data": { "time": "9:30 AM", "label": "Stand-up" } },
+      { "characterId": "reginald", "pose": "thinking", "caption": "Headphones on. The creature must not be disturbed. Observe from a distance.", "durationMs": 3500, "data": { "time": "1:00 PM", "label": "Deep work" } },
+      { "characterId": "reginald", "pose": "sceptical", "caption": "Work ends. Work begins. He builds a website about himself. Starring me.", "durationMs": 3500, "data": { "time": "7:00 PM", "label": "Side project" } },
+      { "characterId": "reginald", "pose": "neutral", "caption": "A chapter of Harry Potter. Forty percent through. 'Pretty good,' he says.", "durationMs": 3500, "data": { "time": "11:30 PM", "label": "Wind down" } }
+    ],
+    "comments": [
+      { "authorId": "marge", "text": "6:45 AM. Unnatural." },
+      { "authorId": "tia", "text": "the 7pm work ends work begins is so real" },
+      { "authorId": "blaze", "text": "HE NEVER STOPS, FOLKS. HE NEVER STOPS." }
     ] }
 ]

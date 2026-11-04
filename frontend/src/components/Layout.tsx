@@ -29,6 +29,13 @@ export function Layout() {
     return () => window.removeEventListener("dynamo:focus-profile-item", onFocusItem);
   }, []);
 
+  // Playing a highlight closes the profile sheet and takes over the feed.
+  useEffect(() => {
+    const onStartHighlight = () => setSheet(null);
+    window.addEventListener("dynamo:start-highlight", onStartHighlight);
+    return () => window.removeEventListener("dynamo:start-highlight", onStartHighlight);
+  }, []);
+
   const closeSheet = () => setSheet(null);
 
   return (

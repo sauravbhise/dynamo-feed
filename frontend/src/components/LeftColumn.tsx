@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { profile, profileValid } from "../content";
 import { ProfileHeader } from "./profile/ProfileHeader";
+import { HighlightsRow } from "./profile/HighlightsRow";
 import { SocialLinks } from "./profile/SocialLinks";
 import { SkillChips } from "./profile/SkillChips";
 import { CollapsibleSection } from "./profile/CollapsibleSection";
@@ -137,6 +138,7 @@ export function LeftColumn() {
         photo={profile.photo}
         location={profile.location}
       />
+      <HighlightsRow />
       <SocialLinks socials={profile.socials} resumeUrl={profile.resumeUrl} />
       <SkillChips skills={profile.skills} />
       {sections.map((section) => (

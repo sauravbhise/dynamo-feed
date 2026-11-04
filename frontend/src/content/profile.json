@@ -118,5 +118,11 @@
   "certifications": [
     { "name": "Azure AI Fundamentals (AI-901)", "issuer": "Microsoft" },
     { "name": "Azure Fundamentals (AZ-900)", "issuer": "Microsoft" }
+  ],
+  "highlights": [
+    { "id": "projects", "label": "Projects", "reelSlugs": ["breaking-built-by-voice", "the-outreach-part-1", "the-outreach-part-2"] },
+    { "id": "community", "label": "Community", "reelSlugs": ["the-campus-builder", "myth-you-need-a-referral"] },
+    { "id": "off-the-clock", "label": "Off the clock", "reelSlugs": ["the-streak", "a-day-in-the-life"] },
+    { "id": "the-cast", "label": "The cast", "reelSlugs": ["marge-reviews-saurav", "marge-ranks-the-stack", "marge-stitches-the-news", "blaze-interviews-saurav"] }
   ]
 }

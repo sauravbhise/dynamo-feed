@@ -9,6 +9,7 @@ export type ReelTemplate =
   | "tier_list"
   | "stitch"
   | "pov"
+  | "day_in_life"
   | "nudge";
 
 export type Pose =
@@ -118,6 +119,13 @@ export interface CertificationEntry {
   pageSlug?: string;
 }
 
+export interface Highlight {
+  id: string;
+  label: string;
+  reelSlugs: string[];
+  cover?: string;
+}
+
 export interface Profile {
   name: string;
   oneLiner: string;
@@ -127,6 +135,7 @@ export interface Profile {
   resumeUrl: string;
   socials: SocialLink[];
   skills: string[];
+  highlights?: Highlight[];
   experience: ExperienceEntry[];
   projects: ProjectEntry[];
   writing: WritingEntry[];

@@ -24,6 +24,7 @@ import type {
   Reel,
   ReelTemplate,
 } from "./types";
+import type { Highlight } from "./types";
 
 // ---------- Validation that never blanks the site ----------
 // Each file is validated separately; a failure logs a clear warning naming
@@ -179,6 +180,19 @@ export const castById: Record<string, CastMember> = Object.fromEntries(
 );
 
 export const castColor = (id: string): string => castById[id]?.color ?? "#B9ADA6";
+
+// Story highlights: unknown reel slugs are dropped (with a warning); a
+// highlight left without any valid reels is hidden entirely.
+export const highlights: Highlight[] = (profile.highlights ?? [])
+  .map((highlight) => {
+    const validSlugs = highlight.reelSlugs.filter((slug) => {
+      if (reels.some((reel) => reel.slug === slug)) return true;
+      console.warn(`[content] profile.json: highlight "${highlight.id}" skips unknown reel slug "${slug}".`);
+      return false;
+    });
+    return { ...highlight, reelSlugs: validSlugs };
+  })
+  .filter((highlight) => highlight.reelSlugs.length > 0);
 
 // "Part X of Y" from every reel sharing the seriesId.
 export function seriesInfo(reel: Reel): { part: number; total: number } | null {

@@ -15,6 +15,7 @@ const FLOATING = new Set([
   "tier_list",
   "stitch",
   "pov",
+  "day_in_life",
 ]);
 
 // A comment is visible for 0.15 of the reel (~3s), then the lane empties.
