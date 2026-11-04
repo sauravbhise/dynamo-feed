@@ -94,7 +94,7 @@ export function CharacterSlot({
     align === "left"
       ? { left: 16 }
       : align === "right"
-        ? { right: 16 }
+        ? { right: "calc(16px + var(--slot-right-clear, 0px))" }
         // Centered characters shift left on mobile so the reserved action-rail
         // column on the right never covers their visible area.
         : { left: "50%", transform: "translateX(calc(-50% - var(--rail-inset, 0px) / 2))" };
@@ -149,9 +149,17 @@ export function CharacterSlot({
           className="absolute inset-0"
           style={{
             transformOrigin: "bottom center",
-            animation: reduceMotion
-              ? undefined
-              : `${isSpeaking ? "char-bob-speak" : "char-bob"} ${isSpeaking ? 0.8 : 2.5}s ease-in-out infinite`,
+            // Longhands, not the `animation` shorthand — updating the
+            // shorthand alongside animationPlayState triggers a React
+            // style-conflict warning on every rerender.
+            ...(reduceMotion
+              ? null
+              : {
+                  animationName: isSpeaking ? "char-bob-speak" : "char-bob",
+                  animationDuration: `${isSpeaking ? 0.8 : 2.5}s`,
+                  animationTimingFunction: "ease-in-out",
+                  animationIterationCount: "infinite",
+                }),
             animationPlayState: paused ? "paused" : "running",
           }}
         >

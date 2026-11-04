@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { CharacterSlot } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
@@ -10,9 +10,23 @@ import { str, type TemplateProps } from "./registry";
 
 const CHAR_HEIGHT = 32;
 
+/** Below md the action rail sits inside the frame on the right — the
+    two-shot shrinks so both characters clear it. */
+function useIsPhone(): boolean {
+  const [isPhone, setIsPhone] = useState(() => window.matchMedia("(max-width: 767px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const onChange = (event: MediaQueryListEvent) => setIsPhone(event.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return isPhone;
+}
+
 /** A talk-show two-shot: the host (reel.hostId) on the left, the guest on the right. */
 export function InterviewTemplate({ reel, beat, data, reducedMotion }: TemplateProps) {
   const paused = usePaused();
+  const charHeight = useIsPhone() ? 28 : CHAR_HEIGHT;
 
   // Guest + topic come from beat 1's data, read from the accumulated extras
   // like every other template.
@@ -72,7 +86,7 @@ export function InterviewTemplate({ reel, beat, data, reducedMotion }: TemplateP
               characterId={reel.hostId}
               pose={speakerIsHost ? beat.pose : "neutral"}
               isSpeaking={speakerIsHost}
-              heightPercent={CHAR_HEIGHT}
+              heightPercent={charHeight}
               align="left"
             />
           </motion.div>
@@ -88,7 +102,7 @@ export function InterviewTemplate({ reel, beat, data, reducedMotion }: TemplateP
               characterId={guestId}
               pose={speakerIsHost ? "neutral" : beat.pose}
               isSpeaking={!speakerIsHost}
-              heightPercent={CHAR_HEIGHT}
+              heightPercent={charHeight}
               align="right"
             />
           </motion.div>
