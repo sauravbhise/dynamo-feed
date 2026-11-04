@@ -13,14 +13,19 @@ interface ReelBackgroundProps {
   style?: MotionStyle;
 }
 
+/** A reel's background image candidates, in priority order. */
+export function backgroundCandidates(reel: Reel): string[] {
+  return [reel.background, `/backgrounds/${reel.template}.webp`].filter(
+    (src): src is string => typeof src === "string"
+  );
+}
+
 export function ReelBackground({ reel, style }: ReelBackgroundProps) {
   const host = castById[reel.hostId];
   const color = host?.color ?? "#A9BED6";
   // Priority: the reel's own background → the template's → the colour
   // gradient. Each step is probed only if the previous image fails.
-  const srcs = [reel.background, `/backgrounds/${reel.template}.webp`].filter(
-    (src): src is string => typeof src === "string"
-  );
+  const srcs = backgroundCandidates(reel);
   const srcKey = srcs.join("|");
   const [bgSrc, setBgSrc] = useState<string | null>(
     () => srcs.find((src) => checked.get(src) === true) ?? null

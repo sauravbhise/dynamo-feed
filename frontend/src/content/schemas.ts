@@ -9,6 +9,8 @@ export const templateSchema = z.enum([
   "stat_reveal",
   "interview",
   "tier_list",
+  "stitch",
+  "pov",
   "nudge",
 ]);
 
@@ -91,6 +93,8 @@ export const templateDataSchemas: Partial<Record<z.infer<typeof templateSchema>,
     })
     .partial()
     .strict(),
+  stitch: z.object({ stitchSlug: z.string() }).partial().strict(),
+  pov: z.object({ pov: z.string() }).partial().strict(),
 };
 
 export const profileSchema = z.object({

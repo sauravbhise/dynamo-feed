@@ -4,16 +4,18 @@ import { Toaster } from "sonner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Layout } from "./components/Layout";
 import { PageLayer } from "./components/PageLayer";
-
-const SPRITE_SHEETS = ["/cast/reginald.webp", "/cast/blaze.webp", "/cast/marge.webp", "/cast/tia.webp"];
+import { castById } from "./content";
 
 export default function App() {
-  // Preload every sprite sheet at load so pose changes never flash.
+  // Preload every sprite sheet at load so pose changes never flash (Saurav
+  // renders as a placeholder, no sheet to fetch).
   useEffect(() => {
-    SPRITE_SHEETS.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
+    Object.keys(castById)
+      .filter((id) => id !== "saurav")
+      .forEach((id) => {
+        const img = new Image();
+        img.src = `/cast/${id}.webp`;
+      });
   }, []);
 
   return (

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronDown, ChevronUp, Volume2, X } from "lucide-react";
 import { ActionRail } from "./ActionRail";
+import { CoachMark } from "./CoachMark";
 import { CommentsPanel } from "./CommentsPanel";
 import { ReelPlayer } from "./ReelPlayer";
 import { nextGeneration } from "../feed/order";
@@ -105,6 +106,7 @@ function FeedFrameInner() {
   const [extraComments, setExtraComments] = useState<Record<string, ReelComment[]>>({});
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [loopHint, setLoopHint] = useState(false);
+  const [coachVisible, setCoachVisible] = useState(false);
 
   // The nudge: 10 different reels viewed or 3 minutes in the feed, whichever
   // comes first — inserted once per visit, worded for its trigger.
@@ -378,7 +380,7 @@ function FeedFrameInner() {
                   onTogglePause={() => setPaused((value) => !value)}
                   onLoop={handleLoop}
                   onDoubleTap={() => likeReel(reel.id)}
-                  commentsSuppressed={loopHint || commentsOpen}
+                  commentsSuppressed={loopHint || commentsOpen || coachVisible}
                   onOpenComments={() => setCommentsOpen(true)}
                 />
               )}
@@ -407,7 +409,7 @@ function FeedFrameInner() {
             just above the caption zone — never over the (centered) character.
             Hides as soon as the visitor scrolls. */}
         <AnimatePresence>
-          {loopHint && activeReel.template !== "breaking_news" && (
+          {loopHint && !coachVisible && activeReel.template !== "breaking_news" && (
             <motion.div
               key="swipe-hint"
               data-testid="swipe-hint"
@@ -423,6 +425,10 @@ function FeedFrameInner() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* First-launch coach mark — once per browser, hides the live-comment
+            lane and the loop hint while it shows. */}
+        <CoachMark blocked={pageOpen || commentsOpen} onVisibleChange={setCoachVisible} />
 
         {isDesktop ? null : (
           <div

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { motion, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion, useAnimationControls, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion";
 import type { CSSProperties } from "react";
 import { castById } from "../content";
 import { useVoice } from "../audio/VoiceContext";
@@ -55,6 +55,22 @@ export function CharacterSlot({
   const paused = usePaused();
   const frozen = paused || reduceMotion;
   const [flip, setFlip] = useState(false);
+
+  // The pose-change pop (squash → settle) runs on a wrapper WITHOUT a keyed
+  // <img> inside, so the sprite never remounts or refetches.
+  const squash = useAnimationControls();
+  const frozenRef = useRef(frozen);
+  frozenRef.current = frozen;
+  useEffect(() => {
+    if (frozenRef.current) {
+      squash.set({ scaleY: 1, scaleX: 1 });
+      return;
+    }
+    squash.start(
+      { scaleY: [0.94, 1], scaleX: [1.04, 1] },
+      { type: "spring", stiffness: 500, damping: 22 }
+    );
+  }, [pose, squash]);
 
   // Reginald alternates neutral/talking while he speaks — but only on beats
   // whose pose is neutral or talking. Any other pose (sceptical, pointing,
@@ -166,14 +182,7 @@ export function CharacterSlot({
           {/* A small extra bob scaled by the voice loudness (everyone but
               Reginald, whose mouth does the work) — zero without a voice. */}
           <motion.div className="absolute inset-0" style={{ y: voiceBob }}>
-          <motion.div
-            key={pose}
-            className="absolute inset-0"
-            style={{ transformOrigin: "bottom center" }}
-            initial={frozen ? undefined : { scaleY: 0.94, scaleX: 1.04 }}
-            animate={{ scaleY: 1, scaleX: 1 }}
-            transition={frozen ? { duration: 0.2 } : { type: "spring", stiffness: 500, damping: 22 }}
-          >
+          <motion.div className="absolute inset-0" style={{ transformOrigin: "bottom center" }} animate={squash}>
             <div className="absolute inset-0 overflow-hidden">
               {characterId === "saurav" ? (
                 <div className="grid h-full w-full place-items-center rounded-3xl" style={{ backgroundColor: character.color }} data-testid="character-placeholder">

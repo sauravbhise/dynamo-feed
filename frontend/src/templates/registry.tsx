@@ -8,6 +8,8 @@ import { MythVsFactTemplate } from "./MythVsFactTemplate";
 import { StatRevealTemplate } from "./StatRevealTemplate";
 import { InterviewTemplate } from "./InterviewTemplate";
 import { TierListTemplate } from "./TierListTemplate";
+import { StitchTemplate } from "./StitchTemplate";
+import { PovTemplate } from "./PovTemplate";
 import { NudgeTemplate } from "./NudgeTemplate";
 import type { Beat, Reel, ReelTemplate } from "../content/types";
 
@@ -40,5 +42,7 @@ export const TEMPLATES: Record<ReelTemplate, ComponentType<TemplateProps>> = {
   stat_reveal: StatRevealTemplate,
   interview: InterviewTemplate,
   tier_list: TierListTemplate,
+  stitch: StitchTemplate,
+  pov: PovTemplate,
   nudge: NudgeTemplate,
 };

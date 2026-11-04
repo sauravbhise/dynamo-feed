@@ -316,5 +316,29 @@
       { "authorId": "blaze", "text": "JAVA IN S TIER?? Marge has SPOKEN" },
       { "authorId": "tia", "text": "react in B tier?? i'm shaking" },
       { "authorId": "saurav", "text": "Fair, honestly." }
+    ] },
+  { "id": "r10", "slug": "marge-stitches-the-news", "template": "stitch", "hostId": "marge", "likes": 2048,
+    "beats": [
+      { "characterId": "blaze", "pose": "talking", "caption": "Local engineer builds entire portfolio by talking at his laptop!", "durationMs": 3000, "data": { "stitchSlug": "breaking-built-by-voice" } },
+      { "characterId": "marge", "pose": "sceptical", "caption": "This man calls talking to a laptop news.", "durationMs": 3000 },
+      { "characterId": "marge", "pose": "thinking", "caption": "In my day we talked to people. They didn't listen either.", "durationMs": 3500 },
+      { "characterId": "marge", "pose": "neutral", "caption": "Still. The website is nice. Don't tell him I said that.", "durationMs": 3500 }
+    ],
+    "comments": [
+      { "authorId": "blaze", "text": "MARGE STITCHED ME. I'M FRAMING THIS" },
+      { "authorId": "tia", "text": "stitch of the year honestly" },
+      { "authorId": "reginald", "text": "A rare exchange between species." }
+    ] },
+  { "id": "r11", "slug": "pov-you-hired-saurav", "template": "pov", "hostId": "tia", "likes": 4096,
+    "beats": [
+      { "characterId": "tia", "pose": "talking", "caption": "Day one. He's already asked where the docs are.", "durationMs": 3000, "data": { "pov": "POV: you just hired Saurav" } },
+      { "characterId": "tia", "pose": "shocked", "caption": "Day three. The docs exist now. He wrote them.", "durationMs": 3000 },
+      { "characterId": "tia", "pose": "thinking", "caption": "Week two. The thing nobody owned? He owns it now.", "durationMs": 3500 },
+      { "characterId": "tia", "pose": "celebrating", "caption": "Month one. You're wondering why you didn't hire him sooner.", "durationMs": 3500 }
+    ],
+    "comments": [
+      { "authorId": "marge", "text": "Suspiciously organised. As I said." },
+      { "authorId": "blaze", "text": "WHERE DO I SIGN UP TO HIRE HIM" },
+      { "authorId": "saurav", "text": "I do like docs." }
     ] }
 ]

@@ -7,6 +7,8 @@ export type ReelTemplate =
   | "stat_reveal"
   | "interview"
   | "tier_list"
+  | "stitch"
+  | "pov"
   | "nudge";
 
 export type Pose =

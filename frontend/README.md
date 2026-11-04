@@ -132,6 +132,36 @@ URL. It beats the template default (`/backgrounds/<template>.webp`), which
 beats the colour gradient — each step is only used if the previous image
 fails to load, with results cached for the session.
 
+**`stitch`** — a TikTok-style Stitch: beat 1 is a clip of another reel, then a
+hard cut to the reply, with the clip kept as a tappable thumbnail.
+
+- Beat 1 data: `stitchSlug` (the slug of an existing reel). Beat 1's
+  `characterId` is the original speaker and its caption is the quoted line;
+  beats 2+ are the reply (normally by the reel's `hostId`).
+- The clip beat plays over the stitched reel's own background; beat 2 starts
+  with a 120ms white flash. The reply keeps a picture-in-picture of the clip
+  top-left — tapping it jumps the feed to the original reel.
+- If `stitchSlug` matches no reel, the pill and thumbnail still show (without
+  the tap) and a warning is logged.
+
+**`pov`** — a native-feeling POV caption that floats over the whole reel.
+
+- Beat 1 data: `pov` (the line, e.g. "POV: you just hired Saurav"). It stays
+  on screen for every beat while the character changes underneath.
+
+Full examples: `r10` (`marge-stitches-the-news`, stitch) and `r11`
+(`pov-you-hired-saurav`, POV) in `reels.json`.
+
+### Coach mark
+
+First-time visitors get a one-off "Swipe up for more" hint (touch) or
+"Scroll or press ↓ for more" (mouse/keyboard) 1.5s into the first reel. It
+disappears on the first scroll, swipe, wheel tick, arrow key, tap or nav
+button — or after 4 seconds — and never shows again (localStorage key
+`df-coach-seen`). To see it again: `localStorage.removeItem("df-coach-seen")`
+and reload. While it shows, the floating live comment and the loop "Swipe up"
+hint stay hidden.
+
 ### Adding a page
 
 A page is one object in `src/content/pages.json` — no code changes needed. It

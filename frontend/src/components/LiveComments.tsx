@@ -6,7 +6,16 @@ import { usePaused } from "./PausedContext";
 
 // Floating comment templates — breaking news puts its comments in the ticker
 // instead, storytime already has chat bubbles, the nudge stays clean.
-const FLOATING = new Set(["review", "documentary", "myth_vs_fact", "stat_reveal", "interview", "tier_list"]);
+const FLOATING = new Set([
+  "review",
+  "documentary",
+  "myth_vs_fact",
+  "stat_reveal",
+  "interview",
+  "tier_list",
+  "stitch",
+  "pov",
+]);
 
 // A comment is visible for 0.15 of the reel (~3s), then the lane empties.
 const WINDOW = 0.15;
