@@ -4,6 +4,10 @@ import { ArrowLeft, ArrowUpRight, Play } from "lucide-react";
 import { pageBySlug, profile, reels } from "../content";
 import type { PageBlock } from "../content/types";
 
+// The site's own title (the index.html <title>), captured ONCE at startup —
+// restored on every page close, however the page was opened.
+const SITE_TITLE = document.title;
+
 // ---------- inline text: **bold** and [label](url) only ----------
 function renderInline(text: string): ReactNode[] {
   const tokens: ReactNode[] = [];
@@ -152,7 +156,6 @@ export function PageLayer() {
   });
   const stateRef = useRef(state);
   stateRef.current = state;
-  const prevTitleRef = useRef<string | null>(null);
   const reduceMotion = useReducedMotion();
 
   const announce = (open: boolean) =>
@@ -167,7 +170,6 @@ export function PageLayer() {
     if (!match) return;
     const page = pageBySlug(decodeURIComponent(match[1]));
     if (!page) return;
-    prevTitleRef.current = document.title;
     document.title = `${page.title} · ${profile.name}`;
     announce(true);
   }, []);
@@ -177,10 +179,8 @@ export function PageLayer() {
     if (!current) return;
     // Direct landings have no history entry — rewrite the URL to /.
     if (current.mode === "direct") window.history.replaceState(null, "", "/");
-    if (prevTitleRef.current !== null) {
-      document.title = prevTitleRef.current;
-      prevTitleRef.current = null;
-    }
+    // Always restore the site's own title.
+    document.title = SITE_TITLE;
     announce(false);
     setState(null);
     // Focus returns to the Read more button that opened the page.
@@ -207,7 +207,6 @@ export function PageLayer() {
       const slug = (event as CustomEvent<string>).detail;
       const page = pageBySlug(slug);
       if (!page || stateRef.current) return;
-      prevTitleRef.current = document.title;
       window.history.pushState({ pageSlug: slug }, "", `/p/${slug}`);
       document.title = `${page.title} · ${profile.name}`;
       announce(true);
@@ -227,9 +226,7 @@ export function PageLayer() {
         // History landed on another page entry — swap the layer's content.
         const slug = decodeURIComponent(match[1]);
         const page = pageBySlug(slug);
-        if (page && prevTitleRef.current !== null) {
-          document.title = `${page.title} · ${profile.name}`;
-        }
+        if (page) document.title = `${page.title} · ${profile.name}`;
         setState({ slug, mode: current.mode });
         return;
       }

@@ -4,7 +4,7 @@ import type { MotionStyle } from "framer-motion";
 import { castById } from "../content";
 import type { Reel } from "../content/types";
 
-// One check per template per session — adding a file is the only step needed.
+// One check per src per session — adding a file is the only step needed.
 const checked = new Map<string, boolean>();
 
 interface ReelBackgroundProps {
@@ -16,29 +16,49 @@ interface ReelBackgroundProps {
 export function ReelBackground({ reel, style }: ReelBackgroundProps) {
   const host = castById[reel.hostId];
   const color = host?.color ?? "#A9BED6";
-  const src = `/backgrounds/${reel.template}.webp`;
-  const [bgSrc, setBgSrc] = useState<string | null>(() => (checked.get(src) === true ? src : null));
+  // Priority: the reel's own background → the template's → the colour
+  // gradient. Each step is probed only if the previous image fails.
+  const srcs = [reel.background, `/backgrounds/${reel.template}.webp`].filter(
+    (src): src is string => typeof src === "string"
+  );
+  const srcKey = srcs.join("|");
+  const [bgSrc, setBgSrc] = useState<string | null>(
+    () => srcs.find((src) => checked.get(src) === true) ?? null
+  );
 
   useEffect(() => {
-    if (checked.get(src) !== undefined) {
-      setBgSrc(checked.get(src) ? src : null);
-      return;
-    }
     let cancelled = false;
-    const img = new Image();
-    img.onload = () => {
-      checked.set(src, true);
-      if (!cancelled) setBgSrc(src);
+    // Walk the chain: the first src that loads wins; a failed src falls
+    // through to the next (results are cached for the whole session).
+    const resolve = (index: number) => {
+      if (cancelled) return;
+      const src = srcs[index];
+      if (!src) {
+        setBgSrc(null); // every image failed → the colour gradient
+        return;
+      }
+      if (checked.get(src) !== undefined) {
+        if (checked.get(src)) setBgSrc(src);
+        else resolve(index + 1);
+        return;
+      }
+      const img = new Image();
+      img.onload = () => {
+        checked.set(src, true);
+        if (!cancelled) setBgSrc(src);
+      };
+      img.onerror = () => {
+        checked.set(src, false);
+        resolve(index + 1);
+      };
+      img.src = src;
     };
-    img.onerror = () => {
-      checked.set(src, false);
-      if (!cancelled) setBgSrc(null);
-    };
-    img.src = src;
+    resolve(0);
     return () => {
       cancelled = true;
     };
-  }, [src]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [srcKey]);
 
   return (
     <div className="absolute inset-0 overflow-hidden" data-testid="reel-background">

@@ -290,5 +290,31 @@
       { "authorId": "reginald", "text": "A healthy scepticism. Rare, and valuable." },
       { "authorId": "tia", "text": "part 3 when he finds the buyers?? 👀" }
     ]
-  }
+  },
+  { "id": "r08", "slug": "blaze-interviews-saurav", "template": "interview", "hostId": "blaze", "likes": 1337,
+    "beats": [
+      { "characterId": "blaze", "pose": "talking", "caption": "Welcome back to the show! Tonight's guest built a whole website starring cartoon animals.", "durationMs": 3500, "data": { "guest": "saurav", "topic": "Why build a portfolio like this?" } },
+      { "characterId": "saurav", "pose": "talking", "caption": "A normal portfolio gets skimmed in ten seconds. I wanted people to actually stay.", "durationMs": 3500 },
+      { "characterId": "blaze", "pose": "shocked", "caption": "Ten seconds?! Folks, that's shorter than my intro!", "durationMs": 3000 },
+      { "characterId": "saurav", "pose": "neutral", "caption": "Exactly. So I made it something you scroll.", "durationMs": 3000 },
+      { "characterId": "blaze", "pose": "celebrating", "caption": "Saurav, everybody! Stay for the cartoon animals!", "durationMs": 3000 }
+    ],
+    "comments": [
+      { "authorId": "marge", "text": "I was not consulted about being a cartoon animal." },
+      { "authorId": "tia", "text": "the host is giving late-night energy fr" },
+      { "authorId": "reginald", "text": "Retention, by way of tortoise. Bold." }
+    ] },
+  { "id": "r09", "slug": "marge-ranks-the-stack", "template": "tier_list", "hostId": "marge", "likes": 512,
+    "beats": [
+      { "characterId": "marge", "pose": "neutral", "caption": "I've been asked to rank Saurav's tools. Against my will.", "durationMs": 3000, "data": { "title": "Marge ranks: the stack" } },
+      { "characterId": "marge", "pose": "sceptical", "caption": "Java. Old, reliable, never surprises anyone. Like me. S.", "durationMs": 3500, "data": { "item": { "label": "Java", "tier": "S" } } },
+      { "characterId": "marge", "pose": "thinking", "caption": "React. Changes its mind every year. B.", "durationMs": 3000, "data": { "item": { "label": "React", "tier": "B" } } },
+      { "characterId": "marge", "pose": "talking", "caption": "TypeScript. Tells you you're wrong before you are. A.", "durationMs": 3000, "data": { "item": { "label": "TypeScript", "tier": "A" } } },
+      { "characterId": "marge", "pose": "sceptical", "caption": "AI engineering. Ask me again in a year. C, for now.", "durationMs": 3500, "data": { "item": { "label": "AI engineering", "tier": "C" } } }
+    ],
+    "comments": [
+      { "authorId": "blaze", "text": "JAVA IN S TIER?? Marge has SPOKEN" },
+      { "authorId": "tia", "text": "react in B tier?? i'm shaking" },
+      { "authorId": "saurav", "text": "Fair, honestly." }
+    ] }
 ]

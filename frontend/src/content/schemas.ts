@@ -7,6 +7,8 @@ export const templateSchema = z.enum([
   "storytime",
   "myth_vs_fact",
   "stat_reveal",
+  "interview",
+  "tier_list",
   "nudge",
 ]);
 
@@ -39,6 +41,8 @@ export const reelSchema = z.object({
   likes: z.number().int().nonnegative(),
   beats: z.array(beatSchema).min(1),
   comments: z.array(z.object({ authorId: z.string(), text: z.string().min(1) })),
+  /** Optional per-reel background: a public/ path or a full URL. */
+  background: z.string().optional(),
   auto: z.boolean().optional(),
 });
 
@@ -78,6 +82,15 @@ export const templateDataSchemas: Partial<Record<z.infer<typeof templateSchema>,
     .strict(),
   // storytime and nudge keep no template extras
   storytime: z.object({}).passthrough(),
+  interview: z.object({ guest: z.string(), topic: z.string() }).partial().strict(),
+  tier_list: z
+    .object({
+      title: z.string(),
+      tiers: z.array(z.string()),
+      item: z.object({ label: z.string(), tier: z.string() }),
+    })
+    .partial()
+    .strict(),
 };
 
 export const profileSchema = z.object({

@@ -5,6 +5,8 @@ export type ReelTemplate =
   | "storytime"
   | "myth_vs_fact"
   | "stat_reveal"
+  | "interview"
+  | "tier_list"
   | "nudge";
 
 export type Pose =
@@ -37,6 +39,8 @@ export interface Reel {
   hostId: string;
   seriesId?: string;
   part?: number;
+  /** Optional background image (public/ path or full URL) — beats the template default. */
+  background?: string;
   likes: number;
   beats: Beat[];
   comments: ReelComment[];

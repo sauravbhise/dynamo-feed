@@ -97,6 +97,41 @@ script); ElevenLabs is the default, add another adapter and set
 be checked before any real voice exists. Auto-reels are included automatically —
 the script reads the same generated reels as the app.
 
+### Reel templates
+
+Each reel's `template` picks how its beats render. Most templates read extra
+beat data from `data` on the beat that carries it (usually beat 1) — extras
+accumulate, so later beats see them too.
+
+**`interview`** — a talk-show two-shot. The reel's `hostId` sits on the left,
+the guest on the right; the beat's `characterId` is the speaker (full size and
+lit), the other listens (dimmed, slightly smaller).
+
+- Beat data (normally beat 1): `guest` (a cast id) and `topic` (string).
+- If the guest is missing or not in the cast, the reel falls back to a
+  single-character layout and logs a warning.
+
+```json
+{ "characterId": "blaze", "pose": "talking", "caption": "Welcome back to the show!", "durationMs": 3500, "data": { "guest": "saurav", "topic": "Why build a portfolio like this?" } }
+```
+
+**`tier_list`** — the host ranks things into tiers, one item per beat, items
+dropping into a board above their head.
+
+- Beat data (normally beat 1): `title` (string) and optional `tiers`
+  (defaults to `["S", "A", "B", "C", "D"]`).
+- Every beat can carry an `item`: `{ "label": "Java", "tier": "S" }`. Items
+  accumulate beat by beat; an item whose tier is not in `tiers` is skipped
+  with a warning.
+- Full examples of both: `r08` (`blaze-interviews-saurav`, interview) and
+  `r09` (`marge-ranks-the-stack`, tier list) in `reels.json`.
+
+**Per-reel background** — any reel can set an optional `background`: a path
+under `public/` (e.g. `/backgrounds/blaze-interviews-saurav.webp`) or a full
+URL. It beats the template default (`/backgrounds/<template>.webp`), which
+beats the colour gradient — each step is only used if the previous image
+fails to load, with results cached for the session.
+
 ### Adding a page
 
 A page is one object in `src/content/pages.json` — no code changes needed. It
