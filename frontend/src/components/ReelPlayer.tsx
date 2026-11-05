@@ -1,9 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useMotionValue, useReducedMotion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform } from "framer-motion";
 import type { MouseEvent as ReactMouseEvent } from "react";
-import { Clapperboard, Heart, Pause } from "lucide-react";
+import { Heart, Pause } from "lucide-react";
 import { TEMPLATES } from "../templates/registry";
-import { profileItemBySlug } from "../content";
+import { beatDurationMs } from "../content";
+import { autoReelsFresh } from "../feed/autoReels";
+import { audioSrcFor, connectAnalyser, readLoudness } from "../audio/engine";
+import { useSound } from "../audio/SoundContext";
+import { VoiceProvider } from "../audio/VoiceContext";
+import { LiveCommentsProvider } from "./LiveCommentsContext";
+import { PausedProvider } from "./PausedContext";
 import type { Reel } from "../content/types";
 
 const BURST_HEARTS = [
@@ -24,28 +30,117 @@ interface ReelPlayerProps {
   onTogglePause: () => void;
   onLoop: () => void;
   onDoubleTap?: () => void;
+  /** Comments sheet open or the swipe hint showing — the lane waits. */
+  commentsSuppressed?: boolean;
+  onOpenComments?: () => void;
 }
 
-export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoubleTap }: ReelPlayerProps) {
+export function ReelPlayer({
+  reel,
+  active,
+  paused,
+  onTogglePause,
+  onLoop,
+  onDoubleTap,
+  commentsSuppressed,
+  onOpenComments,
+}: ReelPlayerProps) {
   const reduceMotion = useReducedMotion();
-  const [beatIndex, setBeatIndex] = useState(0);
-  const beatProgress = useMotionValue(0);
   const reelProgress = useMotionValue(0);
   const [audioDurations, setAudioDurations] = useState<Record<number, number>>({});
+  const { soundOn, manifest } = useSound();
+  const [loopEpoch, setLoopEpoch] = useState(0);
 
-  const durationsRef = useRef<number[]>([]);
+  // A beat has audio only when its {slug}:{beatIndex} key is in the manifest.
+  const audioSrcs = useMemo(
+    () => reel.beats.map((_, i) => audioSrcFor(manifest, reel.slug, i)),
+    [reel, manifest]
+  );
+
+  // Beat lengths: computed from captions (see beatDurationMs). With sound on,
+  // a beat with audio lasts the audio duration plus 300 ms — or the reading
+  // time when that is longer. Sound off: exactly the reading time.
+  const durations = useMemo(
+    () =>
+      reel.beats.map((beat, i) => {
+        const reading = beatDurationMs(beat, reel.template);
+        if (!soundOn) return reading;
+        const audioMs = audioDurations[i];
+        return audioMs ? Math.max(audioMs + 300, reading) : reading;
+      }),
+    [reel, audioDurations, soundOn]
+  );
+  const starts = useMemo(() => {
+    let acc = 0;
+    return durations.map((ms) => {
+      const start = acc;
+      acc += ms;
+      return start;
+    });
+  }, [durations]);
+  const total = durations.reduce((sum, ms) => sum + ms, 0);
+
+  const totalRef = useRef(total);
+  totalRef.current = total;
+  const startsRef = useRef(starts);
+  startsRef.current = starts;
+
   const elapsedRef = useRef(0);
   const rafRef = useRef(0);
   const loopedRef = useRef(false);
 
-  const durations = reel.beats.map((beat, i) => audioDurations[i] ?? beat.durationMs);
+  // ONE unit of state for the beat — changes only when the beat changes.
+  const [beatState, setBeatState] = useState({ index: 0, startedAtMs: 0 });
+
+  const beatFromElapsed = (elapsed: number) => {
+    let index = 0;
+    for (let i = 0; i < startsRef.current.length; i++) {
+      if (elapsed >= startsRef.current[i]) index = i;
+      else break;
+    }
+    return { index, startedAtMs: startsRef.current[index] ?? 0 };
+  };
+
+  // The beat index follows the reel progress. Every template listener fires
+  // from this same publication point, so React batches index and progress
+  // derived state into ONE consistent render — no skew frame.
+  useMotionValueEvent(reelProgress, "change", (rp) => {
+    const { index, startedAtMs } = beatFromElapsed(rp * totalRef.current);
+    setBeatState((prev) => (prev.index === index ? prev : { index, startedAtMs }));
+  });
+
+  // Per-beat progress is DERIVED from elapsed time — it can never disagree
+  // with the beat index and resets to 0 automatically on every beat change.
+  // The transformer reads durations through a REF so its identity never
+  // changes: framer recomputes a changed transformer during the render that
+  // changed it and emits 'change' mid-render, which React reports as
+  // "Cannot update a component (template) while rendering (ReelPlayer)".
+  const durationsRef = useRef(durations);
   durationsRef.current = durations;
 
-  // Beat length comes from the audio file's duration when it exists — no playback yet.
+  const beatProgress = useTransform(reelProgress, (rp) => {
+    const elapsed = rp * totalRef.current;
+    const { index, startedAtMs } = beatFromElapsed(elapsed);
+    return Math.min(Math.max((elapsed - startedAtMs) / (durationsRef.current[index] ?? 1), 0), 1);
+  });
+
+  // ---- Voice playback + loudness ------------------------------------------
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const smoothRef = useRef(0);
+  const loudness = useMotionValue(0);
+
+  // With sound on, each beat's file length decides the beat length — load the
+  // metadata once per reel. A failed file simply never sets a duration, so the
+  // reading time covers that beat silently.
   useEffect(() => {
+    if (!soundOn) {
+      setAudioDurations({});
+      return;
+    }
     let cancelled = false;
-    reel.beats.forEach((beat, i) => {
-      if (!beat.audioSrc) return;
+    audioSrcs.forEach((src, i) => {
+      if (!src) return;
       const audio = new Audio();
       audio.preload = "metadata";
       audio.addEventListener("loadedmetadata", () => {
@@ -54,25 +149,69 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
         }
       });
       audio.addEventListener("error", () => {
-        /* audio not shipped yet — fall back to durationMs */
+        /* file failed — fall back silently to reading-time timing */
       });
-      audio.src = beat.audioSrc;
+      audio.src = src;
     });
     return () => {
       cancelled = true;
     };
-  }, [reel]);
+  }, [audioSrcs, soundOn]);
 
-  // Reels that leave the view pause and reset.
+  const ensureAudio = useCallback(
+    (src: string): HTMLAudioElement => {
+      if (audioRef.current?.dataset.src === src) return audioRef.current;
+      const element = new Audio(src);
+      element.preload = "auto";
+      element.dataset.src = src;
+      analyserRef.current = connectAnalyser(element);
+      audioRef.current = element;
+      return element;
+    },
+    []
+  );
+
+  // The beat's audio always sits at the elapsed position: a fresh beat starts
+  // at zero, a resumed beat continues exactly where the clock stopped. Looping
+  // restarts the audio via loopEpoch; scrolling away (active=false) stops it.
+  useEffect(() => {
+    const src = audioSrcs[beatState.index];
+    if (!active || paused || !soundOn || !src) {
+      audioRef.current?.pause();
+      loudness.set(0);
+      smoothRef.current = 0;
+      return;
+    }
+    const element = ensureAudio(src);
+    const offset = Math.max(
+      0,
+      (elapsedRef.current - (startsRef.current[beatState.index] ?? 0)) / 1000
+    );
+    const start = () => {
+      if (element.duration > 0 && Math.abs(element.currentTime - offset) > 0.05) {
+        element.currentTime = offset;
+      }
+      void element.play().catch(() => {
+        /* file failed or playback blocked — silent fallback */
+        loudness.set(0);
+      });
+    };
+    if (element.duration > 0 || element.readyState >= 2) start();
+    else element.addEventListener("loadedmetadata", start, { once: true });
+    return () => {
+      element.pause();
+    };
+  }, [audioSrcs, beatState.index, active, paused, soundOn, loopEpoch, ensureAudio, loudness]);
+
+  // Reels that leave the view pause and reset — index first, then progress.
   useEffect(() => {
     if (active) return;
     cancelAnimationFrame(rafRef.current);
     elapsedRef.current = 0;
     loopedRef.current = false;
-    setBeatIndex(0);
-    beatProgress.set(0);
+    setBeatState({ index: 0, startedAtMs: 0 });
     reelProgress.set(0);
-  }, [active, reel.id, beatProgress, reelProgress]);
+  }, [active, reel.id, reelProgress]);
 
   // Single elapsed-time clock — pause/resume are exact.
   useEffect(() => {
@@ -82,49 +221,61 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
       elapsedRef.current += now - last;
       last = now;
 
-      const durations = durationsRef.current;
-      const total = durations.reduce((sum, ms) => sum + ms, 0);
+      const total = totalRef.current;
       if (total > 0 && elapsedRef.current >= total) {
         elapsedRef.current = elapsedRef.current % total;
         if (!loopedRef.current) {
           loopedRef.current = true;
           onLoop();
         }
+        // Every wrap restarts the beat audio (see the playback effect).
+        setLoopEpoch((epoch) => epoch + 1);
       }
-      const elapsed = elapsedRef.current;
 
-      // One continuous bar across the whole reel; resets to 0 on loop.
-      reelProgress.set(total > 0 ? Math.min(elapsed / total, 1) : 0);
-
-      // Per-beat progress for the template.
-      let acc = 0;
-      let index = 0;
-      for (let i = 0; i < durations.length; i++) {
-        if (elapsed >= acc + durations[i]) {
-          acc += durations[i];
-          index = i + 1;
-        }
+      // Voice loudness feeds the mouths — sampled on the same clock.
+      const analyser = analyserRef.current;
+      if (soundOn && analyser) {
+        smoothRef.current += (readLoudness(analyser) - smoothRef.current) * 0.35;
+        loudness.set(smoothRef.current);
       }
-      beatProgress.set(Math.min(Math.max((elapsed - acc) / (durations[index] ?? 1), 0), 1));
-      setBeatIndex((prev) => (prev === index ? prev : index));
+
+      // The ONLY publication point: reel progress drives the beat index and
+      // every derived progress value in the same tick.
+      reelProgress.set(total > 0 ? Math.min(elapsedRef.current / total, 1) : 0);
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [active, paused, reel.id, onLoop, beatProgress, reelProgress]);
+  }, [active, paused, reel.id, onLoop, reelProgress, soundOn, loudness]);
 
   // The current beat plus every earlier beat's extras stay in effect.
-  const beat = reel.beats[beatIndex] ?? reel.beats[0];
+  const beat = reel.beats[beatState.index] ?? reel.beats[0];
   const effectiveData = useMemo(() => {
     const acc: Record<string, unknown> = {};
-    for (let i = 0; i <= beatIndex && i < reel.beats.length; i++) {
+    for (let i = 0; i <= beatState.index && i < reel.beats.length; i++) {
       Object.assign(acc, reel.beats[i].data ?? {});
     }
     return acc;
-  }, [reel, beatIndex]);
+  }, [reel, beatState.index]);
+
+  // Live cast comments: one lane fed from the same progress value that drives
+  // the beats — nothing during beat 1, then one at a time.
+  const beat1End = starts.length > 1 ? starts[1] / total : 1;
+  const liveComments = useMemo(
+    () => ({
+      comments: reel.comments,
+      template: reel.template,
+      active,
+      suppressed: !!commentsSuppressed,
+      progress: reelProgress,
+      beat1End,
+      reelTotalMs: total,
+      onOpenComments: () => onOpenComments?.(),
+    }),
+    [reel, active, commentsSuppressed, reelProgress, beat1End, total, onOpenComments]
+  );
 
   // Engagement: double-tap likes with a heart burst; single tap pauses.
-  const profileItem = useMemo(() => profileItemBySlug(reel.slug), [reel.slug]);
   const [burst, setBurst] = useState<{ id: number; x: number; y: number } | null>(null);
   const tapTimer = useRef<number | null>(null);
 
@@ -164,31 +315,35 @@ export function ReelPlayer({ reel, active, paused, onTogglePause, onLoop, onDoub
       className="relative h-full w-full cursor-pointer select-none overflow-hidden"
       onClick={handleClick}
     >
-      <Template
-        reel={reel}
-        beat={beat}
-        beatIndex={beatIndex}
-        progress={beatProgress}
-        data={effectiveData}
-        reducedMotion={!!reduceMotion}
-      />
-
-      {/* Links this reel to the matching portfolio item in the left column */}
-      {profileItem && (
-        <button
-          type="button"
-          data-testid="reel-profile-chip"
-          onClick={(event) => {
-            event.stopPropagation();
-            window.dispatchEvent(
-              new CustomEvent("dynamo:focus-profile-item", { detail: profileItem })
-            );
+      <PausedProvider paused={paused && active}>
+        <VoiceProvider
+          value={{
+            loudness,
+            hasVoice: active && soundOn && !!audioSrcs[beatState.index],
           }}
-          className="absolute bottom-[22%] left-3 z-30 flex items-center gap-1.5 rounded-full bg-ink/75 px-3 py-1.5 text-[11px] font-bold text-cream shadow-soft backdrop-blur transition hover:bg-ink hover:text-sage active:scale-95"
         >
-          <Clapperboard className="size-3.5 text-sage" />
-          {profileItem.title}
-        </button>
+          <LiveCommentsProvider value={liveComments}>
+            <Template
+              reel={reel}
+              beat={beat}
+              beatIndex={beatState.index}
+              progress={beatProgress}
+              data={effectiveData}
+              reducedMotion={!!reduceMotion}
+              active={active}
+            />
+          </LiveCommentsProvider>
+        </VoiceProvider>
+      </PausedProvider>
+
+      {/* Auto-generated reels carry a small "New" chip while now.json is fresh */}
+      {reel.auto && autoReelsFresh && (
+        <span
+          className="absolute right-3 top-3 z-30 rounded-full bg-sage px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-sage-deep shadow-soft"
+          data-testid="reel-new-chip"
+        >
+          New
+        </span>
       )}
 
       {/* Heart burst where the visitor double-tapped */}

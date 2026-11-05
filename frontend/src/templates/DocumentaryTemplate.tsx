@@ -1,9 +1,14 @@
 import { AnimatePresence, motion, useTransform } from "framer-motion";
 import { CharacterSlot } from "../components/CharacterSlot";
+import { ReelCaption } from "../components/ReelCaption";
+import { ProfileReelChip } from "../components/ProfileReelChip";
+import { usePaused } from "../components/PausedContext";
 import { ReelBackground } from "./ReelBackground";
+import { castById } from "../content";
 import { str, type TemplateProps } from "./registry";
 
-export function DocumentaryTemplate({ reel, beat, beatIndex, progress, data, reducedMotion }: TemplateProps) {
+export function DocumentaryTemplate({ reel, beat, beatIndex, progress, data, reducedMotion, active }: TemplateProps) {
+  const paused = usePaused();
   const title = str(data.title);
   // Very slow zoom and pan on the scene, driven by the beat clock.
   const kenBurns = useTransform(
@@ -20,7 +25,7 @@ export function DocumentaryTemplate({ reel, beat, beatIndex, progress, data, red
           <motion.div
             key="title-card"
             className="absolute left-1/2 top-[8%] z-10 -translate-x-1/2 rounded-2xl bg-black/60 px-5 py-3 backdrop-blur"
-            initial={{ opacity: 0 }}
+            initial={paused ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: reducedMotion ? 0.2 : 0.9 }}
@@ -31,13 +36,13 @@ export function DocumentaryTemplate({ reel, beat, beatIndex, progress, data, red
         )}
       </AnimatePresence>
 
-      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={46} />
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={40} />
 
-      {/* Italic subtitle-style caption, inside the caption zone above the letterbox */}
-      <div className="absolute inset-x-0 bottom-[10%] z-10 flex justify-center px-6" data-testid="doc-subtitle">
-        <p className="max-w-[88%] rounded-xl bg-black/45 px-4 py-2 text-center text-sm italic leading-relaxed text-cream/95 backdrop-blur-sm">
+      {/* Caption above the bottom letterbox bar, inside the caption zone */}
+      <div className="absolute inset-x-4 bottom-[9%] z-10">
+        <ReelCaption name={castById[beat.characterId]?.name ?? ""} chip={<ProfileReelChip slug={reel.slug} />}>
           {beat.caption}
-        </p>
+        </ReelCaption>
       </div>
 
       {/* Letterbox bars */}

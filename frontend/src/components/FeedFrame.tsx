@@ -1,16 +1,26 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Volume2, X } from "lucide-react";
 import { ActionRail } from "./ActionRail";
+import { CoachMark } from "./CoachMark";
 import { CommentsPanel } from "./CommentsPanel";
+import { HighlightSessionPill, sessionStore } from "./HighlightSessionPill";
 import { ReelPlayer } from "./ReelPlayer";
 import { nextGeneration } from "../feed/order";
+import { reels } from "../content";
+import { audioUrl, preloadAudio } from "../audio/engine";
+import { SoundContext, SoundProvider, useSound } from "../audio/SoundContext";
 import type { Reel, ReelComment } from "../content/types";
 
-const HINT_KEY = "dynamo:swipe-hint-seen";
 const LIKED_PREFIX = "dynamo:liked:";
 const NUDGE_AFTER_REELS = 10;
 const NUDGE_AFTER_MS = 3 * 60 * 1000;
+
+// Wording matches the trigger that fired.
+const NUDGE_COPY = {
+  time: "You've been scrolling a resume for 3 minutes. Want to talk to the human instead?",
+  reels: "You've watched 10 reels about me. Want to talk to the human instead?",
+} as const;
 
 // The nudge reel — inserted once per visit by the engagement rule, never in reels.json.
 const NUDGE_REEL: Reel = {
@@ -58,6 +68,15 @@ function useIsDesktop() {
 }
 
 export function FeedFrame() {
+  return (
+    <SoundProvider>
+      <FeedFrameInner />
+    </SoundProvider>
+  );
+}
+
+function FeedFrameInner() {
+  const { soundOn, toggleSound, manifest } = useSound();
   const reduceMotion = useReducedMotion();
   const isDesktop = useIsDesktop();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -67,10 +86,19 @@ export function FeedFrame() {
 
   // Opening /r/:slug starts the feed at that reel.
   const initialIndexRef = useRef(-1);
+  // An unknown /r/:slug clears the URL to "/" — the scroll-sync effect keeps
+  // it there until the visitor actually moves to a different reel.
+  const slugResetRef = useRef(false);
   if (initialIndexRef.current < 0) {
     const match = window.location.pathname.match(/\/r\/([^/]+)/);
     const found = match ? order.findIndex((reel) => reel.slug === match[1]) : -1;
     initialIndexRef.current = found >= 0 ? found : 0;
+    // An /r/:slug that matches no reel: start clean at the first reel and
+    // clear the URL — nothing broken on screen.
+    if (found < 0 && match) {
+      window.history.replaceState(null, "", "/");
+      slugResetRef.current = true;
+    }
   }
   const [activeIndex, setActiveIndex] = useState(initialIndexRef.current);
   const activeIndexRef = useRef(activeIndex);
@@ -79,34 +107,96 @@ export function FeedFrame() {
   const [likedIds, setLikedIds] = useState<Record<string, boolean>>(readLikedIds);
   const [extraComments, setExtraComments] = useState<Record<string, ReelComment[]>>({});
   const [commentsOpen, setCommentsOpen] = useState(false);
-  const [showIntroHint, setShowIntroHint] = useState(
-    () => localStorage.getItem(HINT_KEY) !== "1"
-  );
-  const introHintRef = useRef(showIntroHint);
   const [loopHint, setLoopHint] = useState(false);
+  const [coachVisible, setCoachVisible] = useState(false);
 
-  // The nudge: 10 reels watched or 3 minutes in the feed, whichever comes first.
+  // The nudge: 10 different reels viewed or 3 minutes in the feed, whichever
+  // comes first — inserted once per visit, worded for its trigger.
   const nudgeInsertedRef = useRef(false);
-  const watchedRef = useRef(0);
   const startedAtRef = useRef(Date.now());
 
-  const insertNudge = useCallback(() => {
-    if (nudgeInsertedRef.current) return;
+  const insertNudge = useCallback((trigger: "reels" | "time") => {
+    // The nudge never interrupts a highlight session.
+    if (nudgeInsertedRef.current || sessionRef.current) return;
     nudgeInsertedRef.current = true;
     const next = [...orderRef.current];
-    next.splice(Math.min(activeIndexRef.current + 2, next.length), 0, NUDGE_REEL);
+    // The reel-count trigger puts the nudge in place as the VERY NEXT reel.
+    const at = Math.min(activeIndexRef.current + (trigger === "reels" ? 1 : 2), next.length);
+    next.splice(at, 0, {
+      ...NUDGE_REEL,
+      beats: [{ ...NUDGE_REEL.beats[0], caption: NUDGE_COPY[trigger] }],
+    });
     orderRef.current = next;
     setOrder(next);
   }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      if (Date.now() - startedAtRef.current >= NUDGE_AFTER_MS) insertNudge();
+      if (Date.now() - startedAtRef.current >= NUDGE_AFTER_MS) insertNudge("time");
     }, 2000);
     return () => window.clearInterval(timer);
   }, [insertNudge]);
 
+  // A reel counts as viewed each time a DIFFERENT reel becomes the active one,
+  // however the visitor got there (scrolling, swiping, arrow keys, the
+  // up/down buttons or a "Watch the reel" chip) — including the reel they land
+  // on first. The tenth view triggers the nudge immediately.
+  const lastViewedIdRef = useRef<string | null>(null);
+  const viewedCountRef = useRef(0);
+  useEffect(() => {
+    const id = order[Math.min(activeIndex, order.length - 1)]?.id;
+    if (!id || id === lastViewedIdRef.current) return;
+    lastViewedIdRef.current = id;
+    viewedCountRef.current += 1;
+    if (viewedCountRef.current >= NUDGE_AFTER_REELS) insertNudge("reels");
+  }, [activeIndex, order, insertNudge]);
+
   const activeReel = order[Math.min(activeIndex, order.length - 1)];
+
+  // ?audiotest=1 — check the pill and playback on ANY reel: the sample file is
+  // attached to the current reel's first beat, in memory only.
+  const audioTest = useMemo(
+    () => new URLSearchParams(window.location.search).get("audiotest") === "1",
+    []
+  );
+  const effectiveManifest = useMemo(
+    () => (audioTest ? { ...manifest, [`${activeReel.slug}:0`]: "audio/sample.wav" } : manifest),
+    [audioTest, manifest, activeReel.slug]
+  );
+  const reelHasAudio = useMemo(
+    () => activeReel.beats.some((_, i) => !!effectiveManifest[`${activeReel.slug}:${i}`]),
+    [activeReel, effectiveManifest]
+  );
+  // Sound UI (pill + rail button) renders only on reels that have audio —
+  // with an empty manifest no sound UI shows anywhere.
+  const contextValue = useMemo(
+    () => ({ soundOn, toggleSound, manifest: effectiveManifest }),
+    [soundOn, toggleSound, effectiveManifest]
+  );
+
+  // The pill hides as soon as it's tapped or after 5 seconds; a reel change
+  // brings it back on the next reel with audio.
+  const [pillHidden, setPillHidden] = useState(false);
+  useEffect(() => {
+    setPillHidden(false);
+  }, [activeIndex]);
+  useEffect(() => {
+    if (!reelHasAudio || soundOn || pillHidden) return;
+    const timer = window.setTimeout(() => setPillHidden(true), 5000);
+    return () => window.clearTimeout(timer);
+  }, [reelHasAudio, soundOn, pillHidden]);
+
+  // Preload the next reel's voice audio while the current one plays.
+  useEffect(() => {
+    if (!soundOn) return;
+    const next = order[activeIndex + 1];
+    if (!next) return;
+    next.beats.forEach((_, i) => {
+      const path = effectiveManifest[`${next.slug}:${i}`];
+      if (path) preloadAudio(audioUrl(path));
+    });
+  }, [activeIndex, order, effectiveManifest, soundOn]);
+
 
   // Deep link: jump to the opening reel before first paint.
   useLayoutEffect(() => {
@@ -115,24 +205,172 @@ export function FeedFrame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The URL follows the feed without adding history entries.
+  // A full-screen page layer pauses the feed AND owns the address bar while
+  // open (a /p/ deep link must not be overwritten by the feed's URL sync).
+  // True at first mount when the site loads directly on /p/:slug.
+  const [pageOpen, setPageOpen] = useState(() => /^\/p\//.test(window.location.pathname));
   useEffect(() => {
+    const onVisibility = (event: Event) => {
+      const open = (event as CustomEvent<boolean>).detail;
+      setPageOpen(open);
+      setPaused(open);
+    };
+    window.addEventListener("dynamo:page-visibility", onVisibility);
+    return () => window.removeEventListener("dynamo:page-visibility", onVisibility);
+  }, []);
+
+  // The URL follows the feed without adding history entries — but a page
+  // layer owns the address bar; the sync resumes only after it closes.
+  useEffect(() => {
+    if (pageOpen) return;
+    if (slugResetRef.current && activeIndex === initialIndexRef.current) return;
+    slugResetRef.current = false;
     const slug = order[activeIndex]?.slug;
     if (slug && window.location.pathname !== `/r/${slug}`) {
       window.history.replaceState(null, "", `/r/${slug}`);
     }
-  }, [activeIndex, order]);
+  }, [activeIndex, order, pageOpen]);
+
+  // ── Highlight sessions ───────────────────────────────────────────────
+  // A highlight plays ONLY its own reels; ending the session restores the
+  // main feed exactly where it was.
+  const [session, setSession] = useState<{ id: string; label: string } | null>(null);
+  const sessionRef = useRef(false);
+  const savedOrderRef = useRef<Reel[] | null>(null);
+  const savedIndexRef = useRef(0);
+  const restoreScrollRef = useRef<number | null>(null);
+
+  const markHighlightSeen = useCallback((id: string) => {
+    try {
+      const seen: string[] = JSON.parse(localStorage.getItem("df-highlights-seen") ?? "[]");
+      if (Array.isArray(seen) && !seen.includes(id)) {
+        seen.push(id);
+        localStorage.setItem("df-highlights-seen", JSON.stringify(seen));
+      }
+    } catch {
+      /* storage unavailable — the ring just never dims */
+    }
+    window.dispatchEvent(new CustomEvent<string[]>("dynamo:highlights-seen"));
+  }, []);
+
+  const endSession = useCallback(() => {
+    const saved = savedOrderRef.current;
+    if (!sessionRef.current || !saved) return;
+    sessionRef.current = false;
+    setSession(null);
+    const index = Math.min(savedIndexRef.current, saved.length - 1);
+    orderRef.current = saved;
+    setOrder(saved);
+    activeIndexRef.current = index;
+    setActiveIndex(index);
+    setPaused(false);
+    restoreScrollRef.current = index;
+    window.history.replaceState(null, "", `/r/${saved[index].slug}`);
+  }, []);
+
+  // Tapping a highlight replaces the feed with its reels (a one-time
+  // validated list — unknown slugs were dropped at load).
+  useEffect(() => {
+    const onStart = (event: Event) => {
+      if (sessionRef.current) return;
+      const { id, label, reelSlugs } = (
+        event as CustomEvent<{ id: string; label: string; reelSlugs: string[] }>
+      ).detail;
+      const sessionReels = reelSlugs
+        .map((slug) => reels.find((reel) => reel.slug === slug))
+        .filter((reel): reel is Reel => !!reel);
+      if (sessionReels.length === 0) return;
+      savedOrderRef.current = orderRef.current;
+      savedIndexRef.current = activeIndexRef.current;
+      sessionRef.current = true;
+      setSession({ id, label });
+      orderRef.current = sessionReels;
+      setOrder(sessionReels);
+      activeIndexRef.current = 0;
+      setActiveIndex(0);
+      setPaused(false);
+      markHighlightSeen(id);
+      if (scrollRef.current) scrollRef.current.scrollTop = 0;
+      window.history.replaceState(null, "", `/r/${sessionReels[0].slug}`);
+    };
+    const onEnd = () => endSession();
+    window.addEventListener("dynamo:start-highlight", onStart);
+    window.addEventListener("dynamo:end-highlight", onEnd);
+    return () => {
+      window.removeEventListener("dynamo:start-highlight", onStart);
+      window.removeEventListener("dynamo:end-highlight", onEnd);
+    };
+  }, [markHighlightSeen, endSession]);
+
+  // The session pill (top bar on phones, rail column on desktop) mirrors the
+  // live state — label + position — from outside the reel frame.
+  useEffect(() => {
+    sessionStore.set(
+      session
+        ? { id: session.id, label: session.label, position: activeIndex + 1, total: order.length }
+        : null
+    );
+  }, [session, activeIndex, order.length]);
+
+  // The scroll position restores once the main feed is back in the DOM.
+  useLayoutEffect(() => {
+    if (session || restoreScrollRef.current === null) return;
+    const el = scrollRef.current;
+    if (el) el.scrollTop = restoreScrollRef.current * el.clientHeight;
+    restoreScrollRef.current = null;
+  }, [session]);
+
+  // In a session: Escape ends it; a wheel-down or an upward swipe past the
+  // LAST reel ends it too (the snap feed can't scroll beyond its content).
+  useEffect(() => {
+    if (!session) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") endSession();
+    };
+    const onWheel = (event: WheelEvent) => {
+      if (event.deltaY > 0 && activeIndexRef.current >= orderRef.current.length - 1) endSession();
+    };
+    let touchStartY: number | null = null;
+    const onTouchStart = (event: TouchEvent) => {
+      touchStartY = event.touches[0]?.clientY ?? null;
+    };
+    const onTouchEnd = (event: TouchEvent) => {
+      if (touchStartY === null) return;
+      const delta = touchStartY - (event.changedTouches[0]?.clientY ?? touchStartY);
+      if (delta > 40 && activeIndexRef.current >= orderRef.current.length - 1) endSession();
+      touchStartY = null;
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [session, endSession]);
 
   const goTo = useCallback(
     (index: number) => {
       const el = scrollRef.current;
       if (!el) return;
+      // Advancing past the last session reel ends the session.
+      if (
+        sessionRef.current &&
+        index > activeIndexRef.current &&
+        index >= orderRef.current.length
+      ) {
+        endSession();
+        return;
+      }
       el.scrollTo({
         top: Math.max(0, index) * el.clientHeight,
         behavior: reduceMotion ? "auto" : "smooth",
       });
     },
-    [reduceMotion]
+    [reduceMotion, endSession]
   );
 
   const handleScroll = useCallback(() => {
@@ -142,17 +380,11 @@ export function FeedFrame() {
     if (index !== activeIndexRef.current) {
       activeIndexRef.current = index;
       setActiveIndex(index);
-      watchedRef.current += 1;
-      if (watchedRef.current >= NUDGE_AFTER_REELS) insertNudge();
-    }
-    if (introHintRef.current) {
-      introHintRef.current = false;
-      localStorage.setItem(HINT_KEY, "1");
-      setShowIntroHint(false);
     }
     setLoopHint(false);
-    // Endless feed: near the end, append a reshuffled generation.
-    if (index >= orderRef.current.length - 2) {
+    // Endless feed: near the end, append a reshuffled generation — never
+    // during a highlight session (the session order stays exactly as listed).
+    if (!sessionRef.current && index >= orderRef.current.length - 2) {
       const tail = orderRef.current.slice(-5).map((reel) => reel.id);
       const next = [...orderRef.current, ...nextGeneration(tail)];
       orderRef.current = next;
@@ -200,13 +432,27 @@ export function FeedFrame() {
     return () => window.removeEventListener("dynamo:goto-reel", goToSlug);
   }, [goTo]);
 
-  // A new reel autoplays; the loop nudge resets on reel change.
+  // A new reel autoplays; the loop hint resets on reel change.
   useEffect(() => {
     setPaused(false);
     setLoopHint(false);
   }, [activeIndex]);
 
-  const handleLoop = useCallback(() => setLoopHint(true), []);
+  // The hint also hides itself 4s after appearing (the live comments return).
+  useEffect(() => {
+    if (!loopHint) return;
+    const timer = window.setTimeout(() => setLoopHint(false), 4000);
+    return () => window.clearTimeout(timer);
+  }, [loopHint]);
+
+  const handleLoop = useCallback(() => {
+    // The LAST session reel finishing its first loop ends the session.
+    if (sessionRef.current && activeIndexRef.current >= orderRef.current.length - 1) {
+      endSession();
+      return;
+    }
+    setLoopHint(true);
+  }, [endSession]);
 
   const toggleLike = useCallback((id: string) => {
     setLikedIds((prev) => {
@@ -240,14 +486,18 @@ export function FeedFrame() {
       onLike={() => toggleLike(activeReel.id)}
       onComments={() => setCommentsOpen(true)}
       slug={activeReel.slug}
+      hasAudio={reelHasAudio}
     />
   );
 
   return (
+    <SoundContext.Provider value={contextValue}>
     <div className="flex h-full w-full items-center justify-center gap-5 md:gap-6" data-testid="feed-stage-inner">
       <div
         data-testid="feed-frame"
-        className="relative aspect-[9/16] h-full max-h-full max-w-full overflow-hidden rounded-3xl bg-[#191416] shadow-card max-md:aspect-auto max-md:w-full max-md:rounded-none"
+        role="region"
+        aria-label="Reels feed"
+        className="reel-frame relative aspect-[9/16] h-full max-h-full max-w-full overflow-hidden rounded-3xl bg-[#191416] shadow-card max-md:aspect-auto max-md:w-full max-md:rounded-none"
       >
         <div
           ref={scrollRef}
@@ -256,7 +506,13 @@ export function FeedFrame() {
           className="no-scrollbar h-full snap-y snap-mandatory overflow-y-auto overscroll-contain"
         >
           {order.map((reel, i) => (
-            <div key={`${reel.id}-${i}`} className="h-full w-full snap-start" data-testid={`feed-slot-${i}`}>
+            <div
+              key={`${reel.id}-${i}`}
+              role="region"
+              aria-label={reel.beats[0]?.caption ?? reel.slug}
+              className="h-full w-full snap-start"
+              data-testid={`feed-slot-${i}`}
+            >
               {Math.abs(i - activeIndex) <= 1 && (
                 <ReelPlayer
                   reel={reel}
@@ -265,29 +521,55 @@ export function FeedFrame() {
                   onTogglePause={() => setPaused((value) => !value)}
                   onLoop={handleLoop}
                   onDoubleTap={() => likeReel(reel.id)}
+                  commentsSuppressed={loopHint || commentsOpen || coachVisible}
+                  onOpenComments={() => setCommentsOpen(true)}
                 />
               )}
             </div>
           ))}
         </div>
 
+        {/* Sound off until the visitor opts in — the pill sits near the TOP of
+            the reel (never over captions, names or chips), hides on tap or
+            after 5 seconds. */}
+        {!soundOn && reelHasAudio && !pillHidden && (
+          <button
+            data-testid="sound-pill"
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleSound();
+            }}
+            className="absolute left-1/2 top-3 z-30 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-sage px-3 py-2 text-xs font-bold text-sage-deep shadow-soft transition hover:scale-105 active:scale-95"
+          >
+            <Volume2 className="size-3.5" />
+            Tap for sound
+          </button>
+        )}
+
+        {/* Shown only after a reel's first full loop, tucked at the left edge
+            just above the caption zone — never over the (centered) character.
+            Hides as soon as the visitor scrolls. */}
         <AnimatePresence>
-          {(showIntroHint || loopHint) && activeReel.template !== "breaking_news" && (
+          {loopHint && !coachVisible && activeReel.template !== "breaking_news" && (
             <motion.div
               key="swipe-hint"
               data-testid="swipe-hint"
-              className="pointer-events-none absolute bottom-5 left-1/2 z-30"
-              initial={{ opacity: 0, x: "-50%", y: 10 }}
-              animate={{ opacity: 1, x: "-50%", y: 0 }}
-              exit={{ opacity: 0, x: "-50%", y: 10 }}
+              className="pointer-events-none absolute bottom-[23%] left-3 z-30"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
             >
-              <span className="flex items-center gap-1.5 rounded-full bg-ink/70 px-3.5 py-2 text-xs font-bold text-cream backdrop-blur">
-                <ChevronUp className="size-4" />
+              <span className="flex items-center gap-1 rounded-full bg-ink/70 px-2.5 py-1.5 text-[11px] font-bold text-cream backdrop-blur">
+                <ChevronUp className="size-3.5" />
                 Swipe up
               </span>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* First-launch coach mark — once per browser, hides the live-comment
+            lane and the loop hint while it shows. */}
+        <CoachMark blocked={pageOpen || commentsOpen} onVisibleChange={setCoachVisible} />
 
         {isDesktop ? null : (
           <div
@@ -339,7 +621,14 @@ export function FeedFrame() {
         </AnimatePresence>
       </div>
 
-      {isDesktop ? <div className="shrink-0">{rail}</div> : null}
+      {isDesktop ? (
+        // The session pill aligns with the frame's top edge; the rail stays
+        // vertically centred.
+        <div className="flex shrink-0 flex-col items-center self-stretch" data-testid="feed-rail-column">
+          <HighlightSessionPill variant="rail" />
+          <div className="my-auto">{rail}</div>
+        </div>
+      ) : null}
 
       {isDesktop ? (
         <div className="flex flex-col gap-3" data-testid="feed-nav">
@@ -363,5 +652,6 @@ export function FeedFrame() {
         </div>
       ) : null}
     </div>
+    </SoundContext.Provider>
   );
 }

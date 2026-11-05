@@ -5,6 +5,11 @@ export type ReelTemplate =
   | "storytime"
   | "myth_vs_fact"
   | "stat_reveal"
+  | "interview"
+  | "tier_list"
+  | "stitch"
+  | "pov"
+  | "day_in_life"
   | "nudge";
 
 export type Pose =
@@ -22,7 +27,6 @@ export interface Beat {
   pose: Pose;
   caption: string;
   durationMs: number;
-  audioSrc?: string;
   data?: Record<string, unknown>;
 }
 
@@ -38,9 +42,13 @@ export interface Reel {
   hostId: string;
   seriesId?: string;
   part?: number;
+  /** Optional background image (public/ path or full URL) — beats the template default. */
+  background?: string;
   likes: number;
   beats: Beat[];
   comments: ReelComment[];
+  /** True for reels generated at runtime from now.json. */
+  auto?: boolean;
 }
 
 export interface CastMember {
@@ -49,6 +57,8 @@ export interface CastMember {
   role: string;
   color: string;
   scale: number;
+  /** Fraction of the sprite frame's height that is empty space above the character. */
+  headroom: number;
   framing: "full" | "waist";
 }
 
@@ -59,17 +69,13 @@ export interface SocialLink {
   url: string;
 }
 
-export interface StatItem {
-  label: string;
-  value: string;
-}
-
 export interface ExperienceEntry {
   title: string;
   org: string;
   dates: string;
   text: string;
   reelSlug?: string;
+  pageSlug?: string;
 }
 
 export interface ProjectEntry {
@@ -78,6 +84,7 @@ export interface ProjectEntry {
   tags: string[];
   links: { label: string; url: string }[];
   reelSlug?: string;
+  pageSlug?: string;
 }
 
 export interface WritingEntry {
@@ -86,6 +93,7 @@ export interface WritingEntry {
   role: string;
   year: string;
   url: string;
+  pageSlug?: string;
 }
 
 export interface CommunityEntry {
@@ -94,6 +102,7 @@ export interface CommunityEntry {
   dates: string;
   text: string;
   reelSlug?: string;
+  pageSlug?: string;
 }
 
 export interface EducationEntry {
@@ -101,11 +110,20 @@ export interface EducationEntry {
   org: string;
   dates: string;
   text: string;
+  pageSlug?: string;
 }
 
 export interface CertificationEntry {
   name: string;
   issuer: string;
+  pageSlug?: string;
+}
+
+export interface Highlight {
+  id: string;
+  label: string;
+  reelSlugs: string[];
+  cover?: string;
 }
 
 export interface Profile {
@@ -116,7 +134,8 @@ export interface Profile {
   email: string;
   resumeUrl: string;
   socials: SocialLink[];
-  stats: StatItem[];
+  skills: string[];
+  highlights?: Highlight[];
   experience: ExperienceEntry[];
   projects: ProjectEntry[];
   writing: WritingEntry[];
@@ -171,4 +190,30 @@ export interface ProfileItemRef {
   section: ProfileSectionKey;
   itemId: string;
   title: string;
+  pageSlug?: string;
+}
+
+// ---------- Pages (pages.json) ----------
+
+export type PageBlock =
+  | { type: "heading"; text: string }
+  | { type: "text"; text: string }
+  | { type: "image"; src: string; alt: string; caption?: string }
+  | { type: "stats"; items: { value: string; label: string }[] }
+  | { type: "chips"; label?: string; items: string[] }
+  | { type: "links"; items: { label: string; url: string }[] }
+  | { type: "quote"; text: string; by?: string }
+  | { type: "divider" };
+
+export interface Page {
+  /** Unique, url-safe — the page lives at /p/<slug>. */
+  slug: string;
+  /** Small label above the title, e.g. "Project". */
+  kicker?: string;
+  title: string;
+  subtitle?: string;
+  dates?: string;
+  /** Jumps the feed to this reel from the page. */
+  reelSlug?: string;
+  blocks: PageBlock[];
 }

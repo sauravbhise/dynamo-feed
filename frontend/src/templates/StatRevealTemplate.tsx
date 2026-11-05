@@ -1,26 +1,44 @@
-import { useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { motion, useMotionValueEvent, useTransform } from "framer-motion";
 import { CharacterSlot } from "../components/CharacterSlot";
+import { ReelCaption } from "../components/ReelCaption";
+import { ProfileReelChip } from "../components/ProfileReelChip";
+import { usePaused } from "../components/PausedContext";
 import { ReelBackground } from "./ReelBackground";
+import { beatDurationMs, castById } from "../content";
 import { num, str, type TemplateProps } from "./registry";
 
-export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, reducedMotion }: TemplateProps) {
+const COUNT_UP_MS = 1400;
+
+export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, reducedMotion, active }: TemplateProps) {
+  const paused = usePaused();
   const value = num(data.value);
   const unit = str(data.unit) ?? "";
   const label = str(data.label);
   const before = str(data.before);
   const after = str(data.after);
   const valueOnThisBeat = typeof num(beat.data?.value) === "number";
+  const counting = active && valueOnThisBeat && !reducedMotion;
 
-  // The number counts up while its own beat plays, then holds.
+  // The count is written straight from the beat-consistent progress value —
+  // no React state, so it can never flash a wrong number at a beat change.
+  // Progress freezes on pause and resets per beat, and so does the count.
   const countRef = useRef<HTMLSpanElement>(null);
+  const beatMs = beatDurationMs(beat, reel.template);
   useMotionValueEvent(progress, "change", (p) => {
-    if (countRef.current && valueOnThisBeat && !reducedMotion) {
-      countRef.current.textContent = Math.round(Math.min(p, 1) * (value ?? 0)).toLocaleString();
-    }
+    if (!counting || !countRef.current) return;
+    const f = Math.min(Math.max((p * beatMs) / COUNT_UP_MS, 0), 1);
+    countRef.current.textContent = Math.round(f * (value ?? 0)).toLocaleString();
   });
+  // Reset with the beat: count from 0 while counting, final value otherwise
+  // (pre-mounted neighbours show 600, never a stale or zero count).
+  useLayoutEffect(() => {
+    if (countRef.current) {
+      countRef.current.textContent = counting ? "0" : (value ?? 0).toLocaleString();
+    }
+  }, [beatIndex, counting, value]);
 
-  // Before/after split screen wipes across with the beat.
+  // Before/after split screen wipes across with the beat (freezes on pause).
   const wipe = useTransform(progress, (p) => `inset(0 0 0 ${(Math.min(p, 1) * 100).toFixed(2)}%)`);
 
   const showSplit = before !== undefined && after !== undefined;
@@ -49,11 +67,13 @@ export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, redu
           <div className="absolute inset-x-0 top-[10%] z-10 flex flex-col items-center gap-1.5 text-center" data-testid="stat-reveal">
             <motion.span
               className="rounded-3xl bg-ink/55 px-6 py-3 font-display text-6xl text-cream backdrop-blur"
-              initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8 }}
+              initial={paused || reducedMotion ? false : { opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={reducedMotion ? { duration: 0.3 } : { type: "spring", stiffness: 240, damping: 20 }}
             >
-              <span ref={countRef}>{value.toLocaleString()}</span>
+              <span ref={countRef} data-testid="stat-count">
+                {(value ?? 0).toLocaleString()}
+              </span>
               <span className="ml-1 text-2xl text-cream/80">{unit}</span>
             </motion.span>
             {label && (
@@ -63,13 +83,12 @@ export function StatRevealTemplate({ reel, beat, beatIndex, progress, data, redu
         )
       )}
 
-      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={46} />
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={40} />
 
-      {/* Caption inside the caption zone */}
-      <div className="absolute inset-x-0 bottom-[6%] z-10 flex justify-center px-6 max-md:pr-20" data-testid="stat-caption">
-        <p className="max-w-[85%] rounded-xl bg-ink/55 px-4 py-2 text-center text-sm font-semibold leading-relaxed text-cream backdrop-blur">
+      <div className="absolute inset-x-4 bottom-5 z-10">
+        <ReelCaption name={castById[beat.characterId]?.name ?? ""} chip={<ProfileReelChip slug={reel.slug} />}>
           {beat.caption}
-        </p>
+        </ReelCaption>
       </div>
     </div>
   );

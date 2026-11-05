@@ -290,5 +290,68 @@
       { "authorId": "reginald", "text": "A healthy scepticism. Rare, and valuable." },
       { "authorId": "tia", "text": "part 3 when he finds the buyers?? 👀" }
     ]
-  }
+  },
+  { "id": "r08", "slug": "blaze-interviews-saurav", "template": "interview", "hostId": "blaze", "likes": 1337,
+    "beats": [
+      { "characterId": "blaze", "pose": "talking", "caption": "Welcome back to the show! Tonight's guest built a whole website starring cartoon animals.", "durationMs": 3500, "data": { "guest": "saurav", "topic": "Why build a portfolio like this?" } },
+      { "characterId": "saurav", "pose": "talking", "caption": "A normal portfolio gets skimmed in ten seconds. I wanted people to actually stay.", "durationMs": 3500 },
+      { "characterId": "blaze", "pose": "shocked", "caption": "Ten seconds?! Folks, that's shorter than my intro!", "durationMs": 3000 },
+      { "characterId": "saurav", "pose": "neutral", "caption": "Exactly. So I made it something you scroll.", "durationMs": 3000 },
+      { "characterId": "blaze", "pose": "celebrating", "caption": "Saurav, everybody! Stay for the cartoon animals!", "durationMs": 3000 }
+    ],
+    "comments": [
+      { "authorId": "marge", "text": "I was not consulted about being a cartoon animal." },
+      { "authorId": "tia", "text": "the host is giving late-night energy fr" },
+      { "authorId": "reginald", "text": "Retention, by way of tortoise. Bold." }
+    ] },
+  { "id": "r09", "slug": "marge-ranks-the-stack", "template": "tier_list", "hostId": "marge", "likes": 512,
+    "beats": [
+      { "characterId": "marge", "pose": "neutral", "caption": "I've been asked to rank Saurav's tools. Against my will.", "durationMs": 3000, "data": { "title": "Marge ranks: the stack" } },
+      { "characterId": "marge", "pose": "sceptical", "caption": "Java. Old, reliable, never surprises anyone. Like me. S.", "durationMs": 3500, "data": { "item": { "label": "Java", "tier": "S" } } },
+      { "characterId": "marge", "pose": "thinking", "caption": "React. Changes its mind every year. B.", "durationMs": 3000, "data": { "item": { "label": "React", "tier": "B" } } },
+      { "characterId": "marge", "pose": "talking", "caption": "TypeScript. Tells you you're wrong before you are. A.", "durationMs": 3000, "data": { "item": { "label": "TypeScript", "tier": "A" } } },
+      { "characterId": "marge", "pose": "sceptical", "caption": "AI engineering. Ask me again in a year. C, for now.", "durationMs": 3500, "data": { "item": { "label": "AI engineering", "tier": "C" } } }
+    ],
+    "comments": [
+      { "authorId": "blaze", "text": "JAVA IN S TIER?? Marge has SPOKEN" },
+      { "authorId": "tia", "text": "react in B tier?? i'm shaking" },
+      { "authorId": "saurav", "text": "Fair, honestly." }
+    ] },
+  { "id": "r10", "slug": "marge-stitches-the-news", "template": "stitch", "hostId": "marge", "likes": 2048,
+    "beats": [
+      { "characterId": "blaze", "pose": "talking", "caption": "Local engineer builds entire portfolio by talking at his laptop!", "durationMs": 3000, "data": { "stitchSlug": "breaking-built-by-voice" } },
+      { "characterId": "marge", "pose": "sceptical", "caption": "This man calls talking to a laptop news.", "durationMs": 3000 },
+      { "characterId": "marge", "pose": "thinking", "caption": "In my day we talked to people. They didn't listen either.", "durationMs": 3500 },
+      { "characterId": "marge", "pose": "neutral", "caption": "Still. The website is nice. Don't tell him I said that.", "durationMs": 3500 }
+    ],
+    "comments": [
+      { "authorId": "blaze", "text": "MARGE STITCHED ME. I'M FRAMING THIS" },
+      { "authorId": "tia", "text": "stitch of the year honestly" },
+      { "authorId": "reginald", "text": "A rare exchange between species." }
+    ] },
+  { "id": "r11", "slug": "pov-you-hired-saurav", "template": "pov", "hostId": "tia", "likes": 4096,
+    "beats": [
+      { "characterId": "tia", "pose": "talking", "caption": "Day one. He's already asked where the docs are.", "durationMs": 3000, "data": { "pov": "POV: you just hired Saurav" } },
+      { "characterId": "tia", "pose": "shocked", "caption": "Day three. The docs exist now. He wrote them.", "durationMs": 3000 },
+      { "characterId": "tia", "pose": "thinking", "caption": "Week two. The thing nobody owned? He owns it now.", "durationMs": 3500 },
+      { "characterId": "tia", "pose": "celebrating", "caption": "Month one. You're wondering why you didn't hire him sooner.", "durationMs": 3500 }
+    ],
+    "comments": [
+      { "authorId": "marge", "text": "Suspiciously organised. As I said." },
+      { "authorId": "blaze", "text": "WHERE DO I SIGN UP TO HIRE HIM" },
+      { "authorId": "saurav", "text": "I do like docs." }
+    ] },
+  { "id": "r12", "slug": "a-day-in-the-life", "template": "day_in_life", "hostId": "reginald", "likes": 2400,
+    "beats": [
+      { "characterId": "reginald", "pose": "neutral", "caption": "The creature wakes. Before food, before light, he speaks Spanish to an owl.", "durationMs": 3500, "data": { "title": "A day in the life", "time": "6:45 AM", "label": "Duolingo, before anything else" } },
+      { "characterId": "reginald", "pose": "talking", "caption": "He gathers with his herd and reports what he has built. Briefly. Mostly.", "durationMs": 3500, "data": { "time": "9:30 AM", "label": "Stand-up" } },
+      { "characterId": "reginald", "pose": "thinking", "caption": "Headphones on. The creature must not be disturbed. Observe from a distance.", "durationMs": 3500, "data": { "time": "1:00 PM", "label": "Deep work" } },
+      { "characterId": "reginald", "pose": "sceptical", "caption": "Work ends. Work begins. He builds a website about himself. Starring me.", "durationMs": 3500, "data": { "time": "7:00 PM", "label": "Side project" } },
+      { "characterId": "reginald", "pose": "neutral", "caption": "A chapter of Harry Potter. Forty percent through. 'Pretty good,' he says.", "durationMs": 3500, "data": { "time": "11:30 PM", "label": "Wind down" } }
+    ],
+    "comments": [
+      { "authorId": "marge", "text": "6:45 AM. Unnatural." },
+      { "authorId": "tia", "text": "the 7pm work ends work begins is so real" },
+      { "authorId": "blaze", "text": "HE NEVER STOPS, FOLKS. HE NEVER STOPS." }
+    ] }
 ]

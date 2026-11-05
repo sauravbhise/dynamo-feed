@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { LeftColumn } from "./LeftColumn";
 import { FeedFrame } from "./FeedFrame";
+import { HighlightSessionPill } from "./HighlightSessionPill";
 import { RightColumn } from "./RightColumn";
 import { Sheet } from "./Sheet";
 import { profile } from "../content";
@@ -29,12 +30,19 @@ export function Layout() {
     return () => window.removeEventListener("dynamo:focus-profile-item", onFocusItem);
   }, []);
 
+  // Playing a highlight closes the profile sheet and takes over the feed.
+  useEffect(() => {
+    const onStartHighlight = () => setSheet(null);
+    window.addEventListener("dynamo:start-highlight", onStartHighlight);
+    return () => window.removeEventListener("dynamo:start-highlight", onStartHighlight);
+  }, []);
+
   const closeSheet = () => setSheet(null);
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-ink font-body text-cream">
       <header
-        className="flex shrink-0 items-center justify-between border-b border-white/5 bg-ink px-4 py-3 desk:hidden"
+        className="relative flex shrink-0 items-center justify-between border-b border-white/5 bg-ink px-4 py-3 desk:hidden"
         data-testid="top-bar"
       >
         <button
@@ -53,6 +61,8 @@ export function Layout() {
             className="size-10 rounded-full object-cover"
           />
         </button>
+        {/* Highlight session pill — out of the reel, centred in the bar. */}
+        <HighlightSessionPill variant="topbar" />
         <button
           data-testid="topbar-clock-button"
           onClick={() => setSheet("clock")}
@@ -63,7 +73,7 @@ export function Layout() {
         </button>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_360px] desk:grid-cols-[320px_minmax(0,1fr)_360px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_360px] desk:grid-cols-[380px_minmax(0,1fr)_360px]">
         <aside
           data-testid="left-column"
           className="no-scrollbar hidden min-h-0 overflow-y-auto border-r border-white/5 bg-ink desk:block"

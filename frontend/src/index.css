@@ -38,6 +38,27 @@
   }
 }
 
+/* Every interactive element shows a visible sage ring on keyboard focus. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid #93b29c;
+  outline-offset: 2px;
+}
+
+/* Below 768px the action rail overlays the reel — reserve its column on the
+   right edge: centered characters shift left, cards and bubbles keep the
+   same margin away from the rail. */
+@media (max-width: 767px) {
+  .reel-frame {
+    --rail-inset: 64px;
+    /* Right-aligned slots (interview guest) clear the in-frame rail too. */
+    --slot-right-clear: 56px;
+  }
+
+  .rail-clear-right {
+    margin-right: var(--rail-inset, 0px);
+  }
+}
+
 @keyframes ticker {
   from {
     transform: translateX(0);
@@ -47,9 +68,52 @@
   }
 }
 
+/* Character idle/speaking bob — CSS keyframes so pause can freeze the
+   character mid-motion and resume from the same point. */
+@keyframes char-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2%);
+  }
+}
+
+@keyframes char-bob-speak {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1%);
+  }
+}
+
+/* One-time deck affordance wiggle: slides left, right, then settles. */
+.deck-wiggle-once {
+  animation: deck-wiggle 1.2s ease-in-out 0.45s 1;
+}
+
+@keyframes deck-wiggle {
+  0% {
+    transform: translateX(0);
+  }
+  33% {
+    transform: translateX(-40px);
+  }
+  66% {
+    transform: translateX(40px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-ping,
-  .animate-ticker {
+  .animate-ticker,
+  .deck-wiggle-once {
     animation: none;
   }
 }

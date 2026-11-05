@@ -6,6 +6,11 @@ import { DocumentaryTemplate } from "./DocumentaryTemplate";
 import { StorytimeTemplate } from "./StorytimeTemplate";
 import { MythVsFactTemplate } from "./MythVsFactTemplate";
 import { StatRevealTemplate } from "./StatRevealTemplate";
+import { InterviewTemplate } from "./InterviewTemplate";
+import { TierListTemplate } from "./TierListTemplate";
+import { StitchTemplate } from "./StitchTemplate";
+import { PovTemplate } from "./PovTemplate";
+import { DayInLifeTemplate } from "./DayInLifeTemplate";
 import { NudgeTemplate } from "./NudgeTemplate";
 import type { Beat, Reel, ReelTemplate } from "../content/types";
 
@@ -18,6 +23,10 @@ export interface TemplateProps {
   /** Beat data accumulated from every beat up to now. */
   data: Record<string, unknown>;
   reducedMotion: boolean;
+  /** True when the reel is the active one (neighbours render pre-mounted). */
+  active: boolean;
+  // Pause state is shared through PausedContext (usePaused) so every animation
+  // inside the template can freeze without prop threading.
 }
 
 export const str = (value: unknown): string | undefined =>
@@ -32,5 +41,10 @@ export const TEMPLATES: Record<ReelTemplate, ComponentType<TemplateProps>> = {
   storytime: StorytimeTemplate,
   myth_vs_fact: MythVsFactTemplate,
   stat_reveal: StatRevealTemplate,
+  interview: InterviewTemplate,
+  tier_list: TierListTemplate,
+  stitch: StitchTemplate,
+  pov: PovTemplate,
+  day_in_life: DayInLifeTemplate,
   nudge: NudgeTemplate,
 };

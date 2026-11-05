@@ -1,26 +1,49 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, useMotionValueEvent } from "framer-motion";
-import { CharacterSlot } from "../components/CharacterSlot";
+import { CharacterSlot, headTopPercent } from "../components/CharacterSlot";
+import { ReelCaption } from "../components/ReelCaption";
+import { ProfileReelChip } from "../components/ProfileReelChip";
+import { usePaused } from "../components/PausedContext";
 import { ReelBackground } from "./ReelBackground";
+import { castById } from "../content";
 import type { TemplateProps } from "./registry";
 
-export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, reducedMotion }: TemplateProps) {
+const CHAR_HEIGHT = 40;
+
+export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, reducedMotion, active }: TemplateProps) {
+  const paused = usePaused();
   const myth = typeof data.myth === "string" ? data.myth : undefined;
   const fact = typeof data.fact === "string" ? data.fact : undefined;
   const flipOnThisBeat = myth !== undefined && fact !== undefined && typeof beat.data?.myth === "string";
 
+  // The flip listens to the beat-consistent progress value and always resets
+  // with beatIndex, so a flip never bleeds across beats.
   const [flipped, setFlipped] = useState(false);
   useMotionValueEvent(progress, "change", (value) => {
-    if (flipOnThisBeat) setFlipped(value >= 0.5);
+    if (!flipOnThisBeat) return;
+    const next = value >= 0.5;
+    // Deferred out of any upstream render phase: framer's useTransform
+    // re-syncs its value DURING ReelPlayer's render, and a setState mid-render
+    // trips React's "Cannot update a component while rendering" warning.
+    queueMicrotask(() => setFlipped((prev) => (prev === next ? prev : next)));
   });
+  useEffect(() => {
+    setFlipped(false);
+  }, [beatIndex]);
   // Once the card has flipped it stays flipped for the rest of the reel.
   const isFlipped = flipOnThisBeat ? flipped : fact !== undefined && beatIndex > 0;
+
+  // The card may never grow down over the character's head.
+  const headTop = headTopPercent(beat.characterId, CHAR_HEIGHT);
 
   return (
     <div className="absolute inset-0">
       <ReelBackground reel={reel} />
 
-      <div className="absolute inset-x-3 top-[3%] z-10 flex justify-center" style={{ perspective: "1100px" }}>
+      <div
+        className="absolute inset-x-3 top-[3%] z-10 flex justify-center overflow-hidden rail-clear-right"
+        style={{ perspective: "1100px", maxHeight: `${Math.max(headTop - 5, 18)}%` }}
+      >
         <motion.div
           className="relative w-full"
           style={{ transformStyle: "preserve-3d" }}
@@ -45,13 +68,12 @@ export function MythVsFactTemplate({ reel, beat, beatIndex, progress, data, redu
         </motion.div>
       </div>
 
-      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={46} />
+      <CharacterSlot characterId={beat.characterId} pose={beat.pose} isSpeaking heightPercent={CHAR_HEIGHT} />
 
-      {/* Caption inside the caption zone */}
-      <div className="absolute inset-x-0 bottom-[6%] z-10 flex justify-center px-6 max-md:pr-20" data-testid="myth-caption">
-        <p className="max-w-[85%] rounded-xl bg-ink/55 px-4 py-2 text-center text-sm font-semibold leading-relaxed text-cream backdrop-blur">
+      <div className="absolute inset-x-4 bottom-5 z-10">
+        <ReelCaption name={castById[beat.characterId]?.name ?? ""} chip={<ProfileReelChip slug={reel.slug} />}>
           {beat.caption}
-        </p>
+        </ReelCaption>
       </div>
     </div>
   );

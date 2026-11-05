@@ -10,11 +10,14 @@
     { "platform": "github", "url": "https://github.com/sauravbhise" },
     { "platform": "email", "url": "mailto:sauravbhise2002@gmail.com" }
   ],
-  "stats": [
-    { "value": "50+", "label": "microservices modernised" },
-    { "value": "200+", "label": "community members" },
-    { "value": "2", "label": "published papers" },
-    { "value": "600+", "label": "day Duolingo streak" }
+  "skills": [
+    "Java",
+    "Spring Boot",
+    "React",
+    "TypeScript",
+    "AWS",
+    "n8n",
+    "AI engineering"
   ],
   "experience": [
     {
@@ -50,7 +53,8 @@
       "text": "This site: a portfolio you scroll like a short-video app, built by voice.",
       "tags": ["React", "TypeScript", "Framer Motion"],
       "links": [{ "label": "Code", "url": "https://github.com/sauravbhise/dynamo-feed" }],
-      "reelSlug": "breaking-built-by-voice"
+      "reelSlug": "breaking-built-by-voice",
+      "pageSlug": "example"
     },
     {
       "name": "B2B outreach pipeline",
@@ -114,5 +118,11 @@
   "certifications": [
     { "name": "Azure AI Fundamentals (AI-901)", "issuer": "Microsoft" },
     { "name": "Azure Fundamentals (AZ-900)", "issuer": "Microsoft" }
+  ],
+  "highlights": [
+    { "id": "projects", "label": "Projects", "reelSlugs": ["breaking-built-by-voice", "the-outreach-part-1", "the-outreach-part-2"] },
+    { "id": "community", "label": "Community", "reelSlugs": ["the-campus-builder", "myth-you-need-a-referral"] },
+    { "id": "off-the-clock", "label": "Off the clock", "reelSlugs": ["the-streak", "a-day-in-the-life"] },
+    { "id": "the-cast", "label": "The cast", "reelSlugs": ["marge-reviews-saurav", "marge-ranks-the-stack", "marge-stitches-the-news", "blaze-interviews-saurav"] }
   ]
 }

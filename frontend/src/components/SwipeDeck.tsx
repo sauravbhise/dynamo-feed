@@ -1,23 +1,111 @@
 import { useRef, useState } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
-import type { PanInfo } from "framer-motion";
-import { Heart, X } from "lucide-react";
+import { AnimatePresence, animate, motion, useInView, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
+import type { PanInfo, Variants } from "framer-motion";
+import { ChevronLeft, ChevronRight, Hand } from "lucide-react";
 import type { WatchItem } from "../content/types";
 
 const COMMIT_DISTANCE = 110;
 const FLING_VELOCITY = 550;
 
-export function SwipeDeck({ items }: { items: WatchItem[] }) {
-  const [index, setIndex] = useState(0);
-  const [savedCount, setSavedCount] = useState(0);
-  const [exitDir, setExitDir] = useState<"left" | "right" | null>(null);
-  const busyRef = useRef(false);
-  const count = items.length;
+const cardVariants: Variants = {
+  enter: {
+    // The next card settles into place BENEATH the leaving card.
+    zIndex: 1,
+    scale: 0.96,
+    y: 10,
+    opacity: 0.85,
+    transition: { type: "spring", stiffness: 320, damping: 28 },
+  },
+  center: {
+    x: 0,
+    y: 0,
+    scale: 1,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 320, damping: 28 },
+  },
+  exit: (exitX: number) => ({
+    // The leaving card stays ON TOP of the pile while it flies away.
+    zIndex: 3,
+    x: exitX,
+    opacity: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
+  }),
+};
 
+function DeckCard({
+  item,
+  exitX,
+  wiggle,
+  reduceMotion,
+  onSwipeStart,
+  onSwipe,
+}: {
+  item: WatchItem;
+  exitX: number;
+  wiggle: boolean;
+  reduceMotion: boolean;
+  onSwipeStart: () => void;
+  onSwipe: (swipeDir: 1 | -1) => void;
+}) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-220, 220], [-14, 14]);
-  const saveOpacity = useTransform(x, [40, 130], [0, 1]);
-  const skipOpacity = useTransform(x, [-130, -40], [1, 0]);
+
+  const handleDragEnd = (_event: unknown, info: PanInfo) => {
+    if (info.offset.x > COMMIT_DISTANCE || info.velocity.x > FLING_VELOCITY) {
+      onSwipe(1);
+    } else if (info.offset.x < -COMMIT_DISTANCE || info.velocity.x < -FLING_VELOCITY) {
+      onSwipe(-1);
+    } else {
+      // Swipe not committed — the card ALWAYS springs back to centre,
+      // so nothing is ever left stranded off-centre.
+      animate(x, 0, { type: "spring", stiffness: 320, damping: 28 });
+    }
+  };
+
+  return (
+    <motion.div
+      className={`absolute inset-x-0 top-0 h-[calc(100%-20px)] cursor-grab touch-pan-y select-none rounded-2xl bg-raised p-4 shadow-card active:cursor-grabbing ${
+        wiggle ? "deck-wiggle-once" : ""
+      }`}
+      style={{ x, rotate }}
+      custom={exitX}
+      variants={cardVariants}
+      initial={reduceMotion ? "center" : "enter"}
+      animate="center"
+      exit="exit"
+      drag="x"
+      dragSnapToOrigin={false}
+      onDragStart={onSwipeStart}
+      onDragEnd={handleDragEnd}
+      data-testid="deck-card"
+    >
+      <div className="flex h-full flex-col justify-center px-1">
+        <h4 className="min-w-0 truncate font-display text-sm text-cream" data-testid="deck-card-title">
+          {item.title}
+        </h4>
+        <span className="mt-1.5 w-max rounded-full bg-sage/15 px-2.5 py-0.5 text-[10px] font-bold text-sage">
+          {item.kind} · {item.year}
+        </span>
+        <p className="mt-3 text-xs leading-relaxed text-muted">{item.why}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+export function SwipeDeck({ items }: { items: WatchItem[] }) {
+  const reduceMotion = !!useReducedMotion();
+  // One EVER-INCREASING counter, bumped once per swipe: it is the top card's
+  // AnimatePresence key, so a card that comes around after a full loop can
+  // never share its key with one that is still exiting.
+  const [counter, setCounter] = useState(0);
+  // The wiggle plays once; reduced motion skips it and keeps the hint text.
+  const [hintDone, setHintDone] = useState(reduceMotion);
+  const [hintDismissed, setHintDismissed] = useState(false);
+  const deckRef = useRef<HTMLDivElement>(null);
+  const exitXRef = useRef(480);
+  const count = items.length;
+
+  const inView = useInView(deckRef, { once: true, amount: 0.5 });
 
   if (count === 0) {
     return (
@@ -27,132 +115,92 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
     );
   }
 
-  const commit = (dir: "left" | "right") => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setExitDir(dir);
-    if (dir === "right") setSavedCount((value) => value + 1);
+  const interacted = () => {
+    setHintDone(true);
+    setHintDismissed(true);
   };
 
-  const handleDragEnd = (_event: unknown, info: PanInfo) => {
-    if (info.offset.x > COMMIT_DISTANCE || info.velocity.x > FLING_VELOCITY) {
-      commit("right");
-    } else if (info.offset.x < -COMMIT_DISTANCE || info.velocity.x < -FLING_VELOCITY) {
-      commit("left");
-    }
+  // Every control does the same thing: the top card flies off in the given
+  // direction, on top of the pile, and the next card settles into place
+  // beneath it. No busy lock — several cards may exit at once (mode="sync"),
+  // so rapid swipes keep advancing through the deck endlessly, loops included.
+  const handleSwipe = (swipeDir: 1 | -1) => {
+    interacted();
+    exitXRef.current = swipeDir === 1 ? 480 : -480;
+    setCounter((value) => value + 1);
   };
 
-  const itemAt = (offset: number) => items[(index + offset) % count];
-  const top = itemAt(0);
+  const top = items[counter % count];
 
   return (
     <div>
-      <p
-        className="mt-2.5 flex items-center gap-1.5 text-[11px] font-bold text-muted"
-        data-testid="deck-saved-count"
-      >
-        <Heart className="size-3.5 fill-sage text-sage" />
-        Saved {savedCount}
-      </p>
-
       <div
-        className="relative mt-2.5 h-56 outline-none focus-visible:ring-2 focus-visible:ring-sage"
+        ref={deckRef}
+        className="group relative mt-3 h-60 outline-none focus-visible:ring-2 focus-visible:ring-sage"
         tabIndex={0}
         data-testid="swipe-deck"
         onKeyDown={(event) => {
           if (event.key === "ArrowLeft") {
             event.preventDefault();
-            commit("left");
+            handleSwipe(-1);
           } else if (event.key === "ArrowRight") {
             event.preventDefault();
-            commit("right");
+            handleSwipe(1);
           }
         }}
       >
-        {/* Two cards peeking behind the top one */}
+        {/* Two cards peek out below the top one, slightly rotated — reads as a
+            pile. Same size as the top card, scaled down and moved down, so the
+            edges stay inside the deck area. Always beneath the moving cards. */}
         {count > 1 && (
-          <div className="absolute inset-x-2 bottom-2 top-3 scale-[0.955] rounded-2xl bg-raised/70 shadow-soft" aria-hidden="true" />
+          <div className="absolute inset-x-0 top-2 z-0 h-[calc(100%-20px)] -rotate-2 scale-[0.95] rounded-2xl bg-raised/60 shadow-soft" aria-hidden="true" />
         )}
         {count > 2 && (
-          <div className="absolute inset-x-4 bottom-4 top-6 scale-[0.91] rounded-2xl bg-raised/40" aria-hidden="true" />
+          <div className="absolute inset-x-0 top-4 z-0 h-[calc(100%-20px)] rotate-2 scale-[0.9] rounded-2xl bg-raised/40" aria-hidden="true" />
         )}
 
-        <motion.div
-          key={index}
-          className="absolute inset-0 cursor-grab touch-pan-y select-none rounded-2xl bg-raised p-4 shadow-card active:cursor-grabbing"
-          style={{ x, rotate }}
-          initial={{ scale: 0.96, y: 10, opacity: 0.85 }}
-          animate={
-            exitDir
-              ? { x: exitDir === "right" ? 480 : -480, opacity: 0 }
-              : { x: 0, y: 0, scale: 1, opacity: 1 }
-          }
-          transition={
-            exitDir
-              ? { duration: 0.3, ease: "easeOut" }
-              : { type: "spring", stiffness: 320, damping: 28 }
-          }
-          drag={exitDir ? false : "x"}
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.9}
-          onDragEnd={handleDragEnd}
-          onAnimationComplete={() => {
-            if (exitDir) {
-              x.set(0);
-              setExitDir(null);
-              busyRef.current = false;
-              setIndex((value) => value + 1);
-            }
-          }}
-          data-testid="deck-card"
-        >
-          <motion.span
-            style={{ opacity: saveOpacity }}
-            className="pointer-events-none absolute left-4 top-4 -rotate-12 rounded-lg border-2 border-sage px-2.5 py-1 text-xs font-extrabold uppercase tracking-wide text-sage"
-            data-testid="deck-label-save"
-          >
-            Save
-          </motion.span>
-          <motion.span
-            style={{ opacity: skipOpacity }}
-            className="pointer-events-none absolute right-4 top-4 rotate-12 rounded-lg border-2 border-[#D96A6A] px-2.5 py-1 text-xs font-extrabold uppercase tracking-wide text-[#D96A6A]"
-            data-testid="deck-label-skip"
-          >
-            Skip
-          </motion.span>
-
-          <div className="flex h-full flex-col justify-center px-1">
-            <h4 className="min-w-0 truncate font-display text-sm text-cream" data-testid="deck-card-title">
-              {top.title}
-            </h4>
-            <span className="mt-1.5 w-max rounded-full bg-sage/15 px-2.5 py-0.5 text-[10px] font-bold text-sage">
-              {top.kind} · {top.year}
-            </span>
-            <p className="mt-3 text-xs leading-relaxed text-muted">{top.why}</p>
-          </div>
-        </motion.div>
-      </div>
-
-      <div className="mt-3 flex items-center justify-center gap-5" data-testid="deck-buttons">
+        {/* Faint chevrons on hover — fly the top card off left or right */}
         <button
           type="button"
-          data-testid="deck-skip"
-          aria-label="Skip"
-          onClick={() => commit("left")}
-          className="grid size-12 place-items-center rounded-full border-2 border-[#D96A6A]/50 bg-surface text-[#D96A6A] shadow-soft transition hover:scale-105 active:scale-95"
+          data-testid="deck-prev"
+          aria-label="Next card"
+          title="Swipe left"
+          onClick={() => handleSwipe(-1)}
+          className="absolute left-1 top-1/2 z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-ink/40 text-cream/70 opacity-0 backdrop-blur transition hover:text-cream group-hover:opacity-100 focus-visible:opacity-100"
         >
-          <X className="size-5" />
+          <ChevronLeft className="size-4" />
         </button>
         <button
           type="button"
-          data-testid="deck-save"
-          aria-label="Save"
-          onClick={() => commit("right")}
-          className="grid size-14 place-items-center rounded-full bg-sage text-sage-deep shadow-soft transition hover:scale-105 active:scale-95"
+          data-testid="deck-next"
+          aria-label="Next card"
+          title="Swipe right"
+          onClick={() => handleSwipe(1)}
+          className="absolute right-1 top-1/2 z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-ink/40 text-cream/70 opacity-0 backdrop-blur transition hover:text-cream group-hover:opacity-100 focus-visible:opacity-100"
         >
-          <Heart className="size-6" fill="currentColor" />
+          <ChevronRight className="size-4" />
         </button>
+
+        <AnimatePresence initial={false} mode="sync" custom={exitXRef.current}>
+          <DeckCard
+            key={counter}
+            item={top}
+            exitX={exitXRef.current}
+            wiggle={inView && !hintDone}
+            reduceMotion={reduceMotion}
+            onSwipeStart={() => setHintDone(true)}
+            onSwipe={handleSwipe}
+          />
+        </AnimatePresence>
       </div>
+
+      {/* 12px gap below the deck area — the pile stays inside, so nothing covers it */}
+      {!hintDismissed && (
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-muted" data-testid="deck-hint">
+          <Hand className="size-3.5" />
+          Swipe for more
+        </p>
+      )}
     </div>
   );
 }
