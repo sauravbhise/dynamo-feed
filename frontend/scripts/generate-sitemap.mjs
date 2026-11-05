@@ -3,7 +3,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 // Build-time SEO files. VITE_SITE_URL comes from the environment (set it on
 // Vercel) or frontend/.env; without it robots.txt still allows everything but
 // no sitemap is written.
-const envFile = readFileSync(new URL("../.env", import.meta.url), "utf8");
+let envFile = "";
+try { envFile = readFileSync(new URL("../.env", import.meta.url), "utf8"); } catch {}
 const fromEnv = process.env.VITE_SITE_URL ?? envFile.match(/^VITE_SITE_URL=(.*)$/m)?.[1] ?? "";
 const siteUrl = fromEnv.trim().replace(/\/+$/, "");
 
