@@ -6,74 +6,106 @@
   "email": "sauravbhise2002@gmail.com",
   "resumeUrl": "https://drive.google.com/REPLACE_WITH_PUBLIC_LINK",
   "socials": [
-    { "platform": "linkedin", "url": "https://www.linkedin.com/in/sauravbhise" },
-    { "platform": "github", "url": "https://github.com/sauravbhise" },
-    { "platform": "email", "url": "mailto:sauravbhise2002@gmail.com" }
+    {
+      "platform": "linkedin",
+      "url": "https://www.linkedin.com/in/sauravbhise"
+    },
+    {
+      "platform": "github",
+      "url": "https://github.com/sauravbhise"
+    },
+    {
+      "platform": "email",
+      "url": "mailto:sauravbhise2002@gmail.com"
+    }
   ],
   "skills": [
     "Java",
     "Spring Boot",
     "React",
     "TypeScript",
-    "AWS",
+    "Azure",
+    "Terraform",
+    "SQL",
     "n8n",
-    "AI engineering"
+    "Claude Code"
   ],
   "experience": [
     {
       "title": "Analyst, Software Engineering",
       "org": "Northern Trust",
       "dates": "Aug 2024 – Present",
-      "text": "Moved 50+ Spring Boot services to Java 21 and rebuilt a legacy AngularJS app in React."
-    },
-    {
-      "title": "Growth and outreach",
-      "org": "Family manufacturing business",
-      "dates": "2026",
-      "text": "Built and ran an automated B2B outreach pipeline to find new buyers.",
-      "reelSlug": "the-outreach-part-1"
+      "text": "Upgraded 50+ microservices to Java 21, cutting CVEs by 70%+, and moved 9 onto Azure API Management, saving about $750K a year."
     },
     {
       "title": "Software Engineer Intern",
       "org": "Northern Trust",
       "dates": "Jun – Sep 2023",
-      "text": "Built a report generator that cut a 40-hour job down to minutes."
+      "text": "Built a dynamic report generator, cutting a 40-hour job to minutes."
     },
     {
       "title": "Software Engineer Intern",
       "org": "Manastik",
       "dates": "May – Aug 2022",
-      "text": "Landed by cold email. Built serverless back-ends and shipped an ML model on AWS.",
+      "text": "Landed by cold email. Built serverless back-ends and deployed an ML model on AWS, cutting response times by 50%.",
       "reelSlug": "myth-you-need-a-referral"
     }
   ],
   "projects": [
     {
-      "name": "Dynamo Feed",
-      "text": "This site: a portfolio you scroll like a short-video app, built by voice.",
-      "tags": ["React", "TypeScript", "Framer Motion"],
-      "links": [{ "label": "Code", "url": "https://github.com/sauravbhise/dynamo-feed" }],
-      "reelSlug": "breaking-built-by-voice",
-      "pageSlug": "example"
+      "name": "Project Daedalus",
+      "text": "An AI engine that finds the right buyers for a sheet-metal manufacturer, built to learn AI engineering.",
+      "tags": [
+        "Python",
+        "LLMs"
+      ],
+      "links": [
+        {
+          "label": "Code",
+          "url": "https://github.com/sauravbhise/project-daedalus"
+        }
+      ]
     },
     {
       "name": "B2B outreach pipeline",
-      "text": "Automated buyer research and outreach for a manufacturing business.",
-      "tags": ["n8n", "Clay", "HubSpot"],
+      "text": "Built and ran an automated outreach pipeline to find new buyers for a sheet-metal manufacturer.",
+      "tags": [
+        "n8n",
+        "Clay",
+        "HubSpot"
+      ],
       "links": [],
       "reelSlug": "the-outreach-part-1"
     },
     {
-      "name": "Buyer-finding engine",
-      "text": "An AI project to find the right buyers for a manufacturer, built to learn AI engineering.",
-      "tags": ["AI", "LLMs"],
-      "links": []
+      "name": "Dynamo Feed",
+      "text": "This site: a portfolio you scroll like a short-video app.",
+      "tags": [
+        "React",
+        "TypeScript",
+        "Framer Motion"
+      ],
+      "links": [
+        {
+          "label": "Code",
+          "url": "https://github.com/sauravbhise/dynamo-feed"
+        }
+      ],
+      "reelSlug": "breaking-built-by-voice"
     },
     {
       "name": "Research paper summariser",
       "text": "Turns research papers into summaries and study notes.",
-      "tags": ["NLP", "Web app"],
-      "links": [{ "label": "Live", "url": "https://research-paper-summariser.vercel.app" }]
+      "tags": [
+        "NLP",
+        "Web app"
+      ],
+      "links": [
+        {
+          "label": "Live",
+          "url": "https://research-paper-summariser.vercel.app"
+        }
+      ]
     }
   ],
   "writing": [
@@ -89,7 +121,7 @@
       "venue": "ICCCNT 2023, IEEE",
       "role": "Co-author",
       "year": "2023",
-      "url": ""
+      "url": "https://medium.com/@sauravbhise/enhancing-the-management-of-supply-chains-using-blockchain-technology-f8aa482a02f8"
     }
   ],
   "community": [
@@ -116,13 +148,50 @@
     }
   ],
   "certifications": [
-    { "name": "Azure AI Fundamentals (AI-901)", "issuer": "Microsoft" },
-    { "name": "Azure Fundamentals (AZ-900)", "issuer": "Microsoft" }
+    {
+      "name": "Azure AI Fundamentals (AI-901)",
+      "issuer": "Microsoft"
+    },
+    {
+      "name": "Azure Fundamentals (AZ-900)",
+      "issuer": "Microsoft"
+    }
   ],
   "highlights": [
-    { "id": "projects", "label": "Projects", "reelSlugs": ["breaking-built-by-voice", "the-outreach-part-1", "the-outreach-part-2"] },
-    { "id": "community", "label": "Community", "reelSlugs": ["the-campus-builder", "myth-you-need-a-referral"] },
-    { "id": "off-the-clock", "label": "Off the clock", "reelSlugs": ["the-streak", "a-day-in-the-life"] },
-    { "id": "the-cast", "label": "The cast", "reelSlugs": ["marge-reviews-saurav", "marge-ranks-the-stack", "marge-stitches-the-news", "blaze-interviews-saurav"] }
+    {
+      "id": "projects",
+      "label": "Projects",
+      "reelSlugs": [
+        "breaking-built-by-voice",
+        "the-outreach-part-1",
+        "the-outreach-part-2"
+      ]
+    },
+    {
+      "id": "community",
+      "label": "Community",
+      "reelSlugs": [
+        "the-campus-builder",
+        "myth-you-need-a-referral"
+      ]
+    },
+    {
+      "id": "off-the-clock",
+      "label": "Off the clock",
+      "reelSlugs": [
+        "the-streak",
+        "a-day-in-the-life"
+      ]
+    },
+    {
+      "id": "the-cast",
+      "label": "The cast",
+      "reelSlugs": [
+        "marge-reviews-saurav",
+        "marge-ranks-the-stack",
+        "marge-stitches-the-news",
+        "blaze-interviews-saurav"
+      ]
+    }
   ]
 }
