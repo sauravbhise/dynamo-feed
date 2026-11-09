@@ -10,8 +10,8 @@ on the right. Frontend only — every piece of content lives in JSON files.
 
 - `src/content/profile.json` — the left column: name, one-liner, photo, location,
   socials, stats, experience, projects, writing, community, education, certifications.
-- `src/content/now.json` — the right column: `updatedAt`, what you're reading,
-  the watch-this deck, latest writing, volunteering, Duolingo streak.
+- `src/content/now.json` — the right column: `updatedAt`, current obsession,
+  the writing deck, what you're reading, Spanish, Matiks, volunteering.
 - `src/content/reels.json` — the feed itself: every reel, its template, beats,
   captions and like counts.
 - `src/content/cast.json` — the cartoon cast: colour, scale, headroom and framing
@@ -39,11 +39,21 @@ field fails loudly in the console instead of rendering broken.
 
 `RightColumn.tsx` reads `now.json` and renders these in order:
 
-- `NowReadingCard.tsx` — book cover (or a placeholder block), progress, take.
-- `WatchThisCard.tsx` — wraps `SwipeDeck.tsx`, the swipeable stack of recommendations.
-- `LatestWritingCard.tsx` — links to posts (hidden automatically when the array is empty).
-- `VolunteeringCard.tsx` — status + text.
-- `LearningSpanishCard.tsx` — Duolingo streak.
+- `CurrentObsessionCard.tsx` — project name, one-liner, repo link. `repo` is a
+  GitHub `owner/name`; "Last worked on…" comes from the GitHub API and shows only
+  for a push within 14 days.
+- `WritingDeckCard.tsx` — wraps `SwipeDeck.tsx`, the swipeable stack of posts from
+  `writing` (`platform`, `title`, `hook`, `date`, `readMinutes`, `url`). Tapping a
+  card opens the post; hidden when the array is empty.
+- `NowReadingCard.tsx` — `reading.current`, then a "Before this:" line from
+  `reading.previous`.
+- `SpanishCard.tsx` — score, level and the live streak from `api/duolingo.js`.
+  If that fails it shows `streak` plus the days since `streakAsOf`.
+- `MatiksCard.tsx` — `streak` plus the days since `streakAsOf`.
+- `VolunteeringCard.tsx` — status + text; set `volunteering` to `null` to hide it.
+
+Fields containing "REPLACE" count as drafts, and a draft obsession or Matiks date
+hides that card.
 
 ### Adding, removing and reordering
 
@@ -255,15 +265,15 @@ testing.
 ### Auto-reels
 
 Besides the hand-made reels in `reels.json`, the feed also contains reels generated
-at runtime from `now.json` — the Now-reading update, each Watch-this pick, the
-Duolingo streak, volunteering and every writing link. All of the wording lives in
+at runtime from `now.json` — the Now-reading update, the Duolingo streak,
+volunteering and every writing link. All of the wording lives in
 `src/content/autoScripts.json`:
 
 - each kind of update has two or three script variants; a variant picks the
   template and the host character and lists its beats (character, pose, caption);
-- captions can use placeholders — `{title}`, `{author}`, `{progress}`, `{take}`,
-  `{why}`, `{year}`, `{kind}`, `{streak}`, `{text}`, `{status}` and `{platform}` —
-  which are filled from `now.json` when the reel is built;
+- captions can use placeholders — `{title}`, `{author}`, `{take}`, `{streak}`,
+  `{text}`, `{status}` and `{platform}` — which are filled from `now.json` when
+  the reel is built;
 - the `comments` pools are the cast comments shown on generated reels;
 - the Spanish streak has a `milestoneScript` with extra hype, used whenever the
   streak is a multiple of 100.
@@ -271,7 +281,7 @@ Duolingo streak, volunteering and every writing link. All of the wording lives i
 Updating `now.json` creates new reels automatically — no extra code. Items whose
 fields are empty or contain the word "REPLACE" are skipped, so placeholder drafts
 never reach the feed. Generated reels pass the exact same validation as
-`reels.json`, get stable share links (`/r/auto-watch-…`, built from the content) and
+`reels.json`, get stable share links (`/r/auto-writing-…`, built from the content) and
 stable joke like counts, are sprinkled through the feed (never two in a row), and
 show a small "New" chip while `now.json`'s `updatedAt` is within the last 7 days.
 

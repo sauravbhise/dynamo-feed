@@ -69,7 +69,6 @@ interface KindScripts {
 
 interface AutoScripts {
   reading: KindScripts;
-  watch: KindScripts;
   spanish: KindScripts;
   volunteering: KindScripts;
   writing: KindScripts;
@@ -159,35 +158,16 @@ function buildAutoReels(): Reel[] {
     if (reel) generated.push(reel);
   };
 
-  const reading = now.reading;
-  if (
-    contentUsable(reading.title) &&
-    contentUsable(reading.author) &&
-    contentUsable(reading.take) &&
-    typeof reading.progress === "number"
-  ) {
+  const reading = now.reading.current;
+  if (contentUsable(reading.title) && contentUsable(reading.author) && contentUsable(reading.take)) {
     push(
       makeReel("reading", `auto-reading-${slugify(reading.title)}`, {
         title: reading.title,
         author: reading.author,
-        progress: reading.progress,
         take: reading.take,
       })
     );
   }
-
-  now.watch.forEach((item) => {
-    if (contentUsable(item.title) && contentUsable(item.kind) && contentUsable(item.why) && typeof item.year === "number") {
-      push(
-        makeReel("watch", `auto-watch-${slugify(item.title)}`, {
-          title: item.title,
-          kind: item.kind,
-          year: item.year,
-          why: item.why,
-        })
-      );
-    }
-  });
 
   if (now.spanish.streak > 0) {
     push(
@@ -197,11 +177,12 @@ function buildAutoReels(): Reel[] {
     );
   }
 
-  if (contentUsable(now.volunteering.status) && contentUsable(now.volunteering.text)) {
+  const volunteering = now.volunteering;
+  if (volunteering && contentUsable(volunteering.status) && contentUsable(volunteering.text)) {
     push(
       makeReel("volunteering", "auto-volunteering", {
-        status: now.volunteering.status,
-        text: now.volunteering.text,
+        status: volunteering.status,
+        text: volunteering.text,
       })
     );
   }

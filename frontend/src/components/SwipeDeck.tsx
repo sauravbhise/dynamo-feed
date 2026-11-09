@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { AnimatePresence, animate, motion, useInView, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
 import type { PanInfo, Variants } from "framer-motion";
 import { ChevronLeft, ChevronRight, Hand } from "lucide-react";
-import type { WatchItem } from "../content/types";
+import type { WritingLink } from "../content/types";
 
 const COMMIT_DISTANCE = 110;
 const FLING_VELOCITY = 550;
@@ -40,7 +40,7 @@ function DeckCard({
   onSwipeStart,
   onSwipe,
 }: {
-  item: WatchItem;
+  item: WritingLink;
   exitX: number;
   wiggle: boolean;
   reduceMotion: boolean;
@@ -49,6 +49,8 @@ function DeckCard({
 }) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-220, 220], [-14, 14]);
+  // A drag that ends on the card still fires a click; only a real tap opens it.
+  const draggedRef = useRef(false);
 
   const handleDragEnd = (_event: unknown, info: PanInfo) => {
     if (info.offset.x > COMMIT_DISTANCE || info.velocity.x > FLING_VELOCITY) {
@@ -75,24 +77,44 @@ function DeckCard({
       exit="exit"
       drag="x"
       dragSnapToOrigin={false}
-      onDragStart={onSwipeStart}
+      onPointerDown={() => {
+        draggedRef.current = false;
+      }}
+      onDragStart={() => {
+        draggedRef.current = true;
+        onSwipeStart();
+      }}
       onDragEnd={handleDragEnd}
       data-testid="deck-card"
     >
-      <div className="flex h-full flex-col justify-center px-1">
-        <h4 className="min-w-0 truncate font-display text-sm text-cream" data-testid="deck-card-title">
+      <a
+        href={item.url}
+        target="_blank"
+        rel="noreferrer"
+        draggable={false}
+        onClick={(event) => {
+          if (draggedRef.current) event.preventDefault();
+        }}
+        className="flex h-full flex-col justify-center px-1"
+        data-testid="deck-card-link"
+      >
+        <span className="w-max rounded-full bg-sage/15 px-2.5 py-0.5 text-[10px] font-bold text-sage">
+          {item.platform}
+        </span>
+        <h4 className="mt-1.5 line-clamp-2 min-w-0 font-display text-sm text-cream" data-testid="deck-card-title">
           {item.title}
         </h4>
-        <span className="mt-1.5 w-max rounded-full bg-sage/15 px-2.5 py-0.5 text-[10px] font-bold text-sage">
-          {item.kind} · {item.year}
-        </span>
-        <p className="mt-3 text-xs leading-relaxed text-muted">{item.why}</p>
-      </div>
+        {item.hook && <p className="mt-3 text-xs leading-relaxed text-muted">{item.hook}</p>}
+        <p className="mt-3 text-[11px] font-semibold text-muted">
+          {item.date ? `${item.date} · ` : ""}
+          {item.readMinutes} min read
+        </p>
+      </a>
     </motion.div>
   );
 }
 
-export function SwipeDeck({ items }: { items: WatchItem[] }) {
+export function SwipeDeck({ items }: { items: WritingLink[] }) {
   const reduceMotion = !!useReducedMotion();
   // One EVER-INCREASING counter, bumped once per swipe: it is the top card's
   // AnimatePresence key, so a card that comes around after a full loop can
@@ -107,13 +129,7 @@ export function SwipeDeck({ items }: { items: WatchItem[] }) {
 
   const inView = useInView(deckRef, { once: true, amount: 0.5 });
 
-  if (count === 0) {
-    return (
-      <p className="mt-3 rounded-xl bg-raised p-3 text-xs leading-relaxed text-muted" data-testid="deck-empty">
-        Nothing queued right now — suggestions welcome.
-      </p>
-    );
-  }
+  if (count === 0) return null;
 
   const interacted = () => {
     setHintDone(true);

@@ -1,23 +1,43 @@
 {
-  "updatedAt": "2026-10-01",
-  "reading": {
-    "title": "Harry Potter",
-    "author": "J.K. Rowling",
-    "cover": "",
-    "progress": 40,
-    "take": "Pretty good"
+  "updatedAt": "2026-11-09",
+  "obsession": {
+    "title": "Project Daedalus",
+    "name": "Project Daedalus",
+    "oneLiner": "Agentic workflow for GTM marketing",
+    "repo": "https://github.com/sauravbhise/project-daedalus"
   },
-  "watch": [
-    { "title": "REPLACE: show 1", "kind": "show", "year": 2024, "why": "REPLACE: one line on why" },
-    { "title": "REPLACE: film 1", "kind": "movie", "year": 2023, "why": "REPLACE: one line on why" },
-    { "title": "REPLACE: show 2", "kind": "show", "year": 2022, "why": "REPLACE: one line on why" },
-    { "title": "REPLACE: film 2", "kind": "movie", "year": 2021, "why": "REPLACE: one line on why" },
-    { "title": "REPLACE: show 3", "kind": "show", "year": 2020, "why": "REPLACE: one line on why" }
+  "writing": [
+      {
+      "platform": "Medium",
+      "title": "Two-way Kafka Integraion",
+      "hook": "Kafka Integration",
+      "date": "2026-10-19",
+      "readMinutes": 10,
+      "url": "https://medium.com/@sauravbhise/mastering-two-way-integration-change-data-capture-cdc-with-kafka-and-stripe-30bd7c8ea512"
+    }
   ],
-  "writing": [],
+  "reading": {
+    "current": {
+      "title": "Harry Potter",
+      "author": "J.K. Rowling",
+      "cover": "",
+      "take": "Pretty good"
+    },
+    "previous": []
+  },
+  "spanish": {
+    "score": 29,
+    "level": "A1",
+    "duolingoUsername": "sauravbhise",
+    "streak": 680,
+    "streakAsOf": "2026-11-09"
+  },
+  "matiks": {
+    "streak": 28,
+    "streakAsOf": "2026-11-09"
+  },
   "volunteering": {
     "status": "looking",
     "text": "Looking for a volunteering role where engineering can help. Ideas welcome."
-  },
-  "spanish": { "streak": 600 }
+  }
 }

@@ -1,9 +1,10 @@
 import { now, timeAgo } from "../content";
+import { CurrentObsessionCard } from "./cards/CurrentObsessionCard";
+import { WritingDeckCard } from "./cards/WritingDeckCard";
 import { NowReadingCard } from "./cards/NowReadingCard";
-import { WatchThisCard } from "./cards/WatchThisCard";
-import { LatestWritingCard } from "./cards/LatestWritingCard";
+import { SpanishCard } from "./cards/SpanishCard";
+import { MatiksCard } from "./cards/MatiksCard";
 import { VolunteeringCard } from "./cards/VolunteeringCard";
-import { LearningSpanishCard } from "./cards/LearningSpanishCard";
 
 /** Off the clock — renders the card list in order; each card is its own component. */
 export function RightColumn({ showTitle = true }: { showTitle?: boolean }) {
@@ -33,11 +34,12 @@ export function RightColumn({ showTitle = true }: { showTitle?: boolean }) {
         className="no-scrollbar flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 pb-6"
         data-testid="clock-cards"
       >
+        <CurrentObsessionCard obsession={now.obsession} />
+        <WritingDeckCard posts={now.writing} />
         <NowReadingCard reading={now.reading} />
-        <WatchThisCard items={now.watch} />
-        <LatestWritingCard posts={now.writing} />
-        <VolunteeringCard volunteering={now.volunteering} />
-        <LearningSpanishCard streak={now.spanish.streak} />
+        <SpanishCard spanish={now.spanish} />
+        <MatiksCard matiks={now.matiks} />
+        {now.volunteering && <VolunteeringCard volunteering={now.volunteering} />}
       </div>
     </div>
   );

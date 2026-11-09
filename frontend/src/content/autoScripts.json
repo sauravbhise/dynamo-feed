@@ -5,7 +5,7 @@
         "template": "storytime",
         "hostId": "tia",
         "beats": [
-          { "characterId": "tia", "pose": "talking", "caption": "Okay so Saurav is {progress} pages into {title} by {author}." },
+          { "characterId": "tia", "pose": "talking", "caption": "Okay so Saurav is reading {title} by {author}." },
           { "characterId": "tia", "pose": "shocked", "caption": "His official verdict: “{take}”" },
           { "characterId": "tia", "pose": "laughing", "caption": "He said it exactly like that. I'm just the messenger." }
         ]
@@ -16,7 +16,7 @@
         "data": { "title": "Field notes: {title}" },
         "beats": [
           { "characterId": "reginald", "pose": "neutral", "caption": "The engineer, observed mid-chapter." },
-          { "characterId": "reginald", "pose": "sceptical", "caption": "Finished {progress} percent. The author has earned another hour." },
+          { "characterId": "reginald", "pose": "sceptical", "caption": "Still turning pages. The author has earned another hour." },
           { "characterId": "reginald", "pose": "talking", "caption": "His verdict, for the record: “{take}”" }
         ]
       }
@@ -26,46 +26,6 @@
       { "authorId": "blaze", "text": "FINISH THE BOOK, Saurav." },
       { "authorId": "tia", "text": "he annotates the margins too, it's adorable" },
       { "authorId": "reginald", "text": "A gentleman always finishes what he highlights." }
-    ]
-  },
-  "watch": {
-    "scripts": [
-      {
-        "template": "storytime",
-        "hostId": "tia",
-        "beats": [
-          { "characterId": "tia", "pose": "shocked", "caption": "You guys. Saurav will not stop talking about {title}." },
-          { "characterId": "tia", "pose": "talking", "caption": "It's a {kind} from {year}. His exact words: “{why}”" },
-          { "characterId": "tia", "pose": "laughing", "caption": "Watch it so we can talk about it. Please. I'm begging." }
-        ]
-      },
-      {
-        "template": "breaking_news",
-        "hostId": "blaze",
-        "data": {
-          "headline": "{title}",
-          "ticker": "{kind} · {year} · Saurav-approved · watch responsibly · film at eleven"
-        },
-        "beats": [
-          { "characterId": "blaze", "pose": "pointing", "caption": "Breaking: Saurav says you need to watch {title}." },
-          { "characterId": "blaze", "pose": "talking", "caption": "It's a {kind} from {year}. His review: “{why}”" }
-        ]
-      },
-      {
-        "template": "storytime",
-        "hostId": "tia",
-        "beats": [
-          { "characterId": "tia", "pose": "thinking", "caption": "Hear me out: {title}." },
-          { "characterId": "tia", "pose": "talking", "caption": "A {kind}, from {year}. Saurav's case: “{why}”" },
-          { "characterId": "tia", "pose": "sceptical", "caption": "That's all I'm saying. Make of it what you will." }
-        ]
-      }
-    ],
-    "comments": [
-      { "authorId": "marge", "text": "He calls every recommendation life-changing. Every. Single. One." },
-      { "authorId": "blaze", "text": "BREAKING: he has taste. Confirmed." },
-      { "authorId": "reginald", "text": "Noted. The committee will consider it." },
-      { "authorId": "tia", "text": "no notes, perfect pick" }
     ]
   },
   "spanish": {
