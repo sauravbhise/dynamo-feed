@@ -8,15 +8,12 @@ import { PageLayer } from "./components/PageLayer";
 import { castById, profile } from "./content";
 
 export default function App() {
-  // Preload every sprite sheet at load so pose changes never flash (Saurav
-  // renders as a placeholder, no sheet to fetch).
+  // Preload every sprite sheet at load so pose changes never flash.
   useEffect(() => {
-    Object.keys(castById)
-      .filter((id) => id !== "saurav")
-      .forEach((id) => {
-        const img = new Image();
-        img.src = `/cast/${id}.webp`;
-      });
+    Object.keys(castById).forEach((id) => {
+      const img = new Image();
+      img.src = `/cast/${id}.webp`;
+    });
   }, []);
 
   // The meta description follows profile.json's one-liner (index.html keeps

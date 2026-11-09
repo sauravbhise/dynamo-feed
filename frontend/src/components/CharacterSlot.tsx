@@ -55,6 +55,8 @@ export function CharacterSlot({
   const paused = usePaused();
   const frozen = paused || reduceMotion;
   const [flip, setFlip] = useState(false);
+  // Tracks WHICH sprite failed, so a slot reused for another character retries.
+  const [failedSprite, setFailedSprite] = useState<string | null>(null);
 
   // The pose-change pop (squash → settle) runs on a wrapper WITHOUT a keyed
   // <img> inside, so the sprite never remounts or refetches.
@@ -184,7 +186,7 @@ export function CharacterSlot({
           <motion.div className="absolute inset-0" style={{ y: voiceBob }}>
           <motion.div className="absolute inset-0" style={{ transformOrigin: "bottom center" }} animate={squash}>
             <div className="absolute inset-0 overflow-hidden">
-              {characterId === "saurav" ? (
+              {failedSprite === characterId ? (
                 <div className="grid h-full w-full place-items-center rounded-3xl" style={{ backgroundColor: character.color }} data-testid="character-placeholder">
                   <span className="font-display text-4xl text-ink/30">{character.name.slice(0, 1)}</span>
                 </div>
@@ -193,6 +195,7 @@ export function CharacterSlot({
                   src={`/cast/${characterId}.webp`}
                   alt={character.name}
                   draggable={false}
+                  onError={() => setFailedSprite(characterId)}
                   className="absolute bottom-0 left-0 h-full w-[800%] max-w-none"
                   style={{ transform: `translateX(-${frameIndex * 12.5}%)` }}
                 />

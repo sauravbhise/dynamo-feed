@@ -194,8 +194,8 @@ Instagram-style circles under the bio (in `profile.json` → `highlights`):
 `id`, `label`, `reelSlugs` (the reels the highlight plays, in order) and an
 optional `cover` image path. Reel slugs that match no reel are skipped with a
 warning; a highlight left without valid reels is hidden; no `highlights` key
-means no row. Without a `cover`, the circle shows the first reel's host
-(framed on the head; Saurav keeps his placeholder initial).
+means no row. Without a `cover`, the circle shows the first reel's host,
+framed on the head.
 
 Tapping a highlight starts a session in the feed: only that highlight's reels
 play, starting at the first one, with a pill up top showing the label,
