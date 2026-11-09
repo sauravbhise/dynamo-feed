@@ -5,6 +5,7 @@ module.exports = {
     extend: {
       screens: {
         desk: "1200px",
+        wide: "1400px",
       },
       colors: {
         ink: "#211C1F",
