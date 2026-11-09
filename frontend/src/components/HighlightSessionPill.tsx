@@ -37,9 +37,9 @@ export function HighlightSessionPill({ variant }: { variant: "topbar" | "rail" }
   const pill = (
     <div
       data-testid="highlight-pill"
-      className="flex items-center gap-2.5 rounded-full bg-ink/70 py-2 pl-4 pr-2 text-xs font-bold text-cream shadow-soft backdrop-blur"
+      className="flex min-w-0 max-w-full items-center gap-2.5 rounded-full bg-ink/70 py-2 pl-4 pr-2 text-xs font-bold text-cream shadow-soft backdrop-blur"
     >
-      <span className="max-w-[38vw] truncate">{current.label}</span>
+      <span className="min-w-0 max-w-[38vw] truncate">{current.label}</span>
       <span className="text-cream/60">
         {current.position}/{current.total}
       </span>
@@ -58,13 +58,10 @@ export function HighlightSessionPill({ variant }: { variant: "topbar" | "rail" }
   );
 
   if (variant === "topbar") {
-    // Centred in the top bar, between the profile button and "Off the
-    // clock"; phones only (the rail column takes over from md).
-    return (
-      <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2 md:hidden">
-        <div className="pointer-events-auto">{pill}</div>
-      </div>
-    );
+    // A flex child of the top bar, so it takes only the space between the
+    // profile button and "Off the clock" and can't overlap either; phones
+    // only (the rail column takes over from md).
+    return <div className="flex min-w-0 flex-1 justify-center px-2 md:hidden">{pill}</div>;
   }
   return pill;
 }
