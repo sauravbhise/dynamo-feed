@@ -2,8 +2,7 @@ import { now, timeAgo } from "../content";
 import { CurrentObsessionCard } from "./cards/CurrentObsessionCard";
 import { WritingDeckCard } from "./cards/WritingDeckCard";
 import { NowReadingCard } from "./cards/NowReadingCard";
-import { SpanishCard } from "./cards/SpanishCard";
-import { MatiksCard } from "./cards/MatiksCard";
+import { DailyStreaksCard } from "./cards/DailyStreaksCard";
 import { VolunteeringCard } from "./cards/VolunteeringCard";
 
 /** Off the clock — renders the card list in order; each card is its own component. */
@@ -37,8 +36,7 @@ export function RightColumn({ showTitle = true }: { showTitle?: boolean }) {
         <CurrentObsessionCard obsession={now.obsession} />
         <WritingDeckCard posts={now.writing} />
         <NowReadingCard reading={now.reading} />
-        <SpanishCard spanish={now.spanish} />
-        <MatiksCard matiks={now.matiks} />
+        <DailyStreaksCard spanish={now.spanish} matiks={now.matiks} />
         {now.volunteering && <VolunteeringCard volunteering={now.volunteering} />}
       </div>
     </div>

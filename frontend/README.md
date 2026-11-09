@@ -47,13 +47,14 @@ field fails loudly in the console instead of rendering broken.
   card opens the post; hidden when the array is empty.
 - `NowReadingCard.tsx` — `reading.current`, then a "Before this:" line from
   `reading.previous`.
-- `SpanishCard.tsx` — score, level and the live streak from `api/duolingo.js`.
-  If that fails it shows `streak` plus the days since `streakAsOf`.
-- `MatiksCard.tsx` — `streak` plus the days since `streakAsOf`.
+- `DailyStreaksCard.tsx` — one row each for Spanish and Matiks. Spanish shows the
+  score, level and the live streak from `api/duolingo.js`; if that fails it shows
+  `streak` plus the days since `streakAsOf`. Matiks is always `streak` plus the
+  days since `streakAsOf`.
 - `VolunteeringCard.tsx` — status + text; set `volunteering` to `null` to hide it.
 
-Fields containing "REPLACE" count as drafts, and a draft obsession or Matiks date
-hides that card.
+Fields containing "REPLACE" count as drafts: a draft obsession hides its card and
+a draft Matiks date hides the Matiks row.
 
 ### Adding, removing and reordering
 
@@ -203,6 +204,10 @@ exactly where it was — when the last reel finishes its first loop, when the
 visitor swipes/wheels/presses next past it, on X, or on Escape. The nudge
 never interrupts a session; the highlight's ring dims once it has been played
 (localStorage key `df-highlights-seen`; clear it to reset).
+
+The row is currently **hidden**: set `SHOW_HIGHLIGHTS` to `true` in
+`src/config.ts` to bring it back. The data in `profile.json` stays in place while
+it is `false`.
 
 ### Coach mark
 

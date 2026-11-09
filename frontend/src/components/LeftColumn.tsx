@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { SHOW_HIGHLIGHTS } from "../config";
 import { profile, profileValid } from "../content";
 import { ProfileHeader } from "./profile/ProfileHeader";
 import { HighlightsRow } from "./profile/HighlightsRow";
@@ -138,7 +139,7 @@ export function LeftColumn() {
         photo={profile.photo}
         location={profile.location}
       />
-      <HighlightsRow />
+      {SHOW_HIGHLIGHTS && <HighlightsRow />}
       <SocialLinks socials={profile.socials} resumeUrl={profile.resumeUrl} />
       <SkillChips skills={profile.skills} />
       {sections.map((section) => (
