@@ -233,6 +233,12 @@ export function profileItemBySlug(slug: string): ProfileItemRef | null {
   return null;
 }
 
+// Whole days from a date until now; 0 for a future or unparseable date.
+export function wholeDaysSince(iso: string): number {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  return Number.isFinite(days) ? Math.max(days, 0) : 0;
+}
+
 export function timeAgo(iso: string): string {
   const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
   if (minutes < 1) return "just now";

@@ -214,33 +214,51 @@ export const pageSchema = z.object({
 
 export const nowSchema = z.object({
   updatedAt: z.string().min(1),
-  reading: z.object({
+  obsession: z.object({
     title: z.string().min(1),
-    author: z.string().min(1),
-    cover: z.string(),
-    progress: z.number().min(0).max(100),
-    take: z.string(),
+    name: z.string().min(1),
+    oneLiner: z.string(),
+    /** GitHub "owner/name". Left loose so a REPLACE draft hides only this card. */
+    repo: z.string().min(1),
   }),
-  watch: z.array(
-    z.object({
-      title: z.string().min(1),
-      kind: z.string(),
-      year: z.number().int(),
-      why: z.string(),
-    })
-  ),
   writing: z.array(
     z.object({
-      platform: z.enum(["substack", "dev", "medium", "blog"]),
+      /** Display label, e.g. "Medium" — any platform works. */
+      platform: z.string().min(1),
       title: z.string().min(1),
+      hook: z.string(),
+      /** Display date, e.g. "Dec 2023". */
+      date: z.string(),
+      readMinutes: z.number().int().positive(),
       url: z.string().min(1),
     })
   ),
-  volunteering: z.object({
-    status: z.string(),
-    text: z.string(),
+  reading: z.object({
+    current: z.object({
+      title: z.string().min(1),
+      author: z.string().min(1),
+      cover: z.string().optional(),
+      take: z.string(),
+    }),
+    previous: z
+      .array(z.object({ title: z.string().min(1), author: z.string().min(1) }))
+      .default([]),
   }),
   spanish: z.object({
+    score: z.number().nonnegative(),
+    level: z.string(),
+    duolingoUsername: z.string(),
     streak: z.number().int().nonnegative(),
+    streakAsOf: z.string(),
   }),
+  matiks: z.object({
+    streak: z.number().int().nonnegative(),
+    streakAsOf: z.string(),
+  }),
+  volunteering: z
+    .object({
+      status: z.string(),
+      text: z.string(),
+    })
+    .nullable(),
 });

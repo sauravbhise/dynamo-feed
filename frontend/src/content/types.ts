@@ -146,35 +146,49 @@ export interface Profile {
 
 // ---------- "Off the clock" (now.json) ----------
 
-export interface Reading {
+export interface Obsession {
   title: string;
-  author: string;
-  cover: string;
-  /** 0–100 percent through the book. */
-  progress: number;
-  take: string;
-}
-
-export interface WatchItem {
-  title: string;
-  kind: string;
-  year: number;
-  why: string;
+  name: string;
+  oneLiner: string;
+  /** GitHub "owner/name". */
+  repo: string;
 }
 
 export interface WritingLink {
-  platform: "substack" | "dev" | "medium" | "blog";
+  platform: string;
   title: string;
+  hook: string;
+  date: string;
+  readMinutes: number;
   url: string;
+}
+
+export interface Reading {
+  current: { title: string; author: string; cover?: string; take: string };
+  previous: { title: string; author: string }[];
+}
+
+export interface SpanishProgress {
+  score: number;
+  level: string;
+  duolingoUsername: string;
+  streak: number;
+  streakAsOf: string;
+}
+
+export interface Volunteering {
+  status: string;
+  text: string;
 }
 
 export interface Now {
   updatedAt: string;
-  reading: Reading;
-  watch: WatchItem[];
+  obsession: Obsession;
   writing: WritingLink[];
-  volunteering: { status: string; text: string };
-  spanish: { streak: number };
+  reading: Reading;
+  spanish: SpanishProgress;
+  matiks: { streak: number; streakAsOf: string };
+  volunteering: Volunteering | null;
 }
 
 // ---------- Reel ↔ portfolio item link ----------

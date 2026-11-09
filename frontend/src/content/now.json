@@ -1,23 +1,34 @@
 {
   "updatedAt": "2026-10-01",
-  "reading": {
-    "title": "Harry Potter",
-    "author": "J.K. Rowling",
-    "cover": "",
-    "progress": 40,
-    "take": "Pretty good"
+  "obsession": {
+    "title": "Current obsession",
+    "name": "REPLACE: project name",
+    "oneLiner": "REPLACE: one line on what it is",
+    "repo": "REPLACE: owner/repo"
   },
-  "watch": [
-    { "title": "REPLACE: show 1", "kind": "show", "year": 2024, "why": "REPLACE: one line on why" },
-    { "title": "REPLACE: film 1", "kind": "movie", "year": 2023, "why": "REPLACE: one line on why" },
-    { "title": "REPLACE: show 2", "kind": "show", "year": 2022, "why": "REPLACE: one line on why" },
-    { "title": "REPLACE: film 2", "kind": "movie", "year": 2021, "why": "REPLACE: one line on why" },
-    { "title": "REPLACE: show 3", "kind": "show", "year": 2020, "why": "REPLACE: one line on why" }
-  ],
   "writing": [],
+  "reading": {
+    "current": {
+      "title": "Harry Potter",
+      "author": "J.K. Rowling",
+      "cover": "",
+      "take": "Pretty good"
+    },
+    "previous": []
+  },
+  "spanish": {
+    "score": 29,
+    "level": "A1",
+    "duolingoUsername": "sauravbhise",
+    "streak": 680,
+    "streakAsOf": "2026-11-09"
+  },
+  "matiks": {
+    "streak": 0,
+    "streakAsOf": "REPLACE: YYYY-MM-DD"
+  },
   "volunteering": {
     "status": "looking",
     "text": "Looking for a volunteering role where engineering can help. Ideas welcome."
-  },
-  "spanish": { "streak": 600 }
+  }
 }
