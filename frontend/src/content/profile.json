@@ -91,7 +91,7 @@
           "url": "https://github.com/sauravbhise/dynamo-feed"
         }
       ],
-      "reelSlug": "breaking-built-by-voice"
+      "reelSlug": "breaking-resume-replaced"
     },
     {
       "name": "Research paper summariser",
@@ -162,9 +162,9 @@
       "id": "projects",
       "label": "Projects",
       "reelSlugs": [
-        "breaking-built-by-voice",
         "the-outreach-part-1",
-        "the-outreach-part-2"
+        "the-outreach-part-2",
+        "breaking-resume-replaced"
       ]
     },
     {
@@ -179,7 +179,6 @@
       "id": "off-the-clock",
       "label": "Off the clock",
       "reelSlugs": [
-        "the-streak",
         "a-day-in-the-life"
       ]
     },
