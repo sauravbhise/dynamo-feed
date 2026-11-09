@@ -7,12 +7,14 @@
     "repo": "https://github.com/sauravbhise/project-daedalus"
   },
   "writing": [
-    "platform": "Medium",
-    "title": "Two-way Kafka Integraion",
-    "hook": "Kafka Integration",
-    "date": "2026-10-19",
-    "readMinutes": 10,
-    "url": "https://medium.com/@sauravbhise/mastering-two-way-integration-change-data-capture-cdc-with-kafka-and-stripe-30bd7c8ea512"
+      {
+      "platform": "Medium",
+      "title": "Two-way Kafka Integraion",
+      "hook": "Kafka Integration",
+      "date": "2026-10-19",
+      "readMinutes": 10,
+      "url": "https://medium.com/@sauravbhise/mastering-two-way-integration-change-data-capture-cdc-with-kafka-and-stripe-30bd7c8ea512"
+    }
   ],
   "reading": {
     "current": {
