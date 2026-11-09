@@ -40,6 +40,22 @@ const NUDGE_REEL: Reel = {
   comments: [],
 };
 
+// The first insertion point at or after `start` that isn't inside a series:
+// a slot between two parts moves to just after the last part. Auto reels can
+// be sprinkled between parts, so the neighbours checked skip over them.
+function positionOutsideSeries(list: Reel[], start: number): number {
+  let at = start;
+  for (;;) {
+    let before = at - 1;
+    while (before >= 0 && list[before].auto) before--;
+    let after = at;
+    while (after < list.length && list[after].auto) after++;
+    const seriesId = list[before]?.seriesId;
+    if (!seriesId || list[after]?.seriesId !== seriesId) return at;
+    at = after + 1;
+  }
+}
+
 function readLikedIds(): Record<string, boolean> {
   try {
     const stored: Record<string, boolean> = {};
@@ -120,8 +136,12 @@ function FeedFrameInner() {
     if (nudgeInsertedRef.current || sessionRef.current) return;
     nudgeInsertedRef.current = true;
     const next = [...orderRef.current];
-    // The reel-count trigger puts the nudge in place as the VERY NEXT reel.
-    const at = Math.min(activeIndexRef.current + (trigger === "reels" ? 1 : 2), next.length);
+    // The reel-count trigger puts the nudge in place as the VERY NEXT reel,
+    // unless that would split a series.
+    const at = positionOutsideSeries(
+      next,
+      Math.min(activeIndexRef.current + (trigger === "reels" ? 1 : 2), next.length)
+    );
     next.splice(at, 0, {
       ...NUDGE_REEL,
       beats: [{ ...NUDGE_REEL.beats[0], caption: NUDGE_COPY[trigger] }],
@@ -622,10 +642,13 @@ function FeedFrameInner() {
       </div>
 
       {isDesktop ? (
-        // The session pill aligns with the frame's top edge; the rail stays
-        // vertically centred.
-        <div className="flex shrink-0 flex-col items-center self-stretch" data-testid="feed-rail-column">
-          <HighlightSessionPill variant="rail" />
+        // The session pill aligns with the frame's top edge, out of flow so
+        // starting a session can't widen this column and shrink the reel; the
+        // rail stays vertically centred.
+        <div className="relative flex shrink-0 flex-col items-center self-stretch" data-testid="feed-rail-column">
+          <div className="absolute left-0 top-0 z-20 whitespace-nowrap">
+            <HighlightSessionPill variant="rail" />
+          </div>
           <div className="my-auto">{rail}</div>
         </div>
       ) : null}
