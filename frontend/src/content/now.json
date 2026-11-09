@@ -1,12 +1,19 @@
 {
-  "updatedAt": "2026-10-01",
+  "updatedAt": "2026-11-09",
   "obsession": {
-    "title": "Current obsession",
-    "name": "REPLACE: project name",
-    "oneLiner": "REPLACE: one line on what it is",
-    "repo": "REPLACE: owner/repo"
+    "title": "Project Daedalus",
+    "name": "Project Daedalus",
+    "oneLiner": "Agentic workflow for GTM marketing",
+    "repo": "https://github.com/sauravbhise/project-daedalus"
   },
-  "writing": [],
+  "writing": [
+    "platform": "Medium",
+    "title": "Two-way Kafka Integraion",
+    "hook": "Kafka Integration",
+    "date": "2026-10-19",
+    "readMinutes": 10,
+    "url": "https://medium.com/@sauravbhise/mastering-two-way-integration-change-data-capture-cdc-with-kafka-and-stripe-30bd7c8ea512"
+  ],
   "reading": {
     "current": {
       "title": "Harry Potter",
@@ -24,8 +31,8 @@
     "streakAsOf": "2026-11-09"
   },
   "matiks": {
-    "streak": 0,
-    "streakAsOf": "REPLACE: YYYY-MM-DD"
+    "streak": 28,
+    "streakAsOf": "2026-11-09"
   },
   "volunteering": {
     "status": "looking",
