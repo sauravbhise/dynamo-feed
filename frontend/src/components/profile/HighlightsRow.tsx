@@ -79,11 +79,9 @@ function HighlightCircle({ highlight, seen }: { highlight: Highlight; seen: bool
               style={{ backgroundColor: castColor(hostId) }}
             >
               {/* No cover: the first reel's host, framed on the head (frame 0
-                  of the sheet, scaled up; Saurav keeps his placeholder). */}
-              {hostId === "saurav" || !host ? (
-                <span className="font-display text-2xl text-ink/30">
-                  {host ? host.name.slice(0, 1) : "?"}
-                </span>
+                  of the sheet, scaled up). */}
+              {!host ? (
+                <span className="font-display text-2xl text-ink/30">?</span>
               ) : (
                 // Crop to the HEAD of the neutral frame: a ~220×220 region
                 // (frame x 130–350, from headroom×680 − 10 down), scaled to

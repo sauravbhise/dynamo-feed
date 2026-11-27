@@ -5,6 +5,7 @@ import { CharacterSlot, headTopPercent } from "../components/CharacterSlot";
 import { ReelCaption } from "../components/ReelCaption";
 import { ProfileReelChip } from "../components/ProfileReelChip";
 import { usePaused } from "../components/PausedContext";
+import { ReelBackground } from "./ReelBackground";
 import { castById } from "../content";
 import { num, str, type TemplateProps } from "./registry";
 
@@ -40,6 +41,7 @@ export function ReviewTemplate({ reel, beat, beatIndex, progress, data, reducedM
 
   return (
     <div className="absolute inset-0">
+      <ReelBackground reel={reel} />
       <div
         className="absolute inset-x-3 top-[3%] z-10 flex flex-col overflow-hidden rail-clear-right"
         style={{ maxHeight: `${Math.max(headTop - 5, 18)}%` }}

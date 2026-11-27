@@ -1,7 +1,7 @@
 [
   {
     "id": "r01",
-    "slug": "breaking-built-by-voice",
+    "slug": "breaking-resume-replaced",
     "template": "breaking_news",
     "hostId": "blaze",
     "likes": 9001,
@@ -12,26 +12,26 @@
         "caption": "Good evening. We interrupt your scrolling with a story so big it needed its own feed.",
         "durationMs": 3500,
         "data": {
-          "headline": "Local engineer builds entire portfolio by talking at his laptop",
-          "ticker": "Keyboard reportedly feeling left out  •  Wispr Flow confirms involvement  •  Emergent credits described as nervous  •  More at eleven"
+          "headline": "Local engineer replaces his resume with a feed of cartoon reels",
+          "ticker": "Recruiters advised to keep scrolling  •  Marge demands royalties  •  PDF resume still available for traditionalists  •  More at eleven"
         }
       },
       {
         "characterId": "blaze",
         "pose": "pointing",
-        "caption": "Sources confirm he spoke every idea out loud. No typing. Not even a semicolon.",
+        "caption": "Sources confirm: no bullet points. Just a tortoise, a cat and a man with a microphone.",
         "durationMs": 3500
       },
       {
         "characterId": "saurav",
         "pose": "talking",
-        "caption": "It's genuinely faster. I think in sentences, not in keystrokes.",
+        "caption": "Nobody remembers a resume. People remember things they scrolled.",
         "durationMs": 3000
       },
       {
         "characterId": "blaze",
         "pose": "shocked",
-        "caption": "Thinking in SENTENCES, folks. Experts are calling it: talking.",
+        "caption": "He made his career SCROLLABLE, folks. Experts are calling it: content.",
         "durationMs": 3000
       },
       {
@@ -42,9 +42,18 @@
       }
     ],
     "comments": [
-      { "authorId": "reginald", "text": "I was not asleep. I was observing. Quietly." },
-      { "authorId": "marge", "text": "A man talks to a computer. In my day we called that a phone call." },
-      { "authorId": "tia", "text": "the ticker is giving ✨production value✨" }
+      {
+        "authorId": "reginald",
+        "text": "I was not asleep. I was observing. Quietly."
+      },
+      {
+        "authorId": "marge",
+        "text": "In my day a resume was one page and it did not talk back."
+      },
+      {
+        "authorId": "tia",
+        "text": "the ticker is giving ✨production value✨"
+      }
     ]
   },
   {
@@ -59,12 +68,14 @@
         "pose": "neutral",
         "caption": "Here, in the corridors of a Pune university, we find a rare creature.",
         "durationMs": 4000,
-        "data": { "title": "Episode 1: The Campus Builder" }
+        "data": {
+          "title": "Episode 1: The Campus Builder"
+        }
       },
       {
         "characterId": "reginald",
         "pose": "pointing",
-        "caption": "The young engineer has found something missing. A place for builders to gather.",
+        "caption": "The young engineer has noticed something missing. A place for builders to gather.",
         "durationMs": 4000
       },
       {
@@ -76,59 +87,83 @@
       {
         "characterId": "reginald",
         "pose": "shocked",
-        "caption": "Two hundred members. Hackathons of a hundred. Sponsors. Remarkable.",
-        "durationMs": 3500
+        "caption": "Two hundred members. Events of fifty to a hundred. An annual hackathon. Sponsored by GitHub itself.",
+        "durationMs": 4000
       },
       {
         "characterId": "reginald",
         "pose": "thinking",
-        "caption": "And the creature's reward? A title. GitHub Campus Expert. The only one his university has ever had.",
+        "caption": "His title: GitHub Campus Expert. The first and only one his university has ever had.",
         "durationMs": 4500
       }
     ],
     "comments": [
-      { "authorId": "blaze", "text": "TWO HUNDRED MEMBERS?? That's a stadium, Reggie!" },
-      { "authorId": "reginald", "text": "It is not a stadium, Blaze. It is a WhatsApp group." },
-      { "authorId": "marge", "text": "Did anyone bring snacks to these gatherings. Asking for myself." }
+      {
+        "authorId": "blaze",
+        "text": "TWO HUNDRED MEMBERS?? That's a stadium, Reggie!"
+      },
+      {
+        "authorId": "reginald",
+        "text": "It is not a stadium, Blaze. It is a WhatsApp group."
+      },
+      {
+        "authorId": "marge",
+        "text": "Did anyone bring snacks to these gatherings. Asking for myself."
+      }
     ]
   },
   {
     "id": "r03",
-    "slug": "the-streak",
+    "slug": "zero-bullet-points",
     "template": "stat_reveal",
     "hostId": "blaze",
-    "likes": 600,
+    "likes": 101,
     "beats": [
       {
         "characterId": "blaze",
         "pose": "talking",
         "caption": "Ladies and gentlemen, let's go to the numbers.",
         "durationMs": 3000,
-        "data": { "value": 600, "unit": "+ days", "label": "Duolingo streak, unbroken" }
+        "data": {
+          "value": 0,
+          "unit": "bullet points",
+          "label": "on this entire website",
+          "before": "A one-page resume",
+          "after": "A feed, five characters and a talking cat"
+        }
       },
       {
         "characterId": "blaze",
         "pose": "shocked",
-        "caption": "Six hundred days. Every. Single. Day. Spanish.",
+        "caption": "ZERO. Not one bullet point. Recruiters are reportedly sitting down.",
         "durationMs": 3500
       },
       {
         "characterId": "saurav",
         "pose": "neutral",
-        "caption": "Hola. That's most of what I can say with confidence.",
+        "caption": "The bullet points are still in the PDF. For emergencies.",
         "durationMs": 3000
       },
       {
         "characterId": "blaze",
         "pose": "celebrating",
-        "caption": "That's commitment, folks. That's a man the owl fears.",
+        "caption": "Keep scrolling, folks. That's the whole resume now.",
         "durationMs": 3000
       }
     ],
     "comments": [
-      { "authorId": "tia", "text": "obsessed with consistency as a personality trait" },
-      { "authorId": "marge", "text": "Six hundred days and he still can't order a coffee. Impressive, in a way." },
-      { "authorId": "reginald", "text": "Persistence. The most underrated survival trait." }
+      {
+        "authorId": "marge",
+        "text": "I am the talking cat. I would like it noted."
+      },
+      {
+        "authorId": "reginald",
+        "text": "A bold adaptation. The bullet point, extinct in the wild."
+      },
+      {
+        "authorId": "tia",
+        "text": "no bullet points is a whole personality"
+      }
     ]
   },
   {
@@ -143,12 +178,14 @@
         "pose": "neutral",
         "caption": "Leaving a review for Saurav.",
         "durationMs": 2500,
-        "data": { "stars": 3.5 }
+        "data": {
+          "stars": 3.5
+        }
       },
       {
         "characterId": "marge",
         "pose": "sceptical",
-        "caption": "Builds things nobody asked for. Then everybody ends up using them.",
+        "caption": "Explains technical problems to people who don't read code. Calmly. Every day.",
         "durationMs": 3500
       },
       {
@@ -168,13 +205,24 @@
         "pose": "sceptical",
         "caption": "Three and a half stars. Half a star off for the unpaid part.",
         "durationMs": 3000,
-        "data": { "verdict": "Acceptable. Barely." }
+        "data": {
+          "verdict": "Acceptable. Barely."
+        }
       }
     ],
     "comments": [
-      { "authorId": "blaze", "text": "THREE AND A HALF is Marge's HIGHEST SCORE EVER" },
-      { "authorId": "marge", "text": "It is not. I gave a radiator four once." },
-      { "authorId": "saurav", "text": "I'll take it." }
+      {
+        "authorId": "blaze",
+        "text": "THREE AND A HALF is Marge's HIGHEST SCORE EVER"
+      },
+      {
+        "authorId": "marge",
+        "text": "It is not. I gave a radiator four once."
+      },
+      {
+        "authorId": "saurav",
+        "text": "I'll take it."
+      }
     ]
   },
   {
@@ -208,8 +256,14 @@
       }
     ],
     "comments": [
-      { "authorId": "tia", "text": "cold emailing is literally just sliding into DMs for LinkedIn people" },
-      { "authorId": "reginald", "text": "Bold behaviour for a young engineer. I approve." }
+      {
+        "authorId": "tia",
+        "text": "cold emailing is literally just sliding into DMs for LinkedIn people"
+      },
+      {
+        "authorId": "reginald",
+        "text": "Bold behaviour for a young engineer. I approve."
+      }
     ]
   },
   {
@@ -224,13 +278,13 @@
       {
         "characterId": "tia",
         "pose": "talking",
-        "caption": "Okay so listen. Saurav's family runs a manufacturing business.",
+        "caption": "Okay so listen. Saurav's dad runs a sheet-metal company. Three plants.",
         "durationMs": 3000
       },
       {
         "characterId": "tia",
         "pose": "pointing",
-        "caption": "And they need new buyers. Like, actual factories that buy metal parts.",
+        "caption": "They need new buyers. Like, actual factories that buy metal parts.",
         "durationMs": 3500
       },
       {
@@ -242,13 +296,19 @@
       {
         "characterId": "tia",
         "pose": "thinking",
-        "caption": "The tools say every email address is verified. Perfect, right? Right??",
+        "caption": "AI finds the companies, scores them, writes the emails. Perfect, right? Right??",
         "durationMs": 3500
       }
     ],
     "comments": [
-      { "authorId": "blaze", "text": "I'm on the edge of my seat and I'm not even sitting" },
-      { "authorId": "marge", "text": "Verified by whom. That's what I'd like to know." }
+      {
+        "authorId": "blaze",
+        "text": "I'm on the edge of my seat and I'm not even sitting"
+      },
+      {
+        "authorId": "marge",
+        "text": "AI wrote the emails. I can already see where this is going."
+      }
     ]
   },
   {
@@ -263,95 +323,352 @@
       {
         "characterId": "tia",
         "pose": "talking",
-        "caption": "Okay so. He doesn't just trust the tool. He actually checks.",
+        "caption": "Okay so. The AI scores and the AI emails? Wrong. A lot.",
         "durationMs": 3000
       },
       {
         "characterId": "tia",
-        "pose": "shocked",
-        "caption": "Two of the five \"verified\" addresses he could test were just... wrong.",
+        "pose": "sceptical",
+        "caption": "He spent his evenings cleaning up after the AI. Checking everything by hand.",
         "durationMs": 3500
       },
       {
         "characterId": "tia",
-        "pose": "sceptical",
-        "caption": "So now every campaign gets checked by hand before anything goes out. The tool is a suggestion, not a fact.",
+        "pose": "shocked",
+        "caption": "Final count: 126 contacts in the CRM. One real reply, handed to the business head.",
         "durationMs": 4000
       },
       {
         "characterId": "tia",
         "pose": "laughing",
-        "caption": "Lesson of the day: trust, but verify the verified. Iconic.",
+        "caption": "And the lesson became his next project: test the AI before you trust it. It's called Daedalus. Iconic.",
+        "durationMs": 4000
+      }
+    ],
+    "comments": [
+      {
+        "authorId": "marge",
+        "text": "Told you. Check everything."
+      },
+      {
+        "authorId": "reginald",
+        "text": "A healthy scepticism. Rare, and valuable."
+      },
+      {
+        "authorId": "tia",
+        "text": "part 3 when daedalus ships?? 👀"
+      }
+    ]
+  },
+  {
+    "id": "r08",
+    "slug": "blaze-interviews-saurav",
+    "template": "interview",
+    "hostId": "blaze",
+    "likes": 1337,
+    "beats": [
+      {
+        "characterId": "blaze",
+        "pose": "talking",
+        "caption": "Tonight's guest is a software engineer who talks to business people. On purpose.",
+        "durationMs": 3500,
+        "data": {
+          "guest": "saurav",
+          "topic": "Why forward deployed engineering?"
+        }
+      },
+      {
+        "characterId": "saurav",
+        "pose": "talking",
+        "caption": "Every day I explain incidents and fixes to people who don't read code. Turns out I like that part.",
+        "durationMs": 4000
+      },
+      {
+        "characterId": "blaze",
+        "pose": "shocked",
+        "caption": "He LIKES the meetings, folks!",
+        "durationMs": 3000
+      },
+      {
+        "characterId": "saurav",
+        "pose": "neutral",
+        "caption": "I like where the tech meets the actual problem. That's the job I want.",
+        "durationMs": 3500
+      },
+      {
+        "characterId": "blaze",
+        "pose": "celebrating",
+        "caption": "Saurav, everybody! Engineer by day, translator by... also day!",
         "durationMs": 3000
       }
     ],
     "comments": [
-      { "authorId": "marge", "text": "Told you. Verified by whom." },
-      { "authorId": "reginald", "text": "A healthy scepticism. Rare, and valuable." },
-      { "authorId": "tia", "text": "part 3 when he finds the buyers?? 👀" }
+      {
+        "authorId": "marge",
+        "text": "Someone who enjoys meetings. Unsettling."
+      },
+      {
+        "authorId": "tia",
+        "text": "the host is giving late-night energy fr"
+      },
+      {
+        "authorId": "reginald",
+        "text": "A rare hybrid. Observe it while you can."
+      }
     ]
   },
-  { "id": "r08", "slug": "blaze-interviews-saurav", "template": "interview", "hostId": "blaze", "likes": 1337,
+  {
+    "id": "r09",
+    "slug": "marge-ranks-the-stack",
+    "template": "tier_list",
+    "hostId": "marge",
+    "likes": 512,
     "beats": [
-      { "characterId": "blaze", "pose": "talking", "caption": "Welcome back to the show! Tonight's guest built a whole website starring cartoon animals.", "durationMs": 3500, "data": { "guest": "saurav", "topic": "Why build a portfolio like this?" } },
-      { "characterId": "saurav", "pose": "talking", "caption": "A normal portfolio gets skimmed in ten seconds. I wanted people to actually stay.", "durationMs": 3500 },
-      { "characterId": "blaze", "pose": "shocked", "caption": "Ten seconds?! Folks, that's shorter than my intro!", "durationMs": 3000 },
-      { "characterId": "saurav", "pose": "neutral", "caption": "Exactly. So I made it something you scroll.", "durationMs": 3000 },
-      { "characterId": "blaze", "pose": "celebrating", "caption": "Saurav, everybody! Stay for the cartoon animals!", "durationMs": 3000 }
+      {
+        "characterId": "marge",
+        "pose": "neutral",
+        "caption": "I've been asked to rank Saurav's tools. Against my will.",
+        "durationMs": 3000,
+        "data": {
+          "title": "Marge ranks: the stack"
+        }
+      },
+      {
+        "characterId": "marge",
+        "pose": "sceptical",
+        "caption": "Java. Old, reliable, never surprises anyone. Like me. S.",
+        "durationMs": 3500,
+        "data": {
+          "item": {
+            "label": "Java",
+            "tier": "S"
+          }
+        }
+      },
+      {
+        "characterId": "marge",
+        "pose": "talking",
+        "caption": "Azure. Certified in it twice. Overachiever. A.",
+        "durationMs": 3000,
+        "data": {
+          "item": {
+            "label": "Azure",
+            "tier": "A"
+          }
+        }
+      },
+      {
+        "characterId": "marge",
+        "pose": "thinking",
+        "caption": "React. Changes its mind every year. B.",
+        "durationMs": 3000,
+        "data": {
+          "item": {
+            "label": "React",
+            "tier": "B"
+          }
+        }
+      },
+      {
+        "characterId": "marge",
+        "pose": "sceptical",
+        "caption": "AI engineering. Ask me again when Daedalus ships. C, for now.",
+        "durationMs": 3500,
+        "data": {
+          "item": {
+            "label": "AI engineering",
+            "tier": "C"
+          }
+        }
+      }
     ],
     "comments": [
-      { "authorId": "marge", "text": "I was not consulted about being a cartoon animal." },
-      { "authorId": "tia", "text": "the host is giving late-night energy fr" },
-      { "authorId": "reginald", "text": "Retention, by way of tortoise. Bold." }
-    ] },
-  { "id": "r09", "slug": "marge-ranks-the-stack", "template": "tier_list", "hostId": "marge", "likes": 512,
+      {
+        "authorId": "blaze",
+        "text": "JAVA IN S TIER?? Marge has SPOKEN"
+      },
+      {
+        "authorId": "tia",
+        "text": "react in B tier?? i'm shaking"
+      },
+      {
+        "authorId": "saurav",
+        "text": "Fair, honestly."
+      }
+    ]
+  },
+  {
+    "id": "r10",
+    "slug": "marge-stitches-the-news",
+    "template": "stitch",
+    "hostId": "marge",
+    "likes": 2048,
     "beats": [
-      { "characterId": "marge", "pose": "neutral", "caption": "I've been asked to rank Saurav's tools. Against my will.", "durationMs": 3000, "data": { "title": "Marge ranks: the stack" } },
-      { "characterId": "marge", "pose": "sceptical", "caption": "Java. Old, reliable, never surprises anyone. Like me. S.", "durationMs": 3500, "data": { "item": { "label": "Java", "tier": "S" } } },
-      { "characterId": "marge", "pose": "thinking", "caption": "React. Changes its mind every year. B.", "durationMs": 3000, "data": { "item": { "label": "React", "tier": "B" } } },
-      { "characterId": "marge", "pose": "talking", "caption": "TypeScript. Tells you you're wrong before you are. A.", "durationMs": 3000, "data": { "item": { "label": "TypeScript", "tier": "A" } } },
-      { "characterId": "marge", "pose": "sceptical", "caption": "AI engineering. Ask me again in a year. C, for now.", "durationMs": 3500, "data": { "item": { "label": "AI engineering", "tier": "C" } } }
+      {
+        "characterId": "blaze",
+        "pose": "talking",
+        "caption": "Local engineer replaces his resume with a feed of cartoon reels!",
+        "durationMs": 3000,
+        "data": {
+          "stitchSlug": "breaking-resume-replaced"
+        }
+      },
+      {
+        "characterId": "marge",
+        "pose": "sceptical",
+        "caption": "This man calls a website news.",
+        "durationMs": 3000
+      },
+      {
+        "characterId": "marge",
+        "pose": "thinking",
+        "caption": "In my day you printed your resume and nobody read it. Progress.",
+        "durationMs": 3500
+      },
+      {
+        "characterId": "marge",
+        "pose": "neutral",
+        "caption": "Still. The website is nice. Don't tell him I said that.",
+        "durationMs": 3500
+      }
     ],
     "comments": [
-      { "authorId": "blaze", "text": "JAVA IN S TIER?? Marge has SPOKEN" },
-      { "authorId": "tia", "text": "react in B tier?? i'm shaking" },
-      { "authorId": "saurav", "text": "Fair, honestly." }
-    ] },
-  { "id": "r10", "slug": "marge-stitches-the-news", "template": "stitch", "hostId": "marge", "likes": 2048,
+      {
+        "authorId": "blaze",
+        "text": "MARGE STITCHED ME. I'M FRAMING THIS"
+      },
+      {
+        "authorId": "tia",
+        "text": "stitch of the year honestly"
+      },
+      {
+        "authorId": "reginald",
+        "text": "A rare exchange between species."
+      }
+    ]
+  },
+  {
+    "id": "r11",
+    "slug": "pov-you-hired-saurav",
+    "template": "pov",
+    "hostId": "tia",
+    "likes": 4096,
     "beats": [
-      { "characterId": "blaze", "pose": "talking", "caption": "Local engineer builds entire portfolio by talking at his laptop!", "durationMs": 3000, "data": { "stitchSlug": "breaking-built-by-voice" } },
-      { "characterId": "marge", "pose": "sceptical", "caption": "This man calls talking to a laptop news.", "durationMs": 3000 },
-      { "characterId": "marge", "pose": "thinking", "caption": "In my day we talked to people. They didn't listen either.", "durationMs": 3500 },
-      { "characterId": "marge", "pose": "neutral", "caption": "Still. The website is nice. Don't tell him I said that.", "durationMs": 3500 }
+      {
+        "characterId": "tia",
+        "pose": "talking",
+        "caption": "Week one. He's already automated the manual job everyone hated.",
+        "durationMs": 3500,
+        "data": {
+          "pov": "POV: you just hired Saurav"
+        }
+      },
+      {
+        "characterId": "tia",
+        "pose": "shocked",
+        "caption": "Week two. Deploys that took hours now take minutes.",
+        "durationMs": 3000
+      },
+      {
+        "characterId": "tia",
+        "pose": "thinking",
+        "caption": "Week three. The incident report is written so clearly that even sales read it.",
+        "durationMs": 3500
+      },
+      {
+        "characterId": "tia",
+        "pose": "celebrating",
+        "caption": "Month one. You're wondering why you didn't hire him sooner.",
+        "durationMs": 3500
+      }
     ],
     "comments": [
-      { "authorId": "blaze", "text": "MARGE STITCHED ME. I'M FRAMING THIS" },
-      { "authorId": "tia", "text": "stitch of the year honestly" },
-      { "authorId": "reginald", "text": "A rare exchange between species." }
-    ] },
-  { "id": "r11", "slug": "pov-you-hired-saurav", "template": "pov", "hostId": "tia", "likes": 4096,
+      {
+        "authorId": "marge",
+        "text": "Suspiciously organised. As I said."
+      },
+      {
+        "authorId": "blaze",
+        "text": "WHERE DO I SIGN UP TO HIRE HIM"
+      },
+      {
+        "authorId": "saurav",
+        "text": "The manual job had it coming."
+      }
+    ]
+  },
+  {
+    "id": "r12",
+    "slug": "a-day-in-the-life",
+    "template": "day_in_life",
+    "hostId": "reginald",
+    "likes": 2400,
     "beats": [
-      { "characterId": "tia", "pose": "talking", "caption": "Day one. He's already asked where the docs are.", "durationMs": 3000, "data": { "pov": "POV: you just hired Saurav" } },
-      { "characterId": "tia", "pose": "shocked", "caption": "Day three. The docs exist now. He wrote them.", "durationMs": 3000 },
-      { "characterId": "tia", "pose": "thinking", "caption": "Week two. The thing nobody owned? He owns it now.", "durationMs": 3500 },
-      { "characterId": "tia", "pose": "celebrating", "caption": "Month one. You're wondering why you didn't hire him sooner.", "durationMs": 3500 }
+      {
+        "characterId": "reginald",
+        "pose": "neutral",
+        "caption": "The creature wakes. Before food, before light, he speaks Spanish to an owl.",
+        "durationMs": 3500,
+        "data": {
+          "title": "A day in the life",
+          "time": "Morning",
+          "label": "Duolingo, before anything else"
+        }
+      },
+      {
+        "characterId": "reginald",
+        "pose": "talking",
+        "caption": "By day he works with herds in the United States and Europe. Briefly in sync. Mostly.",
+        "durationMs": 3500,
+        "data": {
+          "time": "Work hours",
+          "label": "Teams across three continents"
+        }
+      },
+      {
+        "characterId": "reginald",
+        "pose": "thinking",
+        "caption": "Then a few rounds of mental maths. The streak must survive.",
+        "durationMs": 3500,
+        "data": {
+          "time": "Evening",
+          "label": "Matiks"
+        }
+      },
+      {
+        "characterId": "reginald",
+        "pose": "sceptical",
+        "caption": "Work ends. Work begins. He builds an AI that finds buyers for factories.",
+        "durationMs": 3500,
+        "data": {
+          "time": "Night",
+          "label": "Project Daedalus"
+        }
+      },
+      {
+        "characterId": "reginald",
+        "pose": "neutral",
+        "caption": "A chapter before sleep. Then, finally, rest. Briefly.",
+        "durationMs": 3500,
+        "data": {
+          "time": "Late",
+          "label": "Reading"
+        }
+      }
     ],
     "comments": [
-      { "authorId": "marge", "text": "Suspiciously organised. As I said." },
-      { "authorId": "blaze", "text": "WHERE DO I SIGN UP TO HIRE HIM" },
-      { "authorId": "saurav", "text": "I do like docs." }
-    ] },
-  { "id": "r12", "slug": "a-day-in-the-life", "template": "day_in_life", "hostId": "reginald", "likes": 2400,
-    "beats": [
-      { "characterId": "reginald", "pose": "neutral", "caption": "The creature wakes. Before food, before light, he speaks Spanish to an owl.", "durationMs": 3500, "data": { "title": "A day in the life", "time": "6:45 AM", "label": "Duolingo, before anything else" } },
-      { "characterId": "reginald", "pose": "talking", "caption": "He gathers with his herd and reports what he has built. Briefly. Mostly.", "durationMs": 3500, "data": { "time": "9:30 AM", "label": "Stand-up" } },
-      { "characterId": "reginald", "pose": "thinking", "caption": "Headphones on. The creature must not be disturbed. Observe from a distance.", "durationMs": 3500, "data": { "time": "1:00 PM", "label": "Deep work" } },
-      { "characterId": "reginald", "pose": "sceptical", "caption": "Work ends. Work begins. He builds a website about himself. Starring me.", "durationMs": 3500, "data": { "time": "7:00 PM", "label": "Side project" } },
-      { "characterId": "reginald", "pose": "neutral", "caption": "A chapter of Harry Potter. Forty percent through. 'Pretty good,' he says.", "durationMs": 3500, "data": { "time": "11:30 PM", "label": "Wind down" } }
-    ],
-    "comments": [
-      { "authorId": "marge", "text": "6:45 AM. Unnatural." },
-      { "authorId": "tia", "text": "the 7pm work ends work begins is so real" },
-      { "authorId": "blaze", "text": "HE NEVER STOPS, FOLKS. HE NEVER STOPS." }
-    ] }
+      {
+        "authorId": "marge",
+        "text": "Spanish before breakfast. Unnatural."
+      },
+      {
+        "authorId": "tia",
+        "text": "the work ends work begins is so real"
+      },
+      {
+        "authorId": "blaze",
+        "text": "HE NEVER STOPS, FOLKS. HE NEVER STOPS."
+      }
+    ]
+  }
 ]

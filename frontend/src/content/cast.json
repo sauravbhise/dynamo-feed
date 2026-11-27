@@ -45,7 +45,7 @@
     "role": "The subject",
     "color": "#A9BED6",
     "scale": 1,
-    "headroom": 0,
+    "headroom": 0.12,
     "framing": "full",
     "voiceId": ""
   }

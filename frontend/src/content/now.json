@@ -3,7 +3,7 @@
   "obsession": {
     "title": "Current obsession",
     "name": "Project Daedalus",
-    "text": "An AI engine that finds the right buyers for a sheet-metal manufacturer.",
+    "oneLiner": "An AI engine that finds the right buyers for a sheet-metal manufacturer.",
     "repo": "sauravbhise/project-daedalus"
   },
   "writing": [
@@ -11,7 +11,7 @@
       "title": "Mastering Two-Way Integration: Change Data Capture (CDC) with Kafka and Stripe",
       "url": "https://medium.com/@sauravbhise/mastering-two-way-integration-change-data-capture-cdc-with-kafka-and-stripe-30bd7c8ea512",
       "platform": "Medium",
-      "date": "2023-12-20",
+      "date": "Dec 2023",
       "readMinutes": 3,
       "hook": "Keeping Stripe and a database in sync both ways with Kafka and change data capture."
     },
@@ -19,7 +19,7 @@
       "title": "Enhancing the Management of Supply Chains Using Blockchain Technology",
       "url": "https://medium.com/@sauravbhise/enhancing-the-management-of-supply-chains-using-blockchain-technology-f8aa482a02f8",
       "platform": "Medium",
-      "date": "2023-05-12",
+      "date": "May 2023",
       "readMinutes": 3,
       "hook": "How blockchain could make supply chains more transparent and easier to trust."
     }
