@@ -1,10 +1,10 @@
 {
   "name": "Saurav Bhise",
-  "oneLiner": "Full-stack engineer who builds things, then figures out how to get them used.",
+  "oneLiner": "AI-first engineer. From codebase to customer, sorted.",
   "photo": "/me.jpg",
   "location": "Pune, India",
   "email": "sauravbhise2002@gmail.com",
-  "resumeUrl": "https://drive.google.com/REPLACE_WITH_PUBLIC_LINK",
+  "resumeUrl": "/resume.pdf",
   "socials": [
     {
       "platform": "linkedin",
@@ -79,7 +79,7 @@
     },
     {
       "name": "Dynamo Feed",
-      "text": "This site: a portfolio you scroll like a short-video app.",
+      "text": "This site. Built with React, TypeScript and a cast of opinionated cartoons.",
       "tags": [
         "React",
         "TypeScript",
