@@ -1,21 +1,9 @@
-import { useEffect, useState } from "react";
 import { Calculator, Flame, Languages } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { CardTitle } from "./CardTitle";
 import { contentUsable, wholeDaysSince } from "../../content";
 import type { Now } from "../../content/types";
-
-// One request per page load: the column mounts again each time the phone
-// sheet opens.
-let liveStreakRequest: Promise<number | null> | undefined;
-
-function fetchLiveStreak(): Promise<number | null> {
-  liveStreakRequest ??= fetch("/api/duolingo")
-    .then((res) => (res.ok ? res.json() : null))
-    .then((body) => (Number.isInteger(body?.streak) && body.streak >= 0 ? (body.streak as number) : null))
-    .catch(() => null);
-  return liveStreakRequest;
-}
+import { useLiveStreak } from "./liveStreak";
 
 function StreakRow({
   icon: Icon,
@@ -57,17 +45,7 @@ function StreakRow({
 }
 
 export function DailyStreaksCard({ spanish, matiks }: Pick<Now, "spanish" | "matiks">) {
-  const [liveStreak, setLiveStreak] = useState<number | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchLiveStreak().then((value) => {
-      if (!cancelled) setLiveStreak(value);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const liveStreak = useLiveStreak()?.streak ?? null;
 
   // The estimate shows straight away, and stays if the live value never comes.
   const spanishStreak = liveStreak ?? spanish.streak + wholeDaysSince(spanish.streakAsOf);
