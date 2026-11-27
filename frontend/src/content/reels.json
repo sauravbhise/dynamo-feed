@@ -127,9 +127,7 @@
         "data": {
           "value": 0,
           "unit": "bullet points",
-          "label": "on this entire website",
-          "before": "A one-page resume",
-          "after": "A feed, five characters and a talking cat"
+          "label": "on this entire website"
         }
       },
       {

@@ -4,11 +4,16 @@ import { WritingDeckCard } from "./cards/WritingDeckCard";
 import { NowReadingCard } from "./cards/NowReadingCard";
 import { DailyStreaksCard } from "./cards/DailyStreaksCard";
 import { VolunteeringCard } from "./cards/VolunteeringCard";
+import { useLiveStreak } from "./cards/liveStreak";
 
 /** Off the clock — renders the card list in order; each card is its own component. */
 export function RightColumn({ showTitle = true }: { showTitle?: boolean }) {
+  const liveStreak = useLiveStreak();
   // now.json invalid → hide the right column entirely (its auto reels hide too).
   if (!now) return null;
+  // A successful live Duolingo fetch is newer data than now.json's updatedAt.
+  const updatedLabel =
+    liveStreak && liveStreak.fetchedAt >= new Date(now.updatedAt).getTime() ? "today" : timeAgo(now.updatedAt);
   return (
     <div className="flex h-full min-h-0 flex-col" data-testid="clock-column">
       <div className={showTitle ? "shrink-0 px-6 pb-4 pt-6" : "shrink-0 px-6 pb-2"}>
@@ -25,7 +30,7 @@ export function RightColumn({ showTitle = true }: { showTitle?: boolean }) {
             <span className="absolute inline-flex size-full animate-ping rounded-full bg-sage opacity-50" />
             <span className="relative inline-flex size-2 rounded-full bg-sage" />
           </span>
-          Updated {timeAgo(now.updatedAt)}
+          Updated {updatedLabel}
         </p>
       </div>
 
